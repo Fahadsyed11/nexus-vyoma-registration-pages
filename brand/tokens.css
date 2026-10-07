@@ -1,0 +1,39 @@
+/* Nexus Vyoma design tokens — source: brand/BRAND_GUIDE.md */
+:root {
+  /* Primary / base */
+  --nv-black: #000000;
+  --nv-navy: #0a0f1e;
+  --nv-crimson: #b80f1f;
+  --nv-orange: #ff6a00;
+
+  /* Accent (gradient / glow) */
+  --nv-blue: #0066ff;
+  --nv-magenta: #ff207d;
+  --nv-red-orange: #ff3b2e;
+  --nv-purple: #7b2cff;
+
+  /* Neutral */
+  --nv-white: #ffffff;
+  --nv-grey-light: #e5e5e5;
+  --nv-grey-dark: #1a1a1a;
+
+  /* Semantic */
+  --nv-bg: var(--nv-black);
+  --nv-surface: var(--nv-grey-dark);
+  --nv-text: var(--nv-white);
+  --nv-text-muted: var(--nv-grey-light);
+
+  /* Gradients */
+  --nv-gradient-fire: linear-gradient(135deg, var(--nv-crimson), var(--nv-red-orange) 45%, var(--nv-orange));
+  --nv-gradient-cosmic: linear-gradient(135deg, var(--nv-blue), var(--nv-purple) 50%, var(--nv-magenta));
+  --nv-gradient-title: linear-gradient(180deg, #ffffff 0%, #ffd9a8 35%, var(--nv-orange) 70%, var(--nv-crimson) 100%);
+
+  /* Glows */
+  --nv-glow-orange: 0 0 32px rgb(255 106 0 / 0.45);
+  --nv-glow-blue: 0 0 32px rgb(0 102 255 / 0.45);
+
+  /* Typography (map to next/font variables) */
+  --nv-font-display: var(--font-display), "Anton", "Bebas Neue", Impact, sans-serif;
+  --nv-font-body: var(--font-body), "Inter", system-ui, sans-serif;
+  --nv-tracking-wide: 0.3em;
+}

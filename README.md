@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nexus Vyoma — Registration Pages
 
-## Getting Started
+Registration website for **Nexus Vyoma**, a three-day inter-college fest by ISL Engineering College, Hyderabad (10–12 Nov 2026).
 
-First, run the development server:
+## Tech stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Next.js 16 (App Router) + React 19 + TypeScript
+- Tailwind CSS v4 and brand tokens (`brand/tokens.css`)
+- GSAP and Framer Motion for animation (guides in `skills/`)
+- Payment gateway: TBD (secure server-side flow, see rules)
+
+## Project structure
+
+```
+AGENTS.md          Project rules (read every prompt). CLAUDE.md points here
+brand/             Brand guide, color tokens, brand assets
+skills/            GSAP + Framer animation skills (read before animating)
+app/               Next.js App Router (Server Components by default)
+public/            Static files
+.env.example       Env var names (copy to .env.local, never commit secrets)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Working rules (summary — full text in [AGENTS.md](./AGENTS.md))
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **SSR first**, `"use client"` only for browser APIs and animation, as small components.
+2. **Animated, on-brand, responsive**, using the `skills/` guides. No generic AI-slop design.
+3. **Plan, get approval, then build.**
+4. **Payments are secure:** server-side pricing, signature and webhook verification, secrets only in env.
+5. **Update this README's Activity Log after every task.**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Getting started
 
-## Learn More
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Activity Log
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Newest first.
 
-## Deploy on Vercel
+### 2026-10-07 — Project setup and rules
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+**Done**
+- Added project rules to [AGENTS.md](./AGENTS.md): SSR/CSR split, animation skills and design quality, plan-before-build, payment security and README logging. The auto-generated Next.js block is preserved.
+- Added [CLAUDE.md](./CLAUDE.md), which imports `AGENTS.md`, so the rules load on every prompt.
+- Created `brand/` with [BRAND_GUIDE.md](./brand/BRAND_GUIDE.md), `tokens.css`, `tokens.json` and `assets/`. The palette was transcribed from the brand image.
+- Added `.env.example` for payment and site config, and updated `.gitignore` so it stays tracked.
+- Rewrote this README.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Follow-ups**
+- Drop the original brand images and logos into `brand/assets/`. The chat image can't be saved automatically.
+- Confirm the palette hex values and the display font (Anton vs Bebas Neue).
+- Choose a payment gateway (Razorpay, Stripe or Cashfree).
+- Next prompt: start the website. An implementation plan comes first.
