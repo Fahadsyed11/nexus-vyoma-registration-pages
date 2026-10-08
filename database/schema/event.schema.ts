@@ -18,7 +18,7 @@ const eventSchema = new mongoose.Schema({
         required: true
     },
     date_time: {
-        type: Date,
+        type: String,
         required: true
     },
     image_url: {
@@ -27,7 +27,7 @@ const eventSchema = new mongoose.Schema({
     },
     isFlatship: {
         type: Boolean,
-        required: true
+        default: false
     },
     category: {
         type: String,
@@ -39,9 +39,11 @@ const eventSchema = new mongoose.Schema({
     },
     prize: {
         type: String,
+        default: "No prize"
     },
     entry_fee: {
         type: Number,
+        default: 0
     },
     participants_type: {
         type: String,
@@ -50,9 +52,10 @@ const eventSchema = new mongoose.Schema({
     },
     team_size: {
         type: Number,
+        default: 1
     },
     requirements: {
-        type: String,
+        type: [String],
         required: true
     }
 }, { timestamps: true, overwriteModels: true });
