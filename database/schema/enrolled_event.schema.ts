@@ -11,7 +11,7 @@ const enrolledEventSchema = new mongoose.Schema({
     },
     register_user_id: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "RegisterUser",
     },
     event_id: {
         type: mongoose.Schema.Types.ObjectId,
