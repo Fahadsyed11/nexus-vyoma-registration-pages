@@ -38,7 +38,9 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
     }
 
     // 3. Create a new connection
-    cached.promise = mongoose.connect(MONGODB_URI);
+    cached.promise = mongoose.connect(MONGODB_URI, {
+        appName: process.env.NODE_ENV === "production" ? "nexus_vyoma" : "nexus_vyoma_dev",
+    });
 
     try {
         cached.conn = await cached.promise;
