@@ -38,7 +38,7 @@ const registrationUserSchema = new mongoose.Schema({
         trim: true
     },
     year_of_study: {
-        type: Number,
+        type: String,
         required: true
     },
     degree: {
@@ -46,6 +46,11 @@ const registrationUserSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
+    profile_image: {
+        type: String,
+        required: true,
+        trim: true
+    }
 },
     { timestamps: true, overwriteModels: true });
 
