@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
-import s3Client from "./client"
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { s3Client, sesClient, SendEmailCommand, PutObjectCommand } from "./client"
 
 
 export async function uploadImageToS3(file: Buffer, extension: string, contentType: string) {
@@ -49,6 +48,49 @@ export async function uploadImageToS3(file: Buffer, extension: string, contentTy
             url: null,
             key: null,
             result: null,
+        }
+    }
+}
+
+export async function sendEmailWithSES(to: string, subject: string, html: string, text?: string) {
+    const from = "no-reply@islec.edu.in";
+
+    try {
+        const response = await sesClient.send(
+            new SendEmailCommand({
+                Source: from,
+                Destination: {
+                    ToAddresses: [to],
+                },
+                Message: {
+                    Subject: {
+                        Data: subject,
+                        Charset: "UTF-8",
+                    },
+                    Body: {
+                        Text: {
+                            Data: text,
+                            Charset: "UTF-8",
+                        },
+                        Html: {
+                            Data: html,
+                            Charset: "UTF-8",
+                        },
+                    },
+                },
+            }),
+        )
+
+        return {
+            success: true,
+            messageId: response.MessageId,
+            error: null,
+        }
+    } catch (error) {
+        return {
+            success: false,
+            error: error instanceof Error ? error.message : "Unknown error",
+            messageId: null,
         }
     }
 }
