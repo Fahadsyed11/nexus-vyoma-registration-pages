@@ -70,10 +70,22 @@ The payment gateway is not chosen yet (likely Razorpay/Stripe/Cashfree). Apply t
 - After **every task**, update [`README.md`](./README.md): add a dated entry at the **top** of the **Activity Log** section (newest first) listing what was done, which files changed and any follow-ups.
 - Keep the README's "Project overview", "Tech stack", "Structure" and "Rules" sections current when they change.
 
+## Rule 6 — Strict Asset / Visual Lock (MANDATORY)
+
+- **Use ONLY explicitly provided / approved assets:** Logos, images, graphics, videos, and icons provided by the user or defined in `brand/BRAND_GUIDE.md` / `brand/assets/`.
+- **Zero unapproved visual assets:**
+  - DO NOT search the internet for images.
+  - DO NOT use stock photography (Unsplash, Pexels, Pixabay, etc.).
+  - DO NOT use placeholder URLs, AI-generated images, or random icon packs.
+  - DO NOT copy demo images/media from React Bits or external UI libraries. React Bits components are approved **ONLY** for interaction/animation behaviors, not their demo content.
+- **CSS / Generated visuals:** Allowed ONLY when they are part of the approved brand design system (brand gradients, glows, noise/grain, streaks, borders, text effects).
+- **Missing assets rule:** If a component/card requires an image that has not been supplied, keep the approved structure and leave the image slot awaiting the official asset. Never substitute with unapproved imagery.
+
 ## Order of work for every prompt
 
 1. Read this file (`AGENTS.md`) plus the Next.js docs and relevant skills.
 2. Write the implementation plan, then **wait for approval**.
-3. Build, following Rules 1, 2 and 4.
-4. Verify (lint, build, responsive and motion check).
+3. Build, following Rules 1, 2, 4, and 6.
+4. Verify (lint, build, responsive and motion check, asset audit).
 5. Update `README.md` Activity Log (Rule 5).
+
