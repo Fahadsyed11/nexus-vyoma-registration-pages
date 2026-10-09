@@ -43,6 +43,59 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-09 — Simplified Footer Venue Display
+
+**Done**
+- **Footer Venue Information (`FooterSection.tsx`)**:
+  - Removed image container and simplified venue presentation to clean text format (`Venue — ISL Engineering College` with subtitle `Hyderabad, Telangana`).
+  - Removed unused `Image` import.
+- **Verification**: Ran `npm run build` with 0 compilation errors.
+
+### 2026-10-09 — Final UI Fixes: About Title, Manifesto Reveal Timing & Sponsor Compact Layout
+
+**Done**
+- **About Section Title Typography (`AboutSection.tsx`)**:
+  - Ensured the "ABOUT NEXUS VYOMA" title is styled with brand display font `Anton` (`font-[family-name:var(--font-display)] font-bold`), preserving official warm flame gradients and spark flair.
+- **Manifesto Text Reveal Timing & Readability (`AboutSection.tsx`)**:
+  - Re-calibrated `ScrollReveal` parameters to `wordAnimationStart: "top 80%"`, `wordAnimationEnd: "bottom 35%"`, and `scrub: 1`.
+  - Expanded the word-by-word reveal span across a natural ~350px scroll window so the manifesto does not rush, ensuring 100% of words are fully sharp and readable before the section transitions into Flagship Events.
+- **Sponsor Section Typography & Gap Elimination (`SponsorsSection.tsx`)**:
+  - Refined sponsor heading (`text-xl xs:text-2xl sm:text-3xl lg:text-4xl`) and supporting copy for balanced visual scale.
+  - Eliminated excessive vertical gaps: text-to-carousel margin reduced to `mb-2 sm:mb-3 lg:mb-4`, section padding tightened to `py-8 sm:py-12 lg:py-14`, and carousel stage height reduced to `h-[320px] sm:h-[380px] lg:h-[420px]` to tightly frame the 310px cards.
+  - Closed horizontal gaps between cards by tuning `gap={14}` in `CircularCarousel`.
+- **Mobile Scroll Progression & Pacing (`SponsorsSection.tsx`)**:
+  - Calibrated the GSAP entrance timeline (`start: "top 85%"`, `end: "top 45%"`, `scrub: 1`) to slow down and smooth out the reveal progression on mobile, giving users comfortable time to view the heading, description, and interactive carousel.
+- **Verification**: Ran `npm run build` with 0 compilation errors.
+
+### 2026-10-09 — Enlarged Sponsor Cards & Added 3D Reflective Glass Back Faces
+
+**Done**
+- **Enlarged Card Dimensions (`SponsorsSection.tsx`, `CircularCarousel.tsx`)**:
+  - Increased sponsor card width from `260` to `310` (~20% increase) and expanded stage wrapper height to `h-[380px] xs:h-[420px] sm:h-[520px] lg:h-[600px]`, allowing cards to render bold, large, and unobstructed.
+- **Reflective Glass Back Cards (`CircularCarousel.tsx`)**:
+  - Implemented dual-sided 3D card architecture with inward-facing `[transform:rotateY(180deg)] [backface-visibility:hidden]` back faces.
+  - Styled back faces with deep translucent iPhone Dark Mirror Glass (`bg-[#080D1E]/80 backdrop-blur-xl border border-white/[0.18]`), specular diagonal light streak reflections (`linear-gradient(115deg, ...)`), specular top mirror highlights, subtle micro-grid texturing, and soft glowing ✦ NEXUS VYOMA emblem watermarks.
+  - Reduced `depthFade` to `0.2` so cards at the back of the cylinder remain visibly reflective and create a complete 3D cylindrical glass ring carousel.
+- **Verification**: Ran `npm run build` — compiled with 0 errors.
+
+### 2026-10-09 — Strict UI Refinement: About Title Font, Text-Reveal Timing & Sponsor Spacing
+
+**Done**
+- **About Section Title Font (`AboutSection.tsx`)**:
+  - Updated the "ABOUT NEXUS VYOMA" title font from generic `font-sans` to the brand's bold, condensed display font `Anton` (`font-display font-bold`), preserving all color gradients, letter tracking, spacing, and icon alignment.
+- **Text-Reveal Animation Timing (`AboutSection.tsx`)**:
+  - Re-calibrated `ScrollReveal` trigger boundaries (`wordAnimationStart: "top 82%"`, `wordAnimationEnd: "center 48%"`, `scrub: 0.8`), ensuring all words reach 100% opacity and 0px blur while centered in the viewport.
+  - Eliminated premature exit so the entire manifesto message remains sharp, stable, and readable across both desktop and mobile before moving toward Flagship Events.
+- **Sponsor Typography & Vertical Gap Reduction (`SponsorsSection.tsx`)**:
+  - Scaled down the oversized sponsor heading (`text-2xl xs:text-3xl sm:text-4xl lg:text-5xl`) and supporting description to establish a balanced, premium editorial hierarchy without dominating the page.
+  - Reduced excessive vertical gap between text and 3D carousel from `mb-10 sm:mb-16` to `mb-4 xs:mb-5 sm:mb-7 lg:mb-8`.
+  - Adjusted section padding from `py-24 sm:py-32` to `py-14 xs:py-16 sm:py-20 lg:py-24`.
+- **Sponsor Mobile Responsiveness & Touch Capture (`SponsorsSection.tsx`, `CircularCarousel.tsx`)**:
+  - Responsive carousel wrapper height scaling (`h-[340px] xs:h-[380px] sm:h-[460px] lg:h-[520px]`) eliminating vertical dead space on screens from 320px to 767px (tested at 320px, 360px, 375px, 390px, 430px).
+  - Added pointer capture (`setPointerCapture` / `releasePointerCapture`) on pointer drag in `CircularCarousel.tsx` for seamless, un-dropped touch swipes on mobile devices.
+  - Refined bottom sponsor CTA typography and margins to avoid awkward wrapping on narrow mobile screens.
+- **Verification**: Verified Next.js build (`npm run build`) succeeded with 0 errors.
+
 ### 2026-10-09 — Fixed Navbar Logo Docking Alignment & Capsule Visual Consistency
 
 **Done**

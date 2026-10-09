@@ -45,14 +45,14 @@ export default function AboutSection() {
     <section
       id="about"
       ref={containerRef}
-      className="relative w-full min-h-[70vh] flex flex-col items-center justify-center pt-28 pb-20 sm:pt-40 sm:pb-28 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden select-none"
+      className="relative w-full min-h-[75vh] sm:min-h-[80vh] flex flex-col items-center justify-center pt-24 pb-20 sm:pt-36 sm:pb-28 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden select-none"
     >
       {/* Content Container - Left Aligned */}
       <div className="w-full max-w-5xl mx-auto flex flex-col items-start text-left relative z-10 self-stretch">
-        {/* Subheading: Space Grotesk, uppercase, medium weight, small size, subtle letter spacing, warm gold/orange accent */}
+        {/* Title: Bold Condensed Display (Anton), uppercase, tracking, warm gold/orange accent */}
         <div className="flex items-center gap-2.5 mb-8 sm:mb-10">
           <Spark size={14} color="#FF6A00" glow={true} />
-          <span className="font-sans font-medium text-xs sm:text-sm tracking-[0.25em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FF6A00] to-[#FBB03B]">
+          <span className="font-[family-name:var(--font-display)] font-bold text-sm sm:text-base tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FF6A00] to-[#FBB03B]">
             ABOUT NEXUS VYOMA
           </span>
         </div>
@@ -74,16 +74,16 @@ export default function AboutSection() {
             />
           </div>
 
-          {/* Official Approved About Paragraph with ScrollReveal (0.5x Synced Pace) */}
+          {/* Official Approved About Paragraph with ScrollReveal (Balanced pacing across scroll) */}
           <div className="relative z-10 w-full text-left self-stretch">
             <ScrollReveal
               enableBlur={true}
               blurStrength={5}
               baseOpacity={0.12}
               baseRotation={0}
-              wordAnimationStart="top 75%"
-              wordAnimationEnd="bottom+=120% 35%"
-              scrub={1.2}
+              wordAnimationStart="top 80%"
+              wordAnimationEnd="bottom 35%"
+              scrub={1}
               containerClassName="my-0 w-full self-stretch"
               textClassName="font-[family-name:var(--font-barlow-condensed)] text-[24px] xs:text-[28px] sm:text-[36px] md:text-[44px] font-medium leading-[1.16] text-[#FFFFFF] select-none text-left self-stretch not-italic"
             >

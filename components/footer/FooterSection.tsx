@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef } from 'react';
-import Image from 'next/image';
 import FooterLogoReveal from './FooterLogoReveal';
 
 export default function FooterSection() {
@@ -22,24 +21,17 @@ export default function FooterSection() {
         {/* Footer Meta & Information Bar */}
         <div className="w-full pt-8 border-t border-white/[0.08] flex flex-col lg:flex-row items-center justify-between gap-5 sm:gap-6 lg:gap-8 text-center lg:text-left">
           {/* Venue & College Host */}
-          <div className="w-full max-w-sm sm:w-auto flex items-center justify-center sm:justify-start gap-3.5 px-4 py-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
-            <div className="relative w-11 h-11 rounded-xl bg-black/60 border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
-              <Image
-                src="/brand/isl-college-logo.png"
-                alt="ISL Engineering College Logo"
-                width={64}
-                height={64}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-500 font-semibold">
-                Venue
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-white tracking-tight">
-                ISL Engineering College
-              </span>
-              <span className="text-[11px] text-zinc-400 font-normal">
+          <div className="w-full max-w-sm sm:w-auto flex items-center justify-center sm:justify-start px-5 py-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
+            <div className="flex flex-col text-center sm:text-left">
+              <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-400 font-semibold">
+                  Venue —
+                </span>
+                <span className="text-xs sm:text-sm font-semibold text-white tracking-tight">
+                  ISL Engineering College
+                </span>
+              </div>
+              <span className="text-[11px] text-zinc-400 font-normal mt-0.5">
                 Hyderabad, Telangana
               </span>
             </div>
