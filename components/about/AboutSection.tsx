@@ -85,7 +85,7 @@ export default function AboutSection() {
               wordAnimationEnd="bottom+=120% 35%"
               scrub={1.2}
               containerClassName="my-0 w-full self-stretch"
-              textClassName="font-[family-name:var(--font-barlow-condensed)] text-[28px] sm:text-[36px] md:text-[44px] font-medium leading-[1.16] text-[#FFFFFF] select-none text-left self-stretch not-italic"
+              textClassName="font-[family-name:var(--font-barlow-condensed)] text-[24px] xs:text-[28px] sm:text-[36px] md:text-[44px] font-medium leading-[1.16] text-[#FFFFFF] select-none text-left self-stretch not-italic"
             >
               {manifestoText}
             </ScrollReveal>

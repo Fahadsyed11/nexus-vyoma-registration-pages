@@ -171,7 +171,7 @@ export default function SponsorsSection() {
         {/* 3D Cylindrical Circular Carousel */}
         <div
           ref={carouselWrapperRef}
-          className="relative w-full h-[520px] sm:h-[580px] flex items-center justify-center will-change-transform"
+          className="relative w-full h-[460px] sm:h-[540px] lg:h-[580px] flex items-center justify-center will-change-transform"
         >
           <CircularCarousel
             items={sponsorItems}
@@ -202,14 +202,15 @@ export default function SponsorsSection() {
           />
         </div>
 
-        {/* Supporting Sponsor CTA */}
-        <div className="mt-8 flex items-center gap-2 text-xs font-mono text-zinc-400">
-          <span>WANT TO BECOME A SPONSOR FOR NEXUS VYOMA ?</span>
+        {/* Supporting Sponsor CTA - Fluid Wrap on Mobile */}
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-center text-xs font-mono text-zinc-400 px-4">
+          <span>WANT TO BECOME A SPONSOR FOR NEXUS VYOMA?</span>
           <a
-            href="mailto:[EMAIL_ADDRESS]"
-            className="text-[#FF6A00] underline underline-offset-4 hover:text-white transition-colors"
+            href="mailto:sponsorships@nexusvyoma.com"
+            className="text-[#FF6A00] underline underline-offset-4 hover:text-white transition-colors flex items-center gap-1"
           >
-            CONTACT US   →
+            <span>CONTACT US</span>
+            <span>→</span>
           </a>
         </div>
       </div>

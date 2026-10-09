@@ -53,6 +53,18 @@ Newest first.
   - `npm run test` (passes; no test files currently present)
   - `npm run lint` (completes with 1 existing warning in `app/api/event/route.ts` for unused `request` parameter)
 
+### 2026-10-09 — Comprehensive Mobile Responsiveness Audit & Fixes
+
+**Done**
+- **Mobile Responsiveness Fixes (Desktop Strictly Locked)**:
+  - **DriftWall (`DriftWall.tsx`)**: Added dynamic container-width responsive scaling (Mobile: 4 cols / 130px tiles; Tablet: 5 cols / 165px tiles; Desktop: 7 cols / 200px tiles locked).
+  - **Sponsors Section (`SponsorsSection.tsx`)**: Made bottom sponsor CTA wrap smoothly on mobile (`flex-col sm:flex-row`), adjusted carousel height on small screens (`h-[460px] sm:h-[540px] lg:h-[580px]`).
+  - **About Section (`AboutSection.tsx`)**: Refined mobile typography to `text-[24px] xs:text-[28px] sm:text-[36px]` preventing awkward line breaks on 320px–360px viewports.
+  - **Flagship Arenas (`FlagshipCardItem.tsx`)**: Reduced mobile card padding (`p-5 sm:p-10 lg:p-14`) and scaled title (`text-2xl sm:text-4xl lg:text-6xl`) with proportionate icon sizes.
+  - **Register CTA (`RegisterCTASection.tsx`)**: Adjusted card padding (`p-6 sm:p-14 lg:p-16`) and scaled concentric background arcs (`w-[260px] sm:w-[460px] lg:w-[540px]`).
+  - **Footer Section (`FooterSection.tsx`)**: Symmetrically centered Venue and Date cards with full-width mobile container wrappers (`w-full max-w-sm sm:w-auto`).
+- **Verified**: Next.js production build (`npm run build`) passed with 0 errors; desktop layouts verified identical.
+
 ### 2026-10-09 — Solid Pure White Filled Hero Logo Text
 
 **Done**

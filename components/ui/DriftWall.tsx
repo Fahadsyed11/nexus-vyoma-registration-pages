@@ -92,6 +92,7 @@ export default function DriftWall({
   const lastTsRef = useRef<number | null>(null);
 
   const [containerHeight, setContainerHeight] = useState(600);
+  const [containerWidth, setContainerWidth] = useState(1200);
   const [activeId, setActiveId] = useState<string | null>(null);
   const activeIdRef = useRef<string | null>(null);
   const [reduced, setReduced] = useState(false);
@@ -104,29 +105,64 @@ export default function DriftWall({
     return () => mq.removeEventListener('change', onChange);
   }, []);
 
+  useLayoutEffect(() => {
+    if (!containerRef.current) return;
+    const updateSize = () => {
+      if (containerRef.current) {
+        setContainerHeight(containerRef.current.clientHeight || 600);
+        setContainerWidth(containerRef.current.clientWidth || window.innerWidth || 1200);
+      }
+    };
+    updateSize();
+    const ro = new ResizeObserver(([entry]) => {
+      setContainerHeight(entry.contentRect.height || 600);
+      setContainerWidth(entry.contentRect.width || 1200);
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  // Compute responsive parameters based on containerWidth while keeping desktop exact
+  const responsiveConfig = useMemo(() => {
+    if (containerWidth < 640) {
+      return {
+        columns: Math.min(columns, 4),
+        tileWidth: Math.min(tileWidth, 130),
+        tileHeight: Math.min(tileHeight, 88),
+        gap: Math.min(gap, 10),
+      };
+    }
+    if (containerWidth < 1024) {
+      return {
+        columns: Math.min(columns, 5),
+        tileWidth: Math.min(tileWidth, 165),
+        tileHeight: Math.min(tileHeight, 110),
+        gap: Math.min(gap, 12),
+      };
+    }
+    return {
+      columns,
+      tileWidth,
+      tileHeight,
+      gap,
+    };
+  }, [containerWidth, columns, tileWidth, tileHeight, gap]);
+
   const columnItems = useMemo(() => {
-    const cols: DriftWallItem[][] = Array.from({ length: columns }, () => []);
-    items.forEach((item, i) => cols[i % columns].push(item));
+    const colCount = responsiveConfig.columns;
+    const cols: DriftWallItem[][] = Array.from({ length: colCount }, () => []);
+    items.forEach((item, i) => cols[i % colCount].push(item));
     return cols.map((col) => (col.length ? col : items.slice(0, 1)));
-  }, [items, columns]);
+  }, [items, responsiveConfig.columns]);
 
   const columnMeta = useMemo(() => {
-    const unit = tileHeight + gap;
+    const unit = responsiveConfig.tileHeight + responsiveConfig.gap;
     return columnItems.map((col) => {
       const copyHeight = Math.max(unit, col.length * unit);
       const copies = Math.max(2, Math.ceil((containerHeight * 1.6) / copyHeight) + 1);
       return { copyHeight, copies };
     });
-  }, [columnItems, tileHeight, gap, containerHeight]);
-
-  useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    const ro = new ResizeObserver(([entry]) => {
-      setContainerHeight(entry.contentRect.height || 600);
-    });
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
+  }, [columnItems, responsiveConfig.tileHeight, responsiveConfig.gap, containerHeight]);
 
   const baseVelocities = useMemo(() => {
     const dirSign = direction === 'up' ? 1 : -1;
@@ -246,9 +282,9 @@ export default function DriftWall({
   const cssVars = useMemo(
     () =>
     ({
-      '--dw-tile-w': `${tileWidth}px`,
-      '--dw-tile-h': `${tileHeight}px`,
-      '--dw-gap': `${gap}px`,
+      '--dw-tile-w': `${responsiveConfig.tileWidth}px`,
+      '--dw-tile-h': `${responsiveConfig.tileHeight}px`,
+      '--dw-gap': `${responsiveConfig.gap}px`,
       '--dw-radius': `${radius}px`,
       '--dw-perspective': `${perspective}px`,
       '--dw-lift': `${lift}px`,
@@ -258,7 +294,7 @@ export default function DriftWall({
       '--dw-edge': `${Math.max(0, (1 - fade) * 100)}%`,
       ...style,
     } as React.CSSProperties),
-    [tileWidth, tileHeight, gap, radius, perspective, lift, dim, grayscale, overlayColor, fade, style]
+    [responsiveConfig, radius, perspective, lift, dim, grayscale, overlayColor, fade, style]
   );
 
   const renderTile = (item: DriftWallItem, id: string, colIndex: number) => {

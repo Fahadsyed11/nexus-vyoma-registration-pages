@@ -20,9 +20,9 @@ export default function FooterSection() {
         </div>
 
         {/* Footer Meta & Information Bar */}
-        <div className="w-full pt-8 border-t border-white/[0.08] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 text-center lg:text-left">
+        <div className="w-full pt-8 border-t border-white/[0.08] flex flex-col lg:flex-row items-center justify-between gap-5 sm:gap-6 lg:gap-8 text-center lg:text-left">
           {/* Venue & College Host */}
-          <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
+          <div className="w-full max-w-sm sm:w-auto flex items-center justify-center sm:justify-start gap-3.5 px-4 py-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
             <div className="relative w-11 h-11 rounded-xl bg-black/60 border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
               <Image
                 src="/brand/isl-college-logo.png"
@@ -46,12 +46,12 @@ export default function FooterSection() {
           </div>
       
           {/* Social Media Handle: Instagram */}
-          <div className="flex items-center justify-center">
+          <div className="w-full max-w-sm sm:w-auto flex items-center justify-center">
             <a
               href="https://www.instagram.com/nexusvyoma?utm_source=ig_web_button_share_sheet&rpxt=ZDNlZDc0MzIxNw=="
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-2.5 px-6 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white transition-all duration-300 text-xs sm:text-sm font-mono tracking-wide shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
+              className="w-full sm:w-auto justify-center group flex items-center gap-2.5 px-6 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white transition-all duration-300 text-xs sm:text-sm font-mono tracking-wide shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
               aria-label="Nexus Vyoma Instagram Profile"
             >
               <svg
@@ -72,7 +72,7 @@ export default function FooterSection() {
           </div>
 
           {/* Festival Dates */}
-          <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
+          <div className="w-full max-w-sm sm:w-auto flex items-center justify-center sm:justify-start gap-3.5 px-4 py-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
             <div className="w-11 h-11 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center flex-shrink-0 text-[#FF6A00]">
               <svg
                 className="w-5 h-5"
@@ -93,9 +93,11 @@ export default function FooterSection() {
                 Dates
               </span>
               <span className="text-xs sm:text-sm font-semibold text-white tracking-tight">
-                <span className="hidden sm:inline">10, </span>11 <span className="hidden sm:inline">,</span> 12 <br /> November
+                10, 11, 12 November
               </span>
-
+              <span className="text-[11px] text-zinc-400 font-normal">
+                3-Day Inter-College Fest
+              </span>
             </div>
           </div>
         </div>

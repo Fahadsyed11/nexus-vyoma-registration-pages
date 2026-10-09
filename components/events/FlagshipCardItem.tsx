@@ -193,7 +193,7 @@ export default function FlagshipCardItem({ event, index }: FlagshipCardItemProps
       {/* Pinned Sticky Card Shell */}
       <div
         ref={cardShellRef}
-        className="sticky top-24 sm:top-28 w-full rounded-3xl border border-white/15 bg-[#070B16]/85 backdrop-blur-2xl p-6 sm:p-10 lg:p-14 shadow-[0_25px_80px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.15)] overflow-hidden will-change-transform"
+        className="sticky top-20 sm:top-28 w-full rounded-2xl sm:rounded-3xl border border-white/15 bg-[#070B16]/85 backdrop-blur-2xl p-5 sm:p-10 lg:p-14 shadow-[0_25px_80px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.15)] overflow-hidden will-change-transform"
         style={{
           zIndex: index + 1,
         }}
@@ -208,11 +208,11 @@ export default function FlagshipCardItem({ event, index }: FlagshipCardItemProps
           style={{ backgroundColor: colors.accent }}
         />
 
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center w-full min-h-[380px] sm:min-h-[420px]">
+        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-14 items-center w-full min-h-[340px] sm:min-h-[420px]">
           {/* LEFT: Visual / Image Card */}
           <div
             ref={visualCardRef}
-            className="lg:col-span-5 w-full flex flex-col items-center justify-center p-8 sm:p-12 rounded-2xl bg-gradient-to-br from-white/[0.07] via-white/[0.02] to-black/70 border border-white/15 relative overflow-hidden shadow-2xl group will-change-transform"
+            className="lg:col-span-5 w-full flex flex-col items-center justify-center p-6 sm:p-10 lg:p-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-white/[0.07] via-white/[0.02] to-black/70 border border-white/15 relative overflow-hidden shadow-2xl group will-change-transform"
             style={{
               boxShadow: `0 20px 50px rgba(0,0,0,0.6), inset 0 0 40px ${colors.glow}`,
             }}
@@ -221,22 +221,22 @@ export default function FlagshipCardItem({ event, index }: FlagshipCardItemProps
             <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.12)_1px,transparent_1px)] [background-size:16px_16px] opacity-25 pointer-events-none" />
 
             {/* Glowing Category Vector Icon */}
-            <div className="w-28 h-28 sm:w-36 sm:h-36 mb-6 transition-transform duration-500 group-hover:scale-105 flex items-center justify-center relative">
+            <div className="w-20 h-20 sm:w-36 sm:h-36 mb-4 sm:mb-6 transition-transform duration-500 group-hover:scale-105 flex items-center justify-center relative">
               <div
                 className="absolute inset-0 rounded-full blur-2xl opacity-40"
                 style={{ backgroundColor: colors.accent }}
               />
               <EventIcon
                 id={event.categoryId}
-                size={110}
+                size={100}
                 className="w-full h-full relative z-10 drop-shadow-[0_0_35px_rgba(255,255,255,0.4)]"
               />
             </div>
 
             {/* Category Badge & Headline Caption */}
-            <div className="text-center z-10 flex flex-col items-center gap-2">
+            <div className="text-center z-10 flex flex-col items-center gap-1.5 sm:gap-2">
               <span
-                className="px-4 py-1.5 rounded-full font-mono text-xs font-semibold tracking-wider uppercase border"
+                className="px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full font-mono text-[11px] sm:text-xs font-semibold tracking-wider uppercase border"
                 style={{
                   backgroundColor: 'rgba(255, 255, 255, 0.08)',
                   borderColor: colors.border,
@@ -245,7 +245,7 @@ export default function FlagshipCardItem({ event, index }: FlagshipCardItemProps
               >
                 {categoryMeta?.title || event.category}
               </span>
-              <span className="font-mono text-[11px] text-zinc-400 tracking-widest uppercase">
+              <span className="font-mono text-[10px] sm:text-[11px] text-zinc-400 tracking-widest uppercase">
                 {event.caption}
               </span>
             </div>
@@ -254,10 +254,10 @@ export default function FlagshipCardItem({ event, index }: FlagshipCardItemProps
           {/* RIGHT: Title & Description ONLY */}
           <div
             ref={textContentRef}
-            className="lg:col-span-7 flex flex-col justify-center gap-5 will-change-transform"
+            className="lg:col-span-7 flex flex-col justify-center gap-3.5 sm:gap-5 will-change-transform"
           >
             {/* Flagship Event Title */}
-            <h3 className="font-display text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-wide text-white uppercase leading-[1.1] drop-shadow-lg">
+            <h3 className="font-display text-2xl sm:text-4xl lg:text-6xl font-extrabold tracking-wide text-white uppercase leading-[1.1] drop-shadow-lg">
               {event.title}
             </h3>
 
