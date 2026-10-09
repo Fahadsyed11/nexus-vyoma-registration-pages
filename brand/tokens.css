@@ -1,39 +1,61 @@
-/* Nexus Vyoma design tokens — source: brand/BRAND_GUIDE.md */
+/* Nexus Vyoma Design Tokens — Official Brand Style Guide */
 :root {
-  /* Primary / base */
+  /* 1. Primary / Base Colors */
   --nv-black: #000000;
   --nv-navy: #0a0f1e;
-  --nv-crimson: #b80f1f;
+  --nv-crimson: #d8182b;
+  --nv-crimson-dark: #b80f1f;
   --nv-orange: #ff6a00;
+  --nv-amber: #fbb03b;
 
-  /* Accent (gradient / glow) */
+  /* 2. Accent Colors (Gradient / Glow) */
   --nv-blue: #0066ff;
+  --nv-electric-blue: #0088ff;
   --nv-magenta: #ff207d;
   --nv-red-orange: #ff3b2e;
   --nv-purple: #7b2cff;
 
-  /* Neutral */
+  /* 3. Neutral Colors (Text / Backgrounds) */
   --nv-white: #ffffff;
   --nv-grey-light: #e5e5e5;
+  --nv-grey-medium: #888888;
   --nv-grey-dark: #1a1a1a;
+  --nv-grey-card: #121520;
 
-  /* Semantic */
+  /* 4. College Brand Colors (ISL) */
+  --isl-lime: #98d800;
+  --isl-lime-glow: #a3e635;
+  --isl-blue: #3b49df;
+  --isl-navy: #1e1b4b;
+
+  /* 5. Semantic Surface & Background */
   --nv-bg: var(--nv-black);
   --nv-surface: var(--nv-grey-dark);
+  --nv-card-bg: rgba(18, 21, 32, 0.75);
+  --nv-card-border: rgba(255, 255, 255, 0.12);
+  --nv-card-border-glow: rgba(255, 106, 0, 0.35);
   --nv-text: var(--nv-white);
   --nv-text-muted: var(--nv-grey-light);
 
-  /* Gradients */
-  --nv-gradient-fire: linear-gradient(135deg, var(--nv-crimson), var(--nv-red-orange) 45%, var(--nv-orange));
-  --nv-gradient-cosmic: linear-gradient(135deg, var(--nv-blue), var(--nv-purple) 50%, var(--nv-magenta));
-  --nv-gradient-title: linear-gradient(180deg, #ffffff 0%, #ffd9a8 35%, var(--nv-orange) 70%, var(--nv-crimson) 100%);
+  /* 6. Official Gradients */
+  --nv-gradient-mark-top: linear-gradient(135deg, #d8182b 0%, #b80f1f 100%);
+  --nv-gradient-mark-mid: linear-gradient(135deg, #ff6a00 0%, #ff4500 100%);
+  --nv-gradient-mark-bot: linear-gradient(135deg, #fbb03b 0%, #e8a217 100%);
+  --nv-gradient-fire: linear-gradient(135deg, #d8182b 0%, #ff3b2e 40%, #ff6a00 70%, #fbb03b 100%);
+  --nv-gradient-cosmic: linear-gradient(135deg, #0066ff 0%, #7b2cff 50%, #ff207d 100%);
+  --nv-gradient-title: linear-gradient(180deg, #ffffff 0%, #ffe0b2 30%, #ff6a00 70%, #b80f1f 100%);
+  --nv-gradient-card: linear-gradient(180deg, rgba(26, 26, 26, 0.8) 0%, rgba(10, 15, 30, 0.95) 100%);
 
-  /* Glows */
-  --nv-glow-orange: 0 0 32px rgb(255 106 0 / 0.45);
-  --nv-glow-blue: 0 0 32px rgb(0 102 255 / 0.45);
+  /* 7. Official Glows */
+  --nv-glow-orange: 0 0 36px rgba(255, 106, 0, 0.5);
+  --nv-glow-crimson: 0 0 36px rgba(216, 24, 43, 0.5);
+  --nv-glow-blue: 0 0 36px rgba(0, 102, 255, 0.5);
+  --nv-glow-magenta: 0 0 36px rgba(255, 32, 125, 0.5);
+  --nv-glow-star: 0 0 16px rgba(251, 176, 59, 0.8), 0 0 32px rgba(255, 106, 0, 0.4);
 
-  /* Typography (map to next/font variables) */
-  --nv-font-display: var(--font-display), "Anton", "Bebas Neue", Impact, sans-serif;
-  --nv-font-body: var(--font-body), "Inter", system-ui, sans-serif;
-  --nv-tracking-wide: 0.3em;
+  /* 8. Typography Tokens */
+  --nv-font-display: var(--font-display), "Anton", Impact, sans-serif;
+  --nv-font-body: var(--font-body), "Space Grotesk", sans-serif;
+  --nv-tracking-wide: 0.35em;
+  --nv-tracking-ultra: 0.45em;
 }
