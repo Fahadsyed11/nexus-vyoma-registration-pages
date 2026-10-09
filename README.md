@@ -43,6 +43,31 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-09 — Integrated React Bits <SpecularButton /> in Navbar (CLAIM YOUR PASS)
+
+**Done**
+- **Created SpecularButton Component (`components/ui/SpecularButton.tsx`, `components/ui/SpecularButton.css`)**:
+  - Integrated React Bits WebGL hardware-accelerated `<SpecularButton />` using `ogl`.
+  - Configured signed distance field (SDF) rounded rectangle shader with dynamic rim lighting, elliptical normal calculation, cursor proximity detection, and symmetric specular highlight reflections.
+- **Navbar CTA Integration (`HeroNavbarTransition.tsx`, `Navbar.tsx`)**:
+  - Replaced the navbar CTA button with `<SpecularButton />`:
+    - **Label:** `CLAIM YOUR PASS` with arrow glyph (`↗`).
+    - **Visual Styling:** Translucent glass tint, moving specular highlight line (`lineColor="#ffffff"`, `baseColor="#3a3a4c"`, `intensity={1.2}`), `rounded-full` pill geometry (`radius={999}`), and smooth mouse tracking (`followMouse={true}`, `proximity={220}`).
+    - **Navigation:** Triggers router push to `/register` on click.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
+### 2026-10-09 — Smooth Sweep Animated Navbar Button (CLAIM YOUR PASS)
+
+**Done**
+- **Navbar Button Animation Redesign (`HeroNavbarTransition.tsx`, `Navbar.tsx`)**:
+  - Implemented a smooth directional sweep animation for the `CLAIM YOUR PASS` navbar button:
+    - **Resting State:** Solid White (`#FFFFFF`) pill with high-contrast `#10101B` bold text and Electric Blue `#0066FF` arrow.
+    - **Hover Animation:** An Electric Blue (`#0066FF`) fill layer smoothly sweeps across the button from left to right (`-translate-x-full → translate-x-0` with 300ms `ease-out`), while text and arrow transition fluidly to white with an upward-right arrow glide (`group-hover:translate-x-0.5 group-hover:-translate-y-0.5`) and luminous blue ambient glow (`hover:shadow-[0_0_22px_rgba(0,102,255,0.55)]`).
+    - **Click Feedback:** Added tactile bounce micro-interaction (`active:scale-95`).
+    - **Accessibility:** Keyboard focus ring configured (`focus-visible:ring-[#0066FF]`).
+  - Preserved existing `/register` navigation destination and responsive navbar capsule layout with zero external side effects.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
 ### 2026-10-09 — 1px Solid Pixel Outline on Flagship Arena Cards (Outer Outline Only)
 
 **Done**
