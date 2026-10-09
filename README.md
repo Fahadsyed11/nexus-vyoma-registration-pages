@@ -43,6 +43,15 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-09 — 1px Solid Pixel Outline on Flagship Arena Cards (Outer Outline Only)
+
+**Done**
+- **Flagship Arena Card Outline Refinement (`FlagshipScrollDeck.tsx`, `FlagshipCardItem.tsx`)**:
+  - Reduced outer card border thickness to crisp **1px** (`border` instead of `border-2`) using the event's category accent color.
+  - Removed colored borders from all inside elements (inner visual container now has a subtle neutral `border-white/[0.08]` and category badge uses clean neutral `border-white/15 bg-white/[0.05]`).
+  - The single solid color accent border now strictly and cleanly frames ONLY the outer boundary of each card.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
 ### 2026-10-09 — Fixed Mobile Logo Transition Glitch & Unstacked Footer Meta Items
 
 **Done**

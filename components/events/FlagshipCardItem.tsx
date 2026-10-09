@@ -169,7 +169,7 @@ export default function FlagshipCardItem({ event, index }: FlagshipCardItemProps
       {/* Pinned Sticky Card Shell */}
       <div
         ref={cardShellRef}
-        className="sticky top-20 sm:top-28 w-full rounded-2xl sm:rounded-3xl border-2 bg-[#060913] p-5 sm:p-10 lg:p-14 shadow-[0_25px_80px_rgba(0,0,0,0.9)] overflow-hidden will-change-transform"
+        className="sticky top-20 sm:top-28 w-full rounded-2xl sm:rounded-3xl border bg-[#060913] p-5 sm:p-10 lg:p-14 shadow-[0_25px_80px_rgba(0,0,0,0.9)] overflow-hidden will-change-transform"
         style={{
           zIndex: index + 1,
           borderColor: colors.color,
@@ -179,10 +179,7 @@ export default function FlagshipCardItem({ event, index }: FlagshipCardItemProps
           {/* LEFT: Visual / Image Card */}
           <div
             ref={visualCardRef}
-            className="lg:col-span-5 w-full flex flex-col items-center justify-center p-6 sm:p-10 lg:p-12 rounded-xl sm:rounded-2xl bg-[#0C101D] border-2 relative overflow-hidden group will-change-transform"
-            style={{
-              borderColor: colors.color,
-            }}
+            className="lg:col-span-5 w-full flex flex-col items-center justify-center p-6 sm:p-10 lg:p-12 rounded-xl sm:rounded-2xl bg-[#0C101D] border border-white/[0.08] relative overflow-hidden group will-change-transform"
           >
             {/* Fine Grid Mesh Pattern */}
             <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
@@ -198,14 +195,7 @@ export default function FlagshipCardItem({ event, index }: FlagshipCardItemProps
 
             {/* Category Badge & Headline Caption */}
             <div className="text-center z-10 flex flex-col items-center gap-1.5 sm:gap-2">
-              <span
-                className="px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-sm font-mono text-[11px] sm:text-xs font-semibold tracking-wider uppercase border-2"
-                style={{
-                  backgroundColor: '#060913',
-                  borderColor: colors.color,
-                  color: '#FFFFFF',
-                }}
-              >
+              <span className="px-3.5 sm:px-4 py-1 sm:py-1.5 rounded-full font-mono text-[11px] sm:text-xs font-semibold tracking-wider uppercase border border-white/15 bg-white/[0.05] text-white">
                 {categoryMeta?.title || event.category}
               </span>
               <span className="font-mono text-[10px] sm:text-[11px] text-zinc-400 tracking-widest uppercase">

@@ -50,15 +50,12 @@ export default function FlagshipScrollDeck() {
               itemClassName="w-full max-w-6xl mx-auto"
             >
               <div
-                className="relative w-full rounded-2xl sm:rounded-3xl border-2 bg-[#060913] p-6 sm:p-10 lg:p-12 shadow-[0_24px_60px_rgba(0,0,0,0.9)] overflow-hidden"
+                className="relative w-full rounded-2xl sm:rounded-3xl border bg-[#060913] p-6 sm:p-10 lg:p-12 shadow-[0_24px_60px_rgba(0,0,0,0.9)] overflow-hidden"
                 style={{ borderColor: theme.color }}
               >
                 <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-14 items-center w-full min-h-[300px] sm:min-h-[340px] lg:min-h-[360px]">
-                  {/* LEFT: Visual / Image Card */}
-                  <div
-                    className="lg:col-span-5 w-full h-[180px] sm:h-[240px] lg:h-full flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10 rounded-xl sm:rounded-2xl bg-[#0C101D] border-2 relative overflow-hidden group"
-                    style={{ borderColor: theme.color }}
-                  >
+                  {/* LEFT: Visual / Image Card (Neutral subtle border, no colored border inside) */}
+                  <div className="lg:col-span-5 w-full h-[180px] sm:h-[240px] lg:h-full flex flex-col items-center justify-center p-6 sm:p-8 lg:p-10 rounded-xl sm:rounded-2xl bg-[#0C101D] border border-white/[0.08] relative overflow-hidden group">
                     {/* Micro Grid Mesh */}
                     <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none" />
 
@@ -73,14 +70,7 @@ export default function FlagshipScrollDeck() {
 
                     {/* Category Label & Caption */}
                     <div className="text-center z-10 flex flex-col items-center gap-1">
-                      <span
-                        className="px-3.5 py-1 rounded-sm font-mono text-[11px] sm:text-xs font-semibold tracking-wider uppercase border-2"
-                        style={{
-                          backgroundColor: '#060913',
-                          borderColor: theme.color,
-                          color: '#FFFFFF',
-                        }}
-                      >
+                      <span className="px-3.5 py-1 rounded-full font-mono text-[11px] sm:text-xs font-semibold tracking-wider uppercase border border-white/15 bg-white/[0.05] text-white">
                         {categoryMeta?.title || event.category}
                       </span>
                       <span className="font-mono text-[10px] sm:text-[11px] text-zinc-400 tracking-widest uppercase">
