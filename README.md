@@ -43,6 +43,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-09 — Refined Navbar Background Blur
+
+**Done**
+- **Updated Backdrop Blur**:
+  - Calibrated navbar glassmorphism backdrop blur to a subtle `blur(16px) saturate(180%)` across [`HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx) and [`Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx).
+  - Preserved 30% background fill visibility (`rgba(6, 8, 16, 0.30)`), top specular reflection, and border glows.
+
 ### 2026-10-09 — Integrated React Bits <SpecularButton /> in Navbar (CLAIM YOUR PASS)
 
 **Done**

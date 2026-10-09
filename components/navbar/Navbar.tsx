@@ -86,9 +86,9 @@ export default function Navbar() {
         aria-label="Main Navigation"
         className="w-full max-w-4xl rounded-full relative transition-all duration-300 flex items-center justify-between px-5 sm:px-7 py-2.5 sm:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)]"
         style={{
-          backgroundColor: 'rgba(5, 7, 14, 0.94)',
-          backdropFilter: 'blur(36px) saturate(210%)',
-          WebkitBackdropFilter: 'blur(36px) saturate(210%)',
+          backgroundColor: 'rgba(6, 8, 16, 0.30)',
+          backdropFilter: 'blur(16px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(16px) saturate(180%)',
           boxShadow:
             '0 25px 60px -12px rgba(0, 0, 0, 0.95), 0 10px 25px -5px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
         }}
