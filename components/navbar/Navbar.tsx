@@ -81,35 +81,35 @@ export default function Navbar() {
       <div
         ref={navCapsuleRef}
         aria-label="Main Navigation"
-        className="w-full max-w-5xl rounded-full relative transition-all duration-300 flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3 border border-white/[0.12] pointer-events-none"
+        className="w-full max-w-4xl rounded-full relative transition-all duration-300 flex items-center justify-between px-5 sm:px-7 py-2.5 sm:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)]"
         style={{
-          backgroundColor: 'rgba(10, 15, 30, 0.84)',
-          backdropFilter: 'blur(24px) saturate(180%)',
-          WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+          backgroundColor: 'rgba(5, 7, 14, 0.94)',
+          backdropFilter: 'blur(36px) saturate(210%)',
+          WebkitBackdropFilter: 'blur(36px) saturate(210%)',
           boxShadow:
-            '0 20px 40px -15px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
+            '0 25px 60px -12px rgba(0, 0, 0, 0.95), 0 10px 25px -5px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
         }}
       >
         {/* Specular Top Reflection Highlight (iPhone Polished Mirror Glass effect) */}
         <div
-          className="absolute inset-x-5 top-0 h-[45%] rounded-t-full pointer-events-none opacity-75"
+          className="absolute inset-x-0 top-0 h-[40%] rounded-t-full pointer-events-none opacity-60"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 55%, transparent 100%)',
+              'linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.02) 70%, transparent 100%)',
           }}
         />
 
         {/* LEFT: Official Nexus Vyoma Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 relative z-10 focus:outline-none group"
+          className="flex items-center gap-2 relative z-10 focus:outline-none group flex-shrink-0"
         >
           <Image
             src="/brand/nexus-wordmark-official.png"
             alt="Nexus Vyoma Logo"
-            width={150}
-            height={36}
-            className="h-6 sm:h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+            width={140}
+            height={32}
+            className="h-5 sm:h-6 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
             priority
           />
         </Link>
@@ -120,16 +120,16 @@ export default function Navbar() {
             <Link
               key={link.label}
               href={link.href}
-              className="text-xs lg:text-sm font-medium text-zinc-300 hover:text-white transition-colors duration-200 relative group tracking-wide"
+              className="text-xs sm:text-sm font-semibold text-zinc-100 hover:text-white transition-colors duration-200 relative group tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
             >
               <span>{link.label}</span>
-              <span className="absolute -bottom-1 left-0 right-0 h-[1px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+              <span className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
             </Link>
           ))}
         </div>
 
         {/* RIGHT: Ticket Action CTA */}
-        <div className="flex items-center gap-3 z-10">
+        <div className="flex items-center gap-3 z-10 flex-shrink-0">
           <Link
             href="/register"
             className="relative group overflow-hidden rounded-full p-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00]"
@@ -148,7 +148,7 @@ export default function Navbar() {
             type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             aria-label="Toggle navigation menu"
-            className="md:hidden flex flex-col justify-center items-center w-8 h-8 rounded-full bg-white/5 border border-white/10 text-white focus:outline-none"
+            className="md:hidden flex flex-col justify-center items-center w-8 h-8 rounded-full bg-white/10 border border-white/15 text-white focus:outline-none"
           >
             <span
               className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${

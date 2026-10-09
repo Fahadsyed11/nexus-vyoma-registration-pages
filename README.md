@@ -53,6 +53,16 @@ Newest first.
   - `npm run test` (passes; no test files currently present)
   - `npm run lint` (completes with 1 existing warning in `app/api/event/route.ts` for unused `request` parameter)
 
+### 2026-10-09 — Enhanced Navbar Density, Backdrop Blur & Multi-Layer Dropshadow
+
+**Done**
+- **Navbar (`Navbar.tsx`)**:
+  - Increased background opacity and density to `rgba(5, 7, 14, 0.94)` with an upgraded `blur(36px) saturate(210%)` backdrop filter for clear readability over any page content.
+  - Added multi-layer ambient and directional drop shadows (`0 25px 60px -12px rgba(0,0,0,0.95), 0 10px 25px -5px rgba(0,0,0,0.85)`).
+  - Enhanced text contrast and sharpness for nav links (`text-zinc-100 font-semibold`).
+  - Refined capsule sizing (`max-w-4xl`) and added `overflow-hidden` to ensure smooth, clean containment with no clipping or extended edges.
+- **Verified**: Next.js production build (`npm run build`) passed cleanly with 0 errors.
+
 ### 2026-10-09 — Footer Venue & Date Info with Official ISL College Logo
 
 **Done**
