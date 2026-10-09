@@ -13,13 +13,13 @@ export async function GET(request: NextRequest) {
             message: "Successfully fetched event data",
             data: events,
             error: null,
-        })
+        }, { status: 200 })
 
     } catch (error) {
         return NextResponse.json({
             message: "Error fetching event data",
             data: null,
             error: error instanceof Error ? error.message : "Unknown error",
-        })
+        }, { status: 500 })
     }
 }
