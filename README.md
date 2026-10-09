@@ -43,6 +43,16 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-09 — Resolved PR Merge Conflicts with `main`
+
+**Done**
+- Resolved merge conflicts in `package.json` and `package-lock.json` while merging `origin/main` into `issue-4`.
+- Kept required dependencies from both sides of the merge (including UI dependencies plus `mongoose` and `esmock`) and regenerated lockfile via `npm install --package-lock-only`.
+- Finalized merge commit with two parents (`Merge remote-tracking branch 'origin/main' into issue-4`).
+- **Verified**:
+  - `npm run test` (passes; no test files currently present)
+  - `npm run lint` (completes with 1 existing warning in `app/api/event/route.ts` for unused `request` parameter)
+
 ### 2026-10-09 — Footer Venue & Date Info with Official ISL College Logo
 
 **Done**
