@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import DriftWall from '@/components/ui/DriftWall';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
@@ -18,6 +19,67 @@ export default function HeroNavbarTransition() {
   const navCapsuleRef = useRef<HTMLDivElement>(null);
   const navLogoSlotRef = useRef<HTMLDivElement>(null);
   const floatingLogoRef = useRef<HTMLDivElement>(null);
+  const scrollSolidRef = useRef<HTMLDivElement>(null);
+
+  // Interactive Cursor-Follow Color Reveal Physics (Hero Logo)
+  const coordsRef = useRef({ x: 0, y: 0, currentX: 0, currentY: 0, radius: 0, targetRadius: 0 });
+  const rafRef = useRef<number | null>(null);
+
+  const startLoop = () => {
+    if (rafRef.current) return;
+
+    const tick = () => {
+      const coords = coordsRef.current;
+      const k = 0.22;
+      coords.currentX += (coords.x - coords.currentX) * k;
+      coords.currentY += (coords.y - coords.currentY) * k;
+      coords.radius += (coords.targetRadius - coords.radius) * 0.15;
+
+      if (floatingLogoRef.current) {
+        floatingLogoRef.current.style.setProperty('--cursor-x', `${coords.currentX}px`);
+        floatingLogoRef.current.style.setProperty('--cursor-y', `${coords.currentY}px`);
+        floatingLogoRef.current.style.setProperty('--reveal-radius', `${coords.radius}px`);
+      }
+
+      if (coords.radius > 0.5 || coords.targetRadius > 0) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        rafRef.current = null;
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!floatingLogoRef.current) return;
+    const rect = floatingLogoRef.current.getBoundingClientRect();
+    coordsRef.current.x = e.clientX - rect.left;
+    coordsRef.current.y = e.clientY - rect.top;
+    coordsRef.current.targetRadius = 240;
+    startLoop();
+  };
+
+  const handlePointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!floatingLogoRef.current) return;
+    const rect = floatingLogoRef.current.getBoundingClientRect();
+    coordsRef.current.x = e.clientX - rect.left;
+    coordsRef.current.y = e.clientY - rect.top;
+    coordsRef.current.currentX = coordsRef.current.x;
+    coordsRef.current.currentY = coordsRef.current.y;
+    coordsRef.current.targetRadius = 240;
+    startLoop();
+  };
+
+  const handlePointerLeave = () => {
+    coordsRef.current.targetRadius = 0;
+  };
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     let ctx: gsap.Context | null = null;
@@ -120,6 +182,19 @@ export default function HeroNavbarTransition() {
           },
           0
         );
+
+        // Smoothly blend to solid color logo during scroll for seamless navbar docking
+        if (scrollSolidRef.current) {
+          heroTl.to(
+            scrollSolidRef.current,
+            {
+              opacity: 1,
+              duration: 0.35,
+              ease: 'power1.inOut',
+            },
+            0
+          );
+        }
 
         // Synchronized iPhone Dark Mirror Glass Navbar materialization
         heroTl.fromTo(
@@ -351,33 +426,124 @@ export default function HeroNavbarTransition() {
       </header>
 
       {/* ========================================================================= */}
-      {/* 02 — Single Continuous Transitioning Logo Actor */}
+      {/* 02 — Single Continuous Transitioning Logo Actor with Cursor Color Reveal */}
       {/* ========================================================================= */}
       <div
         ref={floatingLogoRef}
-        className="fixed z-50 flex items-center justify-center pointer-events-none will-change-transform"
+        onPointerMove={handlePointerMove}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        className="fixed z-50 flex items-center justify-center pointer-events-auto select-none will-change-transform cursor-crosshair"
+        style={
+          {
+            '--cursor-x': '-9999px',
+            '--cursor-y': '-9999px',
+            '--reveal-radius': '0px',
+          } as React.CSSProperties
+        }
       >
-        <Image
-          src="/brand/nexus-wordmark-official.png"
-          alt="Nexus Vyoma Logo"
-          width={900}
-          height={300}
-          priority
-          className="w-full h-full object-contain select-none filter drop-shadow-[0_15px_45px_rgba(0,0,0,0.85)]"
+        {/* Ambient Dark Back Shadow Elevation (Elevates text above moving tiles) */}
+        <div
+          className="absolute inset-x-[-8%] inset-y-[-18%] rounded-full opacity-85 blur-2xl pointer-events-none -z-10"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0.35) 70%, transparent 100%)',
+          }}
         />
+
+        {/* Layer A: Solid Pure White Filled Logo with Back Shadow Elevation */}
+        <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
+          <Image
+            src="/brand/nexus-wordmark-white.png"
+            alt="Nexus Vyoma Logo White"
+            width={900}
+            height={300}
+            priority
+            className="w-full h-full object-contain select-none filter drop-shadow-[0_4px_12px_rgba(0,0,0,1)] drop-shadow-[0_16px_35px_rgba(0,0,0,0.95)] drop-shadow-[0_0_2px_rgba(0,0,0,1)] drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]"
+          />
+        </div>
+
+        {/* Layer B: Official Full-Color Logo Revealed by Cursor Mask */}
+        <div
+          className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none"
+          style={{
+            maskImage:
+              'radial-gradient(circle var(--reveal-radius) at var(--cursor-x) var(--cursor-y), black 0%, black 40%, transparent 100%)',
+            WebkitMaskImage:
+              'radial-gradient(circle var(--reveal-radius) at var(--cursor-x) var(--cursor-y), black 0%, black 40%, transparent 100%)',
+          }}
+        >
+          <Image
+            src="/brand/nexus-wordmark-official.png"
+            alt="Nexus Vyoma Logo Color Reveal"
+            width={900}
+            height={300}
+            priority
+            className="w-full h-full object-contain select-none drop-shadow-[0_0_45px_rgba(255,106,0,0.85)]"
+          />
+        </div>
+
+        {/* Layer C: Solid Full-Color Blend on Scroll (for seamless docking into navbar) */}
+        <div
+          ref={scrollSolidRef}
+          className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none opacity-0"
+        >
+          <Image
+            src="/brand/nexus-wordmark-official.png"
+            alt="Nexus Vyoma Logo"
+            width={900}
+            height={300}
+            priority
+            className="w-full h-full object-contain select-none drop-shadow-[0_15px_45px_rgba(0,0,0,0.85)]"
+          />
+        </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 03 — Ultra-Minimal Full-Screen Viewport Hero */}
+      {/* 03 — 3-Layer Hero Viewport (Gradient + DriftWall + Nexus Vyoma Logo) */}
       {/* ========================================================================= */}
       <section
         ref={heroContainerRef}
         className="relative min-h-screen min-h-[100svh] w-full flex items-center justify-center px-4 sm:px-8 bg-transparent overflow-hidden select-none"
       >
-        {/* Center Target Anchor: ONLY the centered NEXUS VYOMA logo */}
+        {/* LAYER 1: Ambient Brand Mesh Gradient (Strictly in the back, compact vertical height, smooth edge fade) */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
+          <div
+            className="w-[28vw] max-w-[320px] h-[10vh] max-h-[90px] rounded-full opacity-35 blur-[55px]"
+            style={{
+              background:
+                'radial-gradient(ellipse at center, rgba(255,106,0,0.6) 0%, rgba(255,32,125,0.3) 45%, rgba(123,44,255,0.1) 70%, transparent 100%)',
+            }}
+          />
+        </div>
+
+        {/* LAYER 2: React Bits DriftWall 3D Perspective Tile Wall (Foreground Images: Sharp, Bright, Distinct) */}
+        <div className="absolute inset-0 z-10 pointer-events-auto">
+          <DriftWall
+            columns={7}
+            tileWidth={180}
+            tileHeight={120}
+            gap={14}
+            tilt={14}
+            turn={-12}
+            perspective={1200}
+            depth={130}
+            speed={36}
+            direction="up"
+            variance={0.45}
+            parallax={0.5}
+            lift={64}
+            fade={0.35}
+            dim={0.92}
+            overlayColor="transparent"
+            grayscale={false}
+          />
+        </div>
+
+        {/* LAYER 3: Nexus Vyoma Text/Logo Anchor (Foreground Target) */}
         <div
           ref={heroLogoAnchorRef}
-          className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl h-28 sm:h-40 md:h-52 lg:h-64 flex items-center justify-center relative z-10"
+          className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl h-28 sm:h-40 md:h-52 lg:h-64 flex items-center justify-center relative z-10 pointer-events-none"
         />
       </section>
     </div>

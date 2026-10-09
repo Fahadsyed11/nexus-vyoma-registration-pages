@@ -53,6 +53,32 @@ Newest first.
   - `npm run test` (passes; no test files currently present)
   - `npm run lint` (completes with 1 existing warning in `app/api/event/route.ts` for unused `request` parameter)
 
+### 2026-10-09 — Solid Pure White Filled Hero Logo Text
+
+**Done**
+- **Hero Logo (`HeroNavbarTransition.tsx`)**:
+  - Replaced the outline text on the Hero page with the solid pure white wordmark ([`nexus-wordmark-white.png`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/public/brand/nexus-wordmark-white.png)).
+  - Retained deep multi-stage back shadows and ambient occlusion so the white text stands out with bold, crisp contrast over the 3D moving image tiles.
+  - Maintained interactive cursor color reveal and seamless scroll docking into the fixed navbar.
+- **Verified**: Next.js production build (`npm run build`) passed with 0 errors.
+
+### 2026-10-09 — Elevated Hero Logo with Multi-Layer Back Shadows
+
+**Done**
+- **Hero Logo (`HeroNavbarTransition.tsx`)**:
+  - Elevated the transparent outline *"NEXUS VYOMA"* logo above the 3D drifting background tiles using multi-stage directional and ambient back shadows (`drop-shadow-[0_4px_10px_rgba(0,0,0,1)] drop-shadow-[0_12px_28px_rgba(0,0,0,0.95)]`).
+  - Added an ambient dark occlusion backdrop layer behind the logo letters to provide crisp contrast and 3D separation over the moving image tiles.
+- **Verified**: Next.js production build (`npm run build`) compiled successfully with 0 errors.
+
+### 2026-10-09 — Foreground Image Sharpness & Reduced Background Gradient Height
+
+**Done**
+- **Hero Background Gradient (`HeroNavbarTransition.tsx`)**:
+  - Decreased vertical height significantly (`h-[10vh] max-h-[90px] w-[28vw] max-w-[320px]`) and positioned strictly in the background at `z-0` with a smooth radial edge fade (`blur-[55px] opacity-35`).
+- **Foreground Images (`HeroNavbarTransition.tsx`, `DriftWall.tsx`)**:
+  - Positioned DriftWall in the foreground at `z-10` with high resting brightness (`dim={0.92}`) and `overlayColor="transparent"`, ensuring images remain sharp, bright, and distinct with zero wash-out.
+- **Verified**: Next.js production build (`npm run build`) passed with 0 errors.
+
 ### 2026-10-09 — Enhanced Navbar Density, Backdrop Blur & Multi-Layer Dropshadow
 
 **Done**
