@@ -27,6 +27,7 @@ export interface CircularCarouselProps {
   curve?: number;
   tilt?: number;
   perspective?: number;
+  spread?: number;
   autoplay?: CircularCarouselAutoplay;
   speed?: number;
   interval?: number;
@@ -137,7 +138,7 @@ const PRESETS: Record<CircularCarouselPreset, Layout> = {
     tilt: -5,
     perspective: 2500,
     curve: 1,
-    spread: 1,
+    spread: 1.35,
     inward: false,
     billboard: false,
     backfaces: true,
@@ -227,6 +228,7 @@ export default function CircularCarousel({
   curve,
   tilt,
   perspective,
+  spread,
   autoplay = 'drift',
   speed = 10,
   interval = 3,
@@ -272,11 +274,12 @@ export default function CircularCarousel({
 
   const radius = useMemo(() => {
     const n = Math.max(count, 3);
-    const pitch = (along + gap) * layout.spread;
+    const effectiveSpread = spread ?? layout.spread;
+    const pitch = (along + gap) * effectiveSpread;
     const chord = pitch / (2 * Math.sin(Math.PI / n));
     const arc = (n * pitch) / (2 * Math.PI);
     return Math.max(chord + (arc - chord) * curveValue, along * 0.7);
-  }, [count, along, gap, curveValue, layout.spread]);
+  }, [count, along, gap, curveValue, layout.spread, spread]);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);

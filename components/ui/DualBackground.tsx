@@ -39,6 +39,7 @@ export default function DualBackground({
             zIndex: 1,
             pointerEvents: 'none',
           }}
+          className="opacity-40 sm:opacity-100 transition-opacity duration-300"
         >
           <Aurora
             colorStops={['#3c0fef', '#f51414', '#ffb127']}

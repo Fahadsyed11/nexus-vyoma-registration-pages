@@ -179,6 +179,7 @@ export default function SponsorsSection() {
             intro="rise"
             cardWidth={310}
             aspectRatio={1}
+            spread={1.35}
             speed={14}
             captions={false}
             gap={14}

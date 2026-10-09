@@ -43,6 +43,42 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-09 — Fixed Mobile Logo Transition Glitch & Unstacked Footer Meta Items
+
+**Done**
+- **Mobile Hero-to-Navbar Transition Fix (`HeroNavbarTransition.tsx`)**:
+  - Separated desktop and mobile timeline orchestration using `gsap.matchMedia()`.
+  - On desktop (`md+` / `>= 768px`): Preserved the exact GSAP flying logo transition, interactive cursor color reveal physics, and footer exit choreography.
+  - On mobile (`< 768px`): Rendered the pure white Hero logo directly inside the Hero container in the DOM so it scrolls naturally with the hero section. When scrolling past the hero, the fixed navbar capsule smoothly fades in with its official color logo cleanly mounted in `navLogoSlotRef` (`opacity-100 md:opacity-0`).
+  - Restricted the fixed `floatingLogoRef` element to `hidden md:flex`, completely eliminating the floating logo from getting stuck mid-screen on mobile.
+- **Mobile Footer Unstacked Layout (`FooterSection.tsx`)**:
+  - Switched the bottom meta bar from `flex-col` to `flex-row items-center justify-between` on mobile.
+  - Formatted Left (Instagram `@nexusvyoma`), Center (Venue `ISL Engineering College`), and Right (Dates `10, 11, 12 Nov` on mobile, `10, 11, 12 November` on desktop) on a single horizontal row across mobile devices with zero vertical stacking.
+  - Preserved desktop 3-column layout untouched.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
+### 2026-10-09 — 6 UI Refinements & Enhancements (Hero, Flagship Arenas, Sponsors, Footer, CTA & Mobile Gradients)
+
+**Done**
+- **Task 1: Darkened Hero Drifting Images (`HeroNavbarTransition.tsx`)**:
+  - Darkened drifting images by applying `dim={0.48}` and `overlayColor="#04060e"` in `DriftWall`.
+  - Images now behave as a subtle background texture behind the sharp, pure white centered NEXUS VYOMA logo.
+- **Task 2: Flagship Arena Cards Solid Pixel Borders (`FlagshipScrollDeck.tsx`, `FlagshipCardItem.tsx`)**:
+  - Removed decorative multi-color gradient fills, blur flares, and glow shadows.
+  - Replaced with crisp, solid 2px pixel-style borders and high-contrast solid `#060913` / `#0C101D` backgrounds using dedicated event category accent colors (`Cosplay #FF207D`, `DJ #FF6A00`, `Auto Expo #FF382E`, `Qawwali #FBB03B`, `Tech Battles #0066FF`, `Food Fest #7B2CFF`).
+- **Task 3: Increased Sponsor Carousel Circle Width (`CircularCarousel.tsx`, `SponsorsSection.tsx`)**:
+  - Expanded the circular/elliptical horizontal orbit spread (`spread: 1.35`) so cards travel along a wider, more spacious horizontal path while preserving vertical orbit height, card dimensions, speed, and 3D perspective.
+- **Task 4: Simplified Footer Layout (`FooterSection.tsx`)**:
+  - Removed boxed card containers and borders from the footer meta bar.
+  - Positioned the three elements directly on the page background: Left Instagram handle (`@nexusvyoma`), Center Venue name (`ISL Engineering College`), and Right Dates (`10, 11, 12 November`).
+- **Task 5: Fixed CTA Mobile Logo & Text Overlap (`RegisterCTASection.tsx`)**:
+  - Restricted absolute concentric background circles to desktop/tablet (`hidden sm:flex`) to prevent collisions on narrow mobile viewports.
+  - Added a clean top mobile emblem header (`sm:hidden`) with dedicated spacing so text and logo never collide or overlap.
+- **Task 6: Reduced Mobile Gradient Height and Opacity (`HeroNavbarTransition.tsx`, `DualBackground.tsx`)**:
+  - Reduced ambient mesh gradient size and opacity on mobile screens (`opacity-15 sm:opacity-35 max-w-[180px] sm:max-w-[320px]`).
+  - Added responsive `opacity-40 sm:opacity-100` wrapper on the global WebGL Aurora layer so mobile viewports have a clean, subtle atmosphere with zero screen overpowering.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
 ### 2026-10-09 — Simplified Footer Venue Display
 
 **Done**

@@ -110,188 +110,254 @@ export default function HeroNavbarTransition() {
           return;
         }
 
-        // Reset transforms temporarily to measure exact resting bounding rects
-        gsap.set(navCapsuleRef.current, { clearProps: 'all' });
-        gsap.set(floatingLogoRef.current, { clearProps: 'all' });
+        const mm = gsap.matchMedia();
 
-        const currentScrollY = window.scrollY || window.pageYOffset || 0;
-        const currentScrollX = window.scrollX || window.pageXOffset || 0;
+        // -------------------------------------------------------------------------
+        // DESKTOP / TABLET (>= 768px): Continuous Flying Logo & Cursor Color Reveal
+        // -------------------------------------------------------------------------
+        mm.add('(min-width: 768px)', () => {
+          // Reset transforms temporarily to measure exact resting bounding rects
+          gsap.set(navCapsuleRef.current, { clearProps: 'all' });
+          gsap.set(floatingLogoRef.current, { clearProps: 'all' });
 
-        const heroRect = heroLogoAnchorRef.current.getBoundingClientRect();
-        const navRect = navLogoSlotRef.current.getBoundingClientRect();
+          const currentScrollY = window.scrollY || window.pageYOffset || 0;
+          const currentScrollX = window.scrollX || window.pageXOffset || 0;
 
-        const startWidth = heroRect.width;
-        const startHeight = heroRect.height;
-        // True document top & left when scroll is 0
-        const startLeft = heroRect.left + currentScrollX;
-        const startTop = heroRect.top + currentScrollY;
+          const heroRect = heroLogoAnchorRef.current!.getBoundingClientRect();
+          const navRect = navLogoSlotRef.current!.getBoundingClientRect();
 
-        const endWidth = navRect.width;
-        const endHeight = navRect.height;
-        const endLeft = navRect.left;
-        const endTop = navRect.top;
+          const startWidth = heroRect.width;
+          const startHeight = heroRect.height;
+          // True document top & left when scroll is 0
+          const startLeft = heroRect.left + currentScrollX;
+          const startTop = heroRect.top + currentScrollY;
 
-        // Accurate aspect-ratio scale & top-left transform mapping
-        const scaleRatio = endHeight / startHeight;
-        const deltaX = endLeft - startLeft;
-        const deltaY = endTop - startTop;
+          const endWidth = navRect.width;
+          const endHeight = navRect.height;
+          const endLeft = navRect.left;
+          const endTop = navRect.top;
 
-        // Position floating logo over Hero anchor at scroll = 0
-        gsap.set(floatingLogoRef.current, {
-          position: 'fixed',
-          top: startTop,
-          left: startLeft,
-          width: startWidth,
-          height: startHeight,
-          transformOrigin: 'top left',
-          x: 0,
-          y: 0,
-          scale: 1,
-          opacity: 1,
-          visibility: 'visible',
-          zIndex: 60,
-        });
+          // Accurate aspect-ratio scale & top-left transform mapping
+          const scaleRatio = endHeight / startHeight;
+          const deltaX = endLeft - startLeft;
+          const deltaY = endTop - startTop;
 
-        // Initial state of navbar capsule: completely hidden and non-interactive
-        gsap.set(navCapsuleRef.current, {
-          opacity: 0,
-          y: -20,
-          scale: 0.96,
-          pointerEvents: 'none',
-        });
+          // Position floating logo over Hero anchor at scroll = 0
+          gsap.set(floatingLogoRef.current, {
+            position: 'fixed',
+            top: startTop,
+            left: startLeft,
+            width: startWidth,
+            height: startHeight,
+            transformOrigin: 'top left',
+            x: 0,
+            y: 0,
+            scale: 1,
+            opacity: 1,
+            visibility: 'visible',
+            zIndex: 60,
+          });
 
-        // Master Hero ScrollTrigger timeline
-        const heroTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: heroContainerRef.current,
-            start: 'top top',
-            end: 'bottom 25%',
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-
-        // Continuous smooth trajectory for the logo
-        heroTl.to(
-          floatingLogoRef.current,
-          {
-            x: deltaX,
-            y: deltaY,
-            scale: scaleRatio,
-            ease: 'power2.inOut',
-            duration: 1,
-          },
-          0
-        );
-
-        // Fade out ambient dark back shadow early in the scroll so it doesn't spill over navbar
-        if (backShadowRef.current) {
-          heroTl.to(
-            backShadowRef.current,
-            {
-              opacity: 0,
-              duration: 0.25,
-              ease: 'power1.out',
-            },
-            0
-          );
-        }
-
-        // Smoothly blend white logo to pure official color logo during scroll for seamless navbar docking
-        if (whiteLayerRef.current) {
-          heroTl.to(
-            whiteLayerRef.current,
-            {
-              opacity: 0,
-              duration: 0.35,
-              ease: 'power1.inOut',
-            },
-            0
-          );
-        }
-
-        if (scrollSolidRef.current) {
-          heroTl.to(
-            scrollSolidRef.current,
-            {
-              opacity: 1,
-              duration: 0.35,
-              ease: 'power1.inOut',
-            },
-            0
-          );
-        }
-
-        // Synchronized iPhone Dark Mirror Glass Navbar materialization
-        heroTl.fromTo(
-          navCapsuleRef.current,
-          {
+          // Initial state of navbar capsule: completely hidden and non-interactive
+          gsap.set(navCapsuleRef.current, {
             opacity: 0,
             y: -20,
             scale: 0.96,
             pointerEvents: 'none',
-          },
-          {
+          });
+
+          // Master Hero ScrollTrigger timeline
+          const heroTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: heroContainerRef.current,
+              start: 'top top',
+              end: 'bottom 25%',
+              scrub: 1,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          // Continuous smooth trajectory for the logo
+          heroTl.to(
+            floatingLogoRef.current,
+            {
+              x: deltaX,
+              y: deltaY,
+              scale: scaleRatio,
+              ease: 'power2.inOut',
+              duration: 1,
+            },
+            0
+          );
+
+          // Fade out ambient dark back shadow early in the scroll so it doesn't spill over navbar
+          if (backShadowRef.current) {
+            heroTl.to(
+              backShadowRef.current,
+              {
+                opacity: 0,
+                duration: 0.25,
+                ease: 'power1.out',
+              },
+              0
+            );
+          }
+
+          // Smoothly blend white logo to pure official color logo during scroll for seamless navbar docking
+          if (whiteLayerRef.current) {
+            heroTl.to(
+              whiteLayerRef.current,
+              {
+                opacity: 0,
+                duration: 0.35,
+                ease: 'power1.inOut',
+              },
+              0
+            );
+          }
+
+          if (scrollSolidRef.current) {
+            heroTl.to(
+              scrollSolidRef.current,
+              {
+                opacity: 1,
+                duration: 0.35,
+                ease: 'power1.inOut',
+              },
+              0
+            );
+          }
+
+          // Synchronized iPhone Dark Mirror Glass Navbar materialization
+          heroTl.fromTo(
+            navCapsuleRef.current,
+            {
+              opacity: 0,
+              y: -20,
+              scale: 0.96,
+              pointerEvents: 'none',
+            },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              pointerEvents: 'auto',
+              ease: 'power2.out',
+              duration: 0.55,
+            },
+            0.45
+          );
+
+          // Reverse Transition: when approaching the footer, navbar glides out cleanly
+          const footerEl = document.getElementById('footer');
+          if (footerEl) {
+            ScrollTrigger.create({
+              trigger: footerEl,
+              start: 'top 85%',
+              end: 'bottom bottom',
+              onEnter: () => {
+                gsap.to(navCapsuleRef.current, {
+                  opacity: 0,
+                  y: -25,
+                  scale: 0.96,
+                  pointerEvents: 'none',
+                  duration: 0.4,
+                  ease: 'power2.in',
+                  overwrite: 'auto',
+                });
+                gsap.to(floatingLogoRef.current, {
+                  opacity: 0,
+                  y: deltaY - 25,
+                  duration: 0.4,
+                  ease: 'power2.in',
+                  overwrite: 'auto',
+                });
+              },
+              onLeaveBack: () => {
+                const heroBottom = heroContainerRef.current?.getBoundingClientRect().bottom || 0;
+                // Re-reveal only if user has scrolled past hero
+                if (heroBottom <= window.innerHeight * 0.35) {
+                  gsap.to(navCapsuleRef.current, {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    pointerEvents: 'auto',
+                    duration: 0.4,
+                    ease: 'power2.out',
+                    overwrite: 'auto',
+                  });
+                  gsap.to(floatingLogoRef.current, {
+                    opacity: 1,
+                    y: deltaY,
+                    scale: scaleRatio,
+                    duration: 0.4,
+                    ease: 'power2.out',
+                    overwrite: 'auto',
+                  });
+                }
+              },
+            });
+          }
+        });
+
+        // -------------------------------------------------------------------------
+        // MOBILE (< 768px): Clean, Glitch-Free Natural Scroll & Smooth Navbar Fade
+        // -------------------------------------------------------------------------
+        mm.add('(max-width: 767px)', () => {
+          gsap.set(floatingLogoRef.current, { display: 'none' });
+          gsap.set(navCapsuleRef.current, { opacity: 0, y: -15, scale: 0.98, pointerEvents: 'none' });
+
+          const mobileTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: heroContainerRef.current,
+              start: 'top top',
+              end: 'bottom 40%',
+              scrub: 0.5,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          mobileTl.to(navCapsuleRef.current, {
             opacity: 1,
             y: 0,
             scale: 1,
             pointerEvents: 'auto',
             ease: 'power2.out',
-            duration: 0.55,
-          },
-          0.45
-        );
-
-        // Reverse Transition: when approaching the footer, navbar glides out cleanly
-        const footerEl = document.getElementById('footer');
-        if (footerEl) {
-          ScrollTrigger.create({
-            trigger: footerEl,
-            start: 'top 85%',
-            end: 'bottom bottom',
-            onEnter: () => {
-              gsap.to(navCapsuleRef.current, {
-                opacity: 0,
-                y: -25,
-                scale: 0.96,
-                pointerEvents: 'none',
-                duration: 0.4,
-                ease: 'power2.in',
-                overwrite: 'auto',
-              });
-              gsap.to(floatingLogoRef.current, {
-                opacity: 0,
-                y: deltaY - 25,
-                duration: 0.4,
-                ease: 'power2.in',
-                overwrite: 'auto',
-              });
-            },
-            onLeaveBack: () => {
-              const heroBottom = heroContainerRef.current?.getBoundingClientRect().bottom || 0;
-              // Re-reveal only if user has scrolled past hero
-              if (heroBottom <= window.innerHeight * 0.35) {
-                gsap.to(navCapsuleRef.current, {
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                  pointerEvents: 'auto',
-                  duration: 0.4,
-                  ease: 'power2.out',
-                  overwrite: 'auto',
-                });
-                gsap.to(floatingLogoRef.current, {
-                  opacity: 1,
-                  y: deltaY,
-                  scale: scaleRatio,
-                  duration: 0.4,
-                  ease: 'power2.out',
-                  overwrite: 'auto',
-                });
-              }
-            },
+            duration: 1,
           });
-        }
+
+          const footerEl = document.getElementById('footer');
+          if (footerEl) {
+            ScrollTrigger.create({
+              trigger: footerEl,
+              start: 'top 85%',
+              end: 'bottom bottom',
+              onEnter: () => {
+                gsap.to(navCapsuleRef.current, {
+                  opacity: 0,
+                  y: -20,
+                  pointerEvents: 'none',
+                  duration: 0.3,
+                  ease: 'power2.in',
+                  overwrite: 'auto',
+                });
+              },
+              onLeaveBack: () => {
+                const heroBottom = heroContainerRef.current?.getBoundingClientRect().bottom || 0;
+                if (heroBottom <= window.innerHeight * 0.35) {
+                  gsap.to(navCapsuleRef.current, {
+                    opacity: 1,
+                    y: 0,
+                    pointerEvents: 'auto',
+                    duration: 0.3,
+                    ease: 'power2.out',
+                    overwrite: 'auto',
+                  });
+                }
+              },
+            });
+          }
+        });
       }, containerRef);
     };
 
@@ -367,13 +433,13 @@ export default function HeroNavbarTransition() {
               ref={navLogoSlotRef}
               className="flex items-center relative"
             >
-              {/* Target bounding box for measuring exact coordinates and aspect ratio */}
+              {/* Target bounding box / Navbar logo (visible on mobile naturally; on desktop docked by flying logo) */}
               <Image
                 src="/brand/nexus-wordmark-official.png"
                 alt="Nexus Vyoma Logo Slot"
                 width={140}
                 height={32}
-                className="h-5 sm:h-6 w-auto object-contain opacity-0 pointer-events-none select-none"
+                className="h-5 sm:h-6 w-auto object-contain opacity-100 md:opacity-0 select-none"
                 priority
               />
             </div>
@@ -462,14 +528,14 @@ export default function HeroNavbarTransition() {
       </header>
 
       {/* ========================================================================= */}
-      {/* 02 — Single Continuous Transitioning Logo Actor with Cursor Color Reveal */}
+      {/* 02 — Single Continuous Transitioning Logo Actor with Cursor Color Reveal (Desktop md+) */}
       {/* ========================================================================= */}
       <div
         ref={floatingLogoRef}
         onPointerMove={handlePointerMove}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
-        className="fixed z-50 flex items-center justify-center pointer-events-auto select-none will-change-transform cursor-crosshair"
+        className="hidden md:flex fixed z-50 items-center justify-center pointer-events-auto select-none will-change-transform cursor-crosshair"
       >
         {/* Ambient Dark Back Shadow Elevation (Elevates text above moving tiles in Hero) */}
         <div
@@ -545,10 +611,10 @@ export default function HeroNavbarTransition() {
         ref={heroContainerRef}
         className="relative min-h-screen min-h-[100svh] w-full flex items-center justify-center px-4 sm:px-8 bg-transparent overflow-hidden select-none"
       >
-        {/* LAYER 1: Ambient Brand Mesh Gradient (Strictly in the back, compact vertical height, smooth edge fade) */}
+        {/* LAYER 1: Ambient Brand Mesh Gradient (Strictly in the back, compact vertical height, subtle mobile scale) */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
           <div
-            className="w-[28vw] max-w-[320px] h-[10vh] max-h-[90px] rounded-full opacity-35 blur-[55px]"
+            className="w-[50vw] sm:w-[28vw] max-w-[180px] sm:max-w-[320px] h-[5vh] sm:h-[10vh] max-h-[40px] sm:max-h-[90px] rounded-full opacity-15 sm:opacity-35 blur-[35px] sm:blur-[55px]"
             style={{
               background:
                 'radial-gradient(ellipse at center, rgba(255,106,0,0.6) 0%, rgba(255,32,125,0.3) 45%, rgba(123,44,255,0.1) 70%, transparent 100%)',
@@ -556,7 +622,7 @@ export default function HeroNavbarTransition() {
           />
         </div>
 
-        {/* LAYER 2: React Bits DriftWall 3D Perspective Tile Wall (Foreground Images: Sharp, Bright, Distinct) */}
+        {/* LAYER 2: React Bits DriftWall 3D Perspective Tile Wall (Subdued & Darkened Ambient Background Images) */}
         <div className="absolute inset-0 z-10 pointer-events-auto">
           <DriftWall
             columns={7}
@@ -573,8 +639,8 @@ export default function HeroNavbarTransition() {
             parallax={0.5}
             lift={64}
             fade={0.35}
-            dim={0.92}
-            overlayColor="transparent"
+            dim={0.48}
+            overlayColor="#04060e"
             grayscale={false}
           />
         </div>
@@ -583,7 +649,26 @@ export default function HeroNavbarTransition() {
         <div
           ref={heroLogoAnchorRef}
           className="w-[85vw] max-w-[280px] xs:max-w-[340px] sm:max-w-[480px] md:max-w-[620px] lg:max-w-[760px] aspect-[1024/341] flex items-center justify-center relative z-10 pointer-events-none"
-        />
+        >
+          {/* On mobile (< md), render the solid white logo and back shadow directly in the Hero */}
+          <div className="md:hidden relative w-full h-full flex items-center justify-center">
+            <div
+              className="absolute inset-x-[-8%] inset-y-[-18%] rounded-full opacity-85 blur-2xl pointer-events-none -z-10"
+              style={{
+                background:
+                  'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0.35) 70%, transparent 100%)',
+              }}
+            />
+            <Image
+              src="/brand/nexus-wordmark-white.png"
+              alt="Nexus Vyoma Logo"
+              width={1024}
+              height={341}
+              priority
+              className="w-full h-full object-contain select-none filter drop-shadow-[0_4px_12px_rgba(0,0,0,1)] drop-shadow-[0_16px_35px_rgba(0,0,0,0.95)] drop-shadow-[0_0_2px_rgba(0,0,0,1)]"
+            />
+          </div>
+        </div>
       </section>
     </div>
   );
