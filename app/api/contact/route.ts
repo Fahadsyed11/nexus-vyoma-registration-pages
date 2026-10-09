@@ -17,12 +17,16 @@ export async function POST(request: NextRequest) {
                 message: "Error creating contact",
                 data: null,
                 error: "Failed to create contact",
+                redirect: false,
+                redirect_url: null
             }, { status: 500 });
         }
         return NextResponse.json({
             message: "Contact created successfully",
             data: null,
             error: null,
+            redirect: false,
+            redirect_url: null
         }, { status: 201 });
 
     } catch (error) {
@@ -31,6 +35,8 @@ export async function POST(request: NextRequest) {
             message: "Error saving contact data",
             data: null,
             error: error instanceof Error ? error.message : "Unknown error",
+            redirect: false,
+            redirect_url: null
         }, { status: 500 })
     }
 }
