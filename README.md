@@ -43,6 +43,17 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-09 — Fixed Navbar Logo Docking Alignment & Capsule Visual Consistency
+
+**Done**
+- **Hero-to-Navbar Docking Fix (`HeroNavbarTransition.tsx`)**:
+  - Replaced bounding container measurements with exact 3:1 image aspect ratio bounding boxes (`heroLogoAnchorRef` and `navLogoSlotRef`), resolving the vertical overflow and coordinate clipping issue where the logo extended beyond the navbar capsule.
+  - Aligned transform origin to `'top left'` with exact `deltaX` and `deltaY` translation formulas, guaranteeing subpixel docking precision across mobile and desktop.
+  - Linked `backShadowRef` to the master scroll timeline to fade out the ambient dark elevation shadow during initial scroll, preventing black glow clouds from spilling over the navbar border.
+  - Replaced white logo drop-shadow layer with pure official full-color logo on scroll completion.
+  - Harmonized navbar capsule styling to match approved iPhone mirror-glass design: `max-w-4xl`, `rgba(5, 7, 14, 0.94)` deep translucent background, `blur(36px)`, specular top reflection, and rich elevation shadow.
+- **Verification**: Ran `npm run build` with clean 0-error compilation.
+
 ### 2026-10-09 — Resolved PR Merge Conflicts with `main`
 
 **Done**

@@ -19,6 +19,9 @@ export default function HeroNavbarTransition() {
   const navCapsuleRef = useRef<HTMLDivElement>(null);
   const navLogoSlotRef = useRef<HTMLDivElement>(null);
   const floatingLogoRef = useRef<HTMLDivElement>(null);
+  const backShadowRef = useRef<HTMLDivElement>(null);
+  const whiteLayerRef = useRef<HTMLDivElement>(null);
+  const colorMaskLayerRef = useRef<HTMLDivElement>(null);
   const scrollSolidRef = useRef<HTMLDivElement>(null);
 
   // Interactive Cursor-Follow Color Reveal Physics (Hero Logo)
@@ -35,10 +38,10 @@ export default function HeroNavbarTransition() {
       coords.currentY += (coords.y - coords.currentY) * k;
       coords.radius += (coords.targetRadius - coords.radius) * 0.15;
 
-      if (floatingLogoRef.current) {
-        floatingLogoRef.current.style.setProperty('--cursor-x', `${coords.currentX}px`);
-        floatingLogoRef.current.style.setProperty('--cursor-y', `${coords.currentY}px`);
-        floatingLogoRef.current.style.setProperty('--reveal-radius', `${coords.radius}px`);
+      if (colorMaskLayerRef.current) {
+        colorMaskLayerRef.current.style.setProperty('--cursor-x', `${coords.currentX}px`);
+        colorMaskLayerRef.current.style.setProperty('--cursor-y', `${coords.currentY}px`);
+        colorMaskLayerRef.current.style.setProperty('--reveal-radius', `${coords.radius}px`);
       }
 
       if (coords.radius > 0.5 || coords.targetRadius > 0) {
@@ -103,7 +106,7 @@ export default function HeroNavbarTransition() {
         // Reduced motion fallback
         if (isReducedMotion) {
           gsap.set(navCapsuleRef.current, { opacity: 1, y: 0, scale: 1, pointerEvents: 'auto' });
-          gsap.set(floatingLogoRef.current, { opacity: 1 });
+          gsap.set(floatingLogoRef.current, { opacity: 0, pointerEvents: 'none' });
           return;
         }
 
@@ -128,12 +131,10 @@ export default function HeroNavbarTransition() {
         const endLeft = navRect.left;
         const endTop = navRect.top;
 
-        const scaleRatio = endWidth / startWidth;
+        // Accurate aspect-ratio scale & top-left transform mapping
+        const scaleRatio = endHeight / startHeight;
         const deltaX = endLeft - startLeft;
-        // Align vertical centers between start position and docked navbar slot
-        const startCenterY = startTop + startHeight / 2;
-        const endCenterY = endTop + endHeight / 2;
-        const deltaY = endCenterY - startCenterY;
+        const deltaY = endTop - startTop;
 
         // Position floating logo over Hero anchor at scroll = 0
         gsap.set(floatingLogoRef.current, {
@@ -142,7 +143,7 @@ export default function HeroNavbarTransition() {
           left: startLeft,
           width: startWidth,
           height: startHeight,
-          transformOrigin: 'left center',
+          transformOrigin: 'top left',
           x: 0,
           y: 0,
           scale: 1,
@@ -183,7 +184,32 @@ export default function HeroNavbarTransition() {
           0
         );
 
-        // Smoothly blend to solid color logo during scroll for seamless navbar docking
+        // Fade out ambient dark back shadow early in the scroll so it doesn't spill over navbar
+        if (backShadowRef.current) {
+          heroTl.to(
+            backShadowRef.current,
+            {
+              opacity: 0,
+              duration: 0.25,
+              ease: 'power1.out',
+            },
+            0
+          );
+        }
+
+        // Smoothly blend white logo to pure official color logo during scroll for seamless navbar docking
+        if (whiteLayerRef.current) {
+          heroTl.to(
+            whiteLayerRef.current,
+            {
+              opacity: 0,
+              duration: 0.35,
+              ease: 'power1.inOut',
+            },
+            0
+          );
+        }
+
         if (scrollSolidRef.current) {
           heroTl.to(
             scrollSolidRef.current,
@@ -235,7 +261,7 @@ export default function HeroNavbarTransition() {
               });
               gsap.to(floatingLogoRef.current, {
                 opacity: 0,
-                y: deltaY + 40,
+                y: deltaY - 25,
                 duration: 0.4,
                 ease: 'power2.in',
                 overwrite: 'auto',
@@ -309,25 +335,25 @@ export default function HeroNavbarTransition() {
       {/* ========================================================================= */}
       {/* 01 — Fixed iPhone Dark Mirror Glass Navbar */}
       {/* ========================================================================= */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3 sm:pt-5 pointer-events-none">
+      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3 sm:pt-5 pointer-events-none font-sans">
         <div
           ref={navCapsuleRef}
           aria-label="Main Navigation"
-          className="w-full max-w-5xl rounded-full relative transition-all duration-300 flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3 border border-white/[0.12] pointer-events-none"
+          className="w-full max-w-4xl rounded-full relative flex items-center justify-between px-5 sm:px-7 py-2.5 sm:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)]"
           style={{
-            backgroundColor: 'rgba(10, 15, 30, 0.84)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            backgroundColor: 'rgba(5, 7, 14, 0.94)',
+            backdropFilter: 'blur(36px) saturate(210%)',
+            WebkitBackdropFilter: 'blur(36px) saturate(210%)',
             boxShadow:
-              '0 20px 40px -15px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
+              '0 25px 60px -12px rgba(0, 0, 0, 0.95), 0 10px 25px -5px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
           }}
-        > 
-          {/* Specular Top Reflection Sheen */}
+        >
+          {/* Specular Top Reflection Highlight (iPhone Polished Mirror Glass effect) */}
           <div
-            className="absolute inset-x-5 top-0 h-[45%] rounded-t-full pointer-events-none opacity-75"
+            className="absolute inset-x-0 top-0 h-[40%] rounded-t-full pointer-events-none opacity-60"
             style={{
               background:
-                'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 55%, transparent 100%)',
+                'linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.02) 70%, transparent 100%)',
             }}
           />
 
@@ -335,13 +361,21 @@ export default function HeroNavbarTransition() {
           <Link
             href="/"
             aria-label="Nexus Vyoma Home"
-            className="flex items-center relative z-10 focus:outline-none group"
+            className="flex items-center gap-2 relative z-10 focus:outline-none group flex-shrink-0"
           >
             <div
               ref={navLogoSlotRef}
-              className="w-28 sm:w-36 md:w-40 h-6 sm:h-7 md:h-8 flex items-center relative"
+              className="flex items-center relative"
             >
-              {/* Target bounding box for measuring exact coordinates */}
+              {/* Target bounding box for measuring exact coordinates and aspect ratio */}
+              <Image
+                src="/brand/nexus-wordmark-official.png"
+                alt="Nexus Vyoma Logo Slot"
+                width={140}
+                height={32}
+                className="h-5 sm:h-6 w-auto object-contain opacity-0 pointer-events-none select-none"
+                priority
+              />
             </div>
           </Link>
 
@@ -351,22 +385,22 @@ export default function HeroNavbarTransition() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="text-xs lg:text-sm font-medium text-zinc-300 hover:text-white transition-colors duration-200 relative group tracking-wide font-sans"
+                className="text-xs sm:text-sm font-semibold text-zinc-100 hover:text-white transition-colors duration-200 relative group tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
                 <span>{link.label}</span>
-                <span className="absolute -bottom-1 left-0 right-0 h-[1px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                <span className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               </Link>
             ))}
           </div>
 
           {/* RIGHT: Ticket Action CTA */}
-          <div className="flex items-center gap-3 z-10">
+          <div className="flex items-center gap-3 z-10 flex-shrink-0">
             <Link
               href="/register"
               className="relative group overflow-hidden rounded-full p-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00]"
             >
               <span className="absolute inset-0 bg-gradient-to-r from-[#FF6A00] via-[#FF382E] to-[#D8182B]" />
-              <span className="relative flex items-center gap-1.5 px-4 sm:px-5 py-1.5 rounded-full bg-[#0A0F1E] hover:bg-[#0A0F1E]/80 text-white text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-200 group-hover:shadow-[0_0_20px_rgba(255,106,0,0.6)] font-sans">
+              <span className="relative flex items-center gap-1.5 px-4 sm:px-5 py-1.5 rounded-full bg-[#0A0F1E] hover:bg-[#0A0F1E]/80 text-white text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-200 group-hover:shadow-[0_0_20px_rgba(255,106,0,0.6)]">
                 <span>TICKET</span>
                 <span className="text-[#FF6A00] transition-transform duration-200 group-hover:translate-x-0.5 font-bold">
                   →
@@ -379,15 +413,17 @@ export default function HeroNavbarTransition() {
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
-              className="md:hidden flex flex-col justify-center items-center w-8 h-8 rounded-full bg-white/5 border border-white/10 text-white focus:outline-none"
+              className="md:hidden flex flex-col justify-center items-center w-8 h-8 rounded-full bg-white/10 border border-white/15 text-white focus:outline-none"
             >
               <span
-                className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-0.5'
-                  }`}
+                className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${
+                  mobileMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-0.5'
+                }`}
               />
               <span
-                className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-0.5'
-                  }`}
+                className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${
+                  mobileMenuOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-0.5'
+                }`}
               />
             </button>
           </div>
@@ -434,16 +470,10 @@ export default function HeroNavbarTransition() {
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
         className="fixed z-50 flex items-center justify-center pointer-events-auto select-none will-change-transform cursor-crosshair"
-        style={
-          {
-            '--cursor-x': '-9999px',
-            '--cursor-y': '-9999px',
-            '--reveal-radius': '0px',
-          } as React.CSSProperties
-        }
       >
-        {/* Ambient Dark Back Shadow Elevation (Elevates text above moving tiles) */}
+        {/* Ambient Dark Back Shadow Elevation (Elevates text above moving tiles in Hero) */}
         <div
+          ref={backShadowRef}
           className="absolute inset-x-[-8%] inset-y-[-18%] rounded-full opacity-85 blur-2xl pointer-events-none -z-10"
           style={{
             background:
@@ -452,12 +482,15 @@ export default function HeroNavbarTransition() {
         />
 
         {/* Layer A: Solid Pure White Filled Logo with Back Shadow Elevation */}
-        <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
+        <div
+          ref={whiteLayerRef}
+          className="relative w-full h-full flex items-center justify-center pointer-events-none"
+        >
           <Image
             src="/brand/nexus-wordmark-white.png"
             alt="Nexus Vyoma Logo White"
-            width={900}
-            height={300}
+            width={1024}
+            height={341}
             priority
             className="w-full h-full object-contain select-none filter drop-shadow-[0_4px_12px_rgba(0,0,0,1)] drop-shadow-[0_16px_35px_rgba(0,0,0,0.95)] drop-shadow-[0_0_2px_rgba(0,0,0,1)] drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]"
           />
@@ -465,19 +498,25 @@ export default function HeroNavbarTransition() {
 
         {/* Layer B: Official Full-Color Logo Revealed by Cursor Mask */}
         <div
+          ref={colorMaskLayerRef}
           className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none"
-          style={{
-            maskImage:
-              'radial-gradient(circle var(--reveal-radius) at var(--cursor-x) var(--cursor-y), black 0%, black 40%, transparent 100%)',
-            WebkitMaskImage:
-              'radial-gradient(circle var(--reveal-radius) at var(--cursor-x) var(--cursor-y), black 0%, black 40%, transparent 100%)',
-          }}
+          style={
+            {
+              '--cursor-x': '-9999px',
+              '--cursor-y': '-9999px',
+              '--reveal-radius': '0px',
+              maskImage:
+                'radial-gradient(circle var(--reveal-radius) at var(--cursor-x) var(--cursor-y), black 0%, black 40%, transparent 100%)',
+              WebkitMaskImage:
+                'radial-gradient(circle var(--reveal-radius) at var(--cursor-x) var(--cursor-y), black 0%, black 40%, transparent 100%)',
+            } as React.CSSProperties
+          }
         >
           <Image
             src="/brand/nexus-wordmark-official.png"
             alt="Nexus Vyoma Logo Color Reveal"
-            width={900}
-            height={300}
+            width={1024}
+            height={341}
             priority
             className="w-full h-full object-contain select-none drop-shadow-[0_0_45px_rgba(255,106,0,0.85)]"
           />
@@ -491,10 +530,10 @@ export default function HeroNavbarTransition() {
           <Image
             src="/brand/nexus-wordmark-official.png"
             alt="Nexus Vyoma Logo"
-            width={900}
-            height={300}
+            width={1024}
+            height={341}
             priority
-            className="w-full h-full object-contain select-none drop-shadow-[0_15px_45px_rgba(0,0,0,0.85)]"
+            className="w-full h-full object-contain select-none"
           />
         </div>
       </div>
@@ -540,10 +579,10 @@ export default function HeroNavbarTransition() {
           />
         </div>
 
-        {/* LAYER 3: Nexus Vyoma Text/Logo Anchor (Foreground Target) */}
+        {/* LAYER 3: Nexus Vyoma Text/Logo Anchor (Foreground Target with Exact 3:1 Aspect Ratio) */}
         <div
           ref={heroLogoAnchorRef}
-          className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl h-28 sm:h-40 md:h-52 lg:h-64 flex items-center justify-center relative z-10 pointer-events-none"
+          className="w-[85vw] max-w-[280px] xs:max-w-[340px] sm:max-w-[480px] md:max-w-[620px] lg:max-w-[760px] aspect-[1024/341] flex items-center justify-center relative z-10 pointer-events-none"
         />
       </section>
     </div>
