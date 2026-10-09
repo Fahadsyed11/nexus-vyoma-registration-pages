@@ -27,6 +27,7 @@ export interface CircularCarouselProps {
   curve?: number;
   tilt?: number;
   perspective?: number;
+  spread?: number;
   autoplay?: CircularCarouselAutoplay;
   speed?: number;
   interval?: number;
@@ -137,7 +138,7 @@ const PRESETS: Record<CircularCarouselPreset, Layout> = {
     tilt: -5,
     perspective: 2500,
     curve: 1,
-    spread: 1,
+    spread: 1.35,
     inward: false,
     billboard: false,
     backfaces: true,
@@ -227,6 +228,7 @@ export default function CircularCarousel({
   curve,
   tilt,
   perspective,
+  spread,
   autoplay = 'drift',
   speed = 10,
   interval = 3,
@@ -272,11 +274,12 @@ export default function CircularCarousel({
 
   const radius = useMemo(() => {
     const n = Math.max(count, 3);
-    const pitch = (along + gap) * layout.spread;
+    const effectiveSpread = spread ?? layout.spread;
+    const pitch = (along + gap) * effectiveSpread;
     const chord = pitch / (2 * Math.sin(Math.PI / n));
     const arc = (n * pitch) / (2 * Math.PI);
     return Math.max(chord + (arc - chord) * curveValue, along * 0.7);
-  }, [count, along, gap, curveValue, layout.spread]);
+  }, [count, along, gap, curveValue, layout.spread, spread]);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -622,6 +625,9 @@ export default function CircularCarousel({
     const state = stateRef.current;
     state.suppressClick = false;
     if (!draggable || event.button !== 0) return;
+    try {
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    } catch {}
     state.press = {
       id: event.pointerId,
       x: event.clientX,
@@ -663,6 +669,11 @@ export default function CircularCarousel({
     const state = stateRef.current;
     const press = state.press;
     if (!press || press.id !== event.pointerId) return;
+    try {
+      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+        event.currentTarget.releasePointerCapture?.(event.pointerId);
+      }
+    } catch {}
     state.press = null;
     if (!press.moved) return;
     state.drag = false;
@@ -737,13 +748,13 @@ export default function CircularCarousel({
                   className="absolute left-0 top-0 h-0 w-0 [transform-style:preserve-3d]"
                   data-cc-index={index}
                 >
+                  {/* FRONT FACE (Visible from outside the cylinder) */}
                   <div
-                    className="absolute -translate-x-1/2 -translate-y-1/2 p-6 sm:p-7 border border-white/20 hover:border-[#FF6A00]/70 bg-[#080D1E]/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.2)] flex flex-col items-center justify-center transition-all duration-300 group overflow-hidden"
+                    className="absolute -translate-x-1/2 -translate-y-1/2 p-6 sm:p-7 border border-white/20 hover:border-[#FF6A00]/70 bg-[#080D1E]/95 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.9),inset_0_1px_0_rgba(255,255,255,0.2)] flex flex-col items-center justify-center transition-all duration-300 group overflow-hidden [backface-visibility:hidden]"
                     style={{
                       width: cardW,
                       height: cardH,
                       borderRadius: `${cornerRadius || 12}px`,
-                      backfaceVisibility: 'hidden',
                     }}
                   >
                     {/* Subtle Radial Card Mesh */}
@@ -795,6 +806,62 @@ export default function CircularCarousel({
                       style={{ borderRadius: `${cornerRadius || 12}px` }}
                     />
                   </div>
+
+                  {/* BACK FACE (Reflective mirror glass card facing inwards, visible from the back of the cylinder) */}
+                  <div
+                    className="absolute -translate-x-1/2 -translate-y-1/2 [transform:rotateY(180deg)] p-6 sm:p-7 border border-white/[0.18] bg-[#0A0F1E]/80 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.85),inset_0_1px_0_rgba(255,255,255,0.25)] flex flex-col items-center justify-center overflow-hidden [backface-visibility:hidden] pointer-events-none"
+                    style={{
+                      width: cardW,
+                      height: cardH,
+                      borderRadius: `${cornerRadius || 12}px`,
+                    }}
+                  >
+                    {/* Reflective Specular Sheen & Glass Gradient */}
+                    <div
+                      className="absolute inset-0 pointer-events-none opacity-80"
+                      style={{
+                        background:
+                          'linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 106, 0, 0.08) 35%, rgba(0, 102, 255, 0.05) 70%, rgba(255, 255, 255, 0.03) 100%)',
+                      }}
+                    />
+
+                    {/* Specular Diagonal Reflection Streak */}
+                    <div
+                      className="absolute -inset-full pointer-events-none opacity-30"
+                      style={{
+                        background:
+                          'linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%)',
+                      }}
+                    />
+
+                    {/* Top Edge Specular Mirror Highlight */}
+                    <div
+                      className="absolute inset-x-0 top-0 h-[45%] pointer-events-none opacity-50"
+                      style={{
+                        background:
+                          'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 65%, transparent 100%)',
+                      }}
+                    />
+
+                    {/* Radial Subtle Grid Mesh on Back */}
+                    <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.08)_1px,transparent_1px)] [background-size:14px_14px] opacity-30 pointer-events-none" />
+
+                    {/* Translucent Brand Emblem Silhouette / Spark Watermark on Reflective Back */}
+                    <div className="relative z-10 flex flex-col items-center justify-center opacity-60 select-none">
+                      <div className="w-10 h-10 rounded-full border border-white/20 bg-white/5 flex items-center justify-center shadow-[0_0_20px_rgba(255,106,0,0.25)]">
+                        <span className="text-[#FF6A00] text-sm font-bold opacity-85">✦</span>
+                      </div>
+                      <span className="font-display text-[10px] tracking-[0.25em] text-white/60 uppercase mt-2">
+                        NEXUS VYOMA
+                      </span>
+                    </div>
+
+                    {/* Depth shadow overlay with subtle inner shade on back */}
+                    <div
+                      className="pointer-events-none absolute inset-0 bg-black opacity-[var(--cc-depth,0)] transition-opacity"
+                      style={{ borderRadius: `${cornerRadius || 12}px` }}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
@@ -804,4 +871,3 @@ export default function CircularCarousel({
     </div>
   );
 }
-  

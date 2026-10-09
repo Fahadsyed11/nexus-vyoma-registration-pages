@@ -23,13 +23,13 @@ export default function SponsorsSection() {
         return;
       }
 
-      // Elegant Entrance: Text header then 3D Carousel
+      // Elegant Entrance: Text header then 3D Carousel with smooth mobile scroll progression
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: containerRef.current,
-          start: 'top 80%',
-          end: 'top 40%',
-          scrub: 0.6,
+          start: 'top 85%',
+          end: 'top 45%',
+          scrub: 1,
         },
       });
 
@@ -150,20 +150,20 @@ export default function SponsorsSection() {
     <section
       id="sponsors"
       ref={containerRef}
-      className="relative w-full min-h-screen py-24 sm:py-32 px-4 sm:px-6 lg:px-8 bg-transparent flex flex-col items-center justify-center overflow-hidden select-none"
+      className="relative w-full py-8 sm:py-12 lg:py-14 px-4 sm:px-6 lg:px-8 bg-transparent flex flex-col items-center justify-center overflow-hidden select-none"
     >
       <div className="w-full max-w-7xl mx-auto flex flex-col items-center relative z-10">
         {/* Section Heading & Editorial Hierarchy */}
-        <div ref={textRef} className="flex flex-col items-center text-center mb-10 sm:mb-16 will-change-transform">
-          <span className="font-sans font-medium text-xs sm:text-sm tracking-[0.25em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FF6A00] to-[#FBB03B] mb-2 sm:mb-3">
+        <div ref={textRef} className="flex flex-col items-center text-center mb-2 sm:mb-3 lg:mb-4 will-change-transform">
+          <span className="font-sans font-medium text-[10px] sm:text-xs tracking-[0.25em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FF6A00] to-[#FBB03B] mb-1 sm:mb-1.5">
             POWERED BY
           </span>
 
-          <h2 className="font-display text-4xl sm:text-6xl lg:text-7xl font-bold tracking-wider text-white uppercase leading-none mb-3">
+          <h2 className="font-display text-xl xs:text-2xl sm:text-3xl lg:text-4xl font-bold tracking-wider text-white uppercase leading-tight mb-1.5 sm:mb-2">
             OUR SPONSORS
           </h2>
 
-          <p className="font-sans text-xs sm:text-sm text-zinc-400 max-w-md tracking-wide">
+          <p className="font-sans text-xs sm:text-sm text-zinc-400 max-w-xs sm:max-w-md tracking-wide px-2 leading-relaxed">
             Visionary institutions, tech innovators, and cultural patrons empowering Nexus Vyoma 2026.
           </p>
         </div>
@@ -171,17 +171,18 @@ export default function SponsorsSection() {
         {/* 3D Cylindrical Circular Carousel */}
         <div
           ref={carouselWrapperRef}
-          className="relative w-full h-[520px] sm:h-[580px] flex items-center justify-center will-change-transform"
+          className="relative w-full h-[320px] sm:h-[380px] lg:h-[420px] flex items-center justify-center will-change-transform"
         >
           <CircularCarousel
             items={sponsorItems}
             preset="cylinder"
             intro="rise"
-            cardWidth={260}
+            cardWidth={310}
             aspectRatio={1}
+            spread={1.35}
             speed={14}
             captions={false}
-            gap={28}
+            gap={14}
             tilt={-5}
             curve={1}
             perspective={2500}
@@ -196,20 +197,21 @@ export default function SponsorsSection() {
             parallax={0.3}
             stretch={0.5}
             fadeColor="#000000"
-            depthFade={0.42}
+            depthFade={0.2}
             innerShade={0.55}
             cornerRadius={14}
           />
         </div>
 
-        {/* Supporting Sponsor CTA */}
-        <div className="mt-8 flex items-center gap-2 text-xs font-mono text-zinc-400">
-          <span>WANT TO BECOME A SPONSOR FOR NEXUS VYOMA ?</span>
+        {/* Supporting Sponsor CTA - Fluid Wrap on Mobile */}
+        <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row items-center justify-center gap-1.5 sm:gap-2 text-center text-[11px] xs:text-xs font-mono text-zinc-400 px-4">
+          <span>WANT TO BECOME A SPONSOR FOR NEXUS VYOMA?</span>
           <a
-            href="mailto:[EMAIL_ADDRESS]"
-            className="text-[#FF6A00] underline underline-offset-4 hover:text-white transition-colors"
+            href="mailto:sponsorships@nexusvyoma.com"
+            className="text-[#FF6A00] underline underline-offset-4 hover:text-white transition-colors flex items-center gap-1"
           >
-            CONTACT US   →
+            <span>CONTACT US</span>
+            <span>→</span>
           </a>
         </div>
       </div>

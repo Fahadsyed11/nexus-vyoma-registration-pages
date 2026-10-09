@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useRef } from 'react';
-import Image from 'next/image';
 import FooterLogoReveal from './FooterLogoReveal';
 
 export default function FooterSection() {
@@ -19,43 +18,19 @@ export default function FooterSection() {
           <FooterLogoReveal />
         </div>
 
-        {/* Footer Meta & Information Bar */}
-        <div className="w-full pt-8 border-t border-white/[0.08] flex flex-col lg:flex-row items-center justify-between gap-6 lg:gap-8 text-center lg:text-left">
-          {/* Venue & College Host */}
-          <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
-            <div className="relative w-11 h-11 rounded-xl bg-black/60 border border-white/10 p-1 flex items-center justify-center overflow-hidden flex-shrink-0">
-              <Image
-                src="/brand/isl-college-logo.png"
-                alt="ISL Engineering College Logo"
-                width={64}
-                height={64}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="flex flex-col text-left">
-              <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-500 font-semibold">
-                Venue
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-white tracking-tight">
-                ISL Engineering College
-              </span>
-              <span className="text-[11px] text-zinc-400 font-normal">
-                Hyderabad, Telangana
-              </span>
-            </div>
-          </div>
-      
-          {/* Social Media Handle: Instagram */}
-          <div className="flex items-center justify-center">
+        {/* Footer Meta & Information Bar - Clean Unboxed Horizontal Layout */}
+        <div className="w-full pt-8 border-t border-white/[0.08] flex flex-row items-center justify-between gap-2 sm:gap-4 md:gap-8 text-left text-[11px] xs:text-xs sm:text-sm">
+          {/* Left: Instagram Handle */}
+          <div className="flex md:w-1/3 items-center justify-start">
             <a
               href="https://www.instagram.com/nexusvyoma?utm_source=ig_web_button_share_sheet&rpxt=ZDNlZDc0MzIxNw=="
               target="_blank"
               rel="noopener noreferrer"
-              className="group flex items-center gap-2.5 px-6 py-3 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white transition-all duration-300 text-xs sm:text-sm font-mono tracking-wide shadow-[0_4px_20px_rgba(0,0,0,0.4)]"
+              className="group flex items-center gap-1.5 sm:gap-2 text-zinc-400 hover:text-white transition-colors duration-200 font-mono tracking-wide"
               aria-label="Nexus Vyoma Instagram Profile"
             >
               <svg
-                className="w-4 h-4 text-[#FF6A00] group-hover:text-[#FF207D] transition-colors duration-200 flex-shrink-0"
+                className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FF6A00] group-hover:text-[#FF207D] transition-colors duration-200 flex-shrink-0"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -67,35 +42,32 @@ export default function FooterSection() {
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                 <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
               </svg>
-              <span>@nexusvyoma</span>
+              <span className="truncate">@nexusvyoma</span>
             </a>
           </div>
 
-          {/* Festival Dates */}
-          <div className="flex items-center gap-3.5 px-4 py-2.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-md">
-            <div className="w-11 h-11 rounded-xl bg-black/60 border border-white/10 flex items-center justify-center flex-shrink-0 text-[#FF6A00]">
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="1.75"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
+          {/* Center: Venue Name */}
+          <div className="flex md:w-1/3 items-center justify-center text-center">
+            <div className="flex items-center justify-center gap-1 font-sans">
+              <span className="hidden sm:inline text-[10px] sm:text-[11px] uppercase font-mono tracking-wider text-zinc-500">
+                Venue:
+              </span>
+              <span className="font-semibold text-zinc-200 tracking-tight whitespace-nowrap">
+                ISL Engineering College
+              </span>
             </div>
-            <div className="flex flex-col text-left">
-              <span className="text-[10px] uppercase font-mono tracking-widest text-zinc-500 font-semibold">
-                Dates
-              </span>
-              <span className="text-xs sm:text-sm font-semibold text-white tracking-tight">
-                <span className="hidden sm:inline">10, </span>11 <span className="hidden sm:inline">,</span> 12 <br /> November
-              </span>
+          </div>
 
+          {/* Right: Event Dates */}
+          <div className="flex md:w-1/3 items-center justify-end text-right">
+            <div className="flex items-center justify-end gap-1 font-mono text-zinc-300">
+              <span className="hidden sm:inline text-[10px] sm:text-[11px] uppercase tracking-wider text-zinc-500">
+                Dates:
+              </span>
+              <span className="font-semibold text-zinc-200 tracking-wider whitespace-nowrap">
+                <span className="sm:hidden">10, 11, 12 Nov</span>
+                <span className="hidden sm:inline">10, 11, 12 November</span>
+              </span>
             </div>
           </div>
         </div>

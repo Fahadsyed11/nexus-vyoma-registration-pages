@@ -44,7 +44,7 @@ export default function RegisterCTASection() {
     >
       <div
         ref={cardRef}
-        className="relative w-full max-w-6xl rounded-[28px] sm:rounded-[36px] border border-white/[0.12] bg-gradient-to-br from-[#121216]/95 via-[#0B0B0E]/95 to-[#050507]/98 backdrop-blur-2xl p-8 sm:p-14 lg:p-16 overflow-hidden shadow-[0_30px_90px_-20px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.15)] will-change-transform font-sans"
+        className="relative w-full max-w-6xl rounded-[24px] sm:rounded-[36px] border border-white/[0.12] bg-gradient-to-br from-[#121216]/95 via-[#0B0B0E]/95 to-[#050507]/98 backdrop-blur-2xl p-6 sm:p-14 lg:p-16 overflow-hidden shadow-[0_30px_90px_-20px_rgba(0,0,0,0.95),inset_0_1px_0_rgba(255,255,255,0.15)] will-change-transform font-sans"
       >
         {/* Top Specular Sheen Line */}
         <div
@@ -55,11 +55,11 @@ export default function RegisterCTASection() {
           }}
         />
 
-        {/* RIGHT SIDE: Concentric Circles with Centered Official Nexus Emblem */}
-        <div className="absolute -right-16 sm:right-6 lg:right-16 top-1/2 -translate-y-1/2 w-[340px] sm:w-[460px] lg:w-[540px] h-[340px] sm:h-[460px] lg:h-[540px] pointer-events-none flex items-center justify-center">
+        {/* DESKTOP/TABLET RIGHT SIDE: Concentric Circles with Centered Official Nexus Emblem */}
+        <div className="hidden sm:flex absolute sm:right-6 lg:right-16 top-1/2 -translate-y-1/2 sm:w-[460px] lg:w-[540px] sm:h-[460px] lg:h-[540px] pointer-events-none items-center justify-center">
           {/* Subtle Ambient Glow Behind Emblem */}
           <div
-            className="absolute w-64 h-64 sm:w-80 sm:h-80 rounded-full opacity-35 blur-[90px] pointer-events-none"
+            className="absolute sm:w-80 sm:h-80 rounded-full opacity-35 blur-[90px] pointer-events-none"
             style={{
               background:
                 'radial-gradient(circle, rgba(255,106,0,0.5) 0%, rgba(255,32,125,0.3) 50%, transparent 100%)',
@@ -81,7 +81,7 @@ export default function RegisterCTASection() {
           </svg>
 
           {/* Centered Official Nexus Symbol / Emblem */}
-          <div className="relative z-10 w-28 h-28 sm:w-36 sm:h-36 lg:w-44 lg:h-44 rounded-full overflow-hidden aspect-square flex items-center justify-center">
+          <div className="relative z-10 sm:w-36 sm:h-36 lg:w-44 lg:h-44 rounded-full overflow-hidden aspect-square flex items-center justify-center">
             <Image
               src="/brand/nexus-mark.png"
               alt="Nexus Vyoma Official Emblem"
@@ -94,9 +94,26 @@ export default function RegisterCTASection() {
         </div>
 
         {/* Main Content Area */}
-        <div className="relative z-10 max-w-xl lg:max-w-2xl text-left flex flex-col items-start gap-5 sm:gap-7">
+        <div className="relative z-10 max-w-xl lg:max-w-2xl text-left flex flex-col items-start gap-4 sm:gap-7">
+          {/* Mobile-only Emblem Badge Header */}
+          <div className="sm:hidden flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full border border-white/20 bg-white/[0.05] p-1.5 flex items-center justify-center shadow-[0_0_20px_rgba(255,106,0,0.4)]">
+              <Image
+                src="/brand/nexus-mark.png"
+                alt="Nexus Vyoma Official Emblem"
+                width={40}
+                height={40}
+                priority
+                className="w-full h-full object-contain mix-blend-screen"
+              />
+            </div>
+            <span className="font-mono text-xs uppercase tracking-widest text-zinc-300 font-semibold">
+              Nexus Vyoma 2026
+            </span>
+          </div>
+
           {/* Contemporary Clean Heading */}
-          <h2 className="font-sans text-3xl sm:text-4xl md:text-5xl lg:text-[52px] font-bold tracking-tight text-white leading-[1.14]">
+          <h2 className="font-sans text-2xl sm:text-4xl md:text-5xl lg:text-[52px] font-bold tracking-tight text-white leading-[1.14]">
             Ready to be part of <br className="hidden sm:inline" />
             <span className="text-white">
               Nexus Vyoma?

@@ -3,14 +3,18 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import DriftWall from '@/components/ui/DriftWall';
+import SpecularButton from '@/components/ui/SpecularButton';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger);
 }
 
 export default function HeroNavbarTransition() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const heroContainerRef = useRef<HTMLElement>(null);
@@ -18,6 +22,70 @@ export default function HeroNavbarTransition() {
   const navCapsuleRef = useRef<HTMLDivElement>(null);
   const navLogoSlotRef = useRef<HTMLDivElement>(null);
   const floatingLogoRef = useRef<HTMLDivElement>(null);
+  const backShadowRef = useRef<HTMLDivElement>(null);
+  const whiteLayerRef = useRef<HTMLDivElement>(null);
+  const colorMaskLayerRef = useRef<HTMLDivElement>(null);
+  const scrollSolidRef = useRef<HTMLDivElement>(null);
+
+  // Interactive Cursor-Follow Color Reveal Physics (Hero Logo)
+  const coordsRef = useRef({ x: 0, y: 0, currentX: 0, currentY: 0, radius: 0, targetRadius: 0 });
+  const rafRef = useRef<number | null>(null);
+
+  const startLoop = () => {
+    if (rafRef.current) return;
+
+    const tick = () => {
+      const coords = coordsRef.current;
+      const k = 0.22;
+      coords.currentX += (coords.x - coords.currentX) * k;
+      coords.currentY += (coords.y - coords.currentY) * k;
+      coords.radius += (coords.targetRadius - coords.radius) * 0.15;
+
+      if (colorMaskLayerRef.current) {
+        colorMaskLayerRef.current.style.setProperty('--cursor-x', `${coords.currentX}px`);
+        colorMaskLayerRef.current.style.setProperty('--cursor-y', `${coords.currentY}px`);
+        colorMaskLayerRef.current.style.setProperty('--reveal-radius', `${coords.radius}px`);
+      }
+
+      if (coords.radius > 0.5 || coords.targetRadius > 0) {
+        rafRef.current = requestAnimationFrame(tick);
+      } else {
+        rafRef.current = null;
+      }
+    };
+
+    rafRef.current = requestAnimationFrame(tick);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!floatingLogoRef.current) return;
+    const rect = floatingLogoRef.current.getBoundingClientRect();
+    coordsRef.current.x = e.clientX - rect.left;
+    coordsRef.current.y = e.clientY - rect.top;
+    coordsRef.current.targetRadius = 240;
+    startLoop();
+  };
+
+  const handlePointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!floatingLogoRef.current) return;
+    const rect = floatingLogoRef.current.getBoundingClientRect();
+    coordsRef.current.x = e.clientX - rect.left;
+    coordsRef.current.y = e.clientY - rect.top;
+    coordsRef.current.currentX = coordsRef.current.x;
+    coordsRef.current.currentY = coordsRef.current.y;
+    coordsRef.current.targetRadius = 240;
+    startLoop();
+  };
+
+  const handlePointerLeave = () => {
+    coordsRef.current.targetRadius = 0;
+  };
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     let ctx: gsap.Context | null = null;
@@ -41,156 +109,258 @@ export default function HeroNavbarTransition() {
         // Reduced motion fallback
         if (isReducedMotion) {
           gsap.set(navCapsuleRef.current, { opacity: 1, y: 0, scale: 1, pointerEvents: 'auto' });
-          gsap.set(floatingLogoRef.current, { opacity: 1 });
+          gsap.set(floatingLogoRef.current, { opacity: 0, pointerEvents: 'none' });
           return;
         }
 
-        // Reset transforms temporarily to measure exact resting bounding rects
-        gsap.set(navCapsuleRef.current, { clearProps: 'all' });
-        gsap.set(floatingLogoRef.current, { clearProps: 'all' });
+        const mm = gsap.matchMedia();
 
-        const currentScrollY = window.scrollY || window.pageYOffset || 0;
-        const currentScrollX = window.scrollX || window.pageXOffset || 0;
+        // -------------------------------------------------------------------------
+        // DESKTOP / TABLET (>= 768px): Continuous Flying Logo & Cursor Color Reveal
+        // -------------------------------------------------------------------------
+        mm.add('(min-width: 768px)', () => {
+          // Reset transforms temporarily to measure exact resting bounding rects
+          gsap.set(navCapsuleRef.current, { clearProps: 'all' });
+          gsap.set(floatingLogoRef.current, { clearProps: 'all' });
 
-        const heroRect = heroLogoAnchorRef.current.getBoundingClientRect();
-        const navRect = navLogoSlotRef.current.getBoundingClientRect();
+          const currentScrollY = window.scrollY || window.pageYOffset || 0;
+          const currentScrollX = window.scrollX || window.pageXOffset || 0;
 
-        const startWidth = heroRect.width;
-        const startHeight = heroRect.height;
-        // True document top & left when scroll is 0
-        const startLeft = heroRect.left + currentScrollX;
-        const startTop = heroRect.top + currentScrollY;
+          const heroRect = heroLogoAnchorRef.current!.getBoundingClientRect();
+          const navRect = navLogoSlotRef.current!.getBoundingClientRect();
 
-        const endWidth = navRect.width;
-        const endHeight = navRect.height;
-        const endLeft = navRect.left;
-        const endTop = navRect.top;
+          const startWidth = heroRect.width;
+          const startHeight = heroRect.height;
+          // True document top & left when scroll is 0
+          const startLeft = heroRect.left + currentScrollX;
+          const startTop = heroRect.top + currentScrollY;
 
-        const scaleRatio = endWidth / startWidth;
-        const deltaX = endLeft - startLeft;
-        // Align vertical centers between start position and docked navbar slot
-        const startCenterY = startTop + startHeight / 2;
-        const endCenterY = endTop + endHeight / 2;
-        const deltaY = endCenterY - startCenterY;
+          const endWidth = navRect.width;
+          const endHeight = navRect.height;
+          const endLeft = navRect.left;
+          const endTop = navRect.top;
 
-        // Position floating logo over Hero anchor at scroll = 0
-        gsap.set(floatingLogoRef.current, {
-          position: 'fixed',
-          top: startTop,
-          left: startLeft,
-          width: startWidth,
-          height: startHeight,
-          transformOrigin: 'left center',
-          x: 0,
-          y: 0,
-          scale: 1,
-          opacity: 1,
-          visibility: 'visible',
-          zIndex: 60,
-        });
+          // Accurate aspect-ratio scale & top-left transform mapping
+          const scaleRatio = endHeight / startHeight;
+          const deltaX = endLeft - startLeft;
+          const deltaY = endTop - startTop;
 
-        // Initial state of navbar capsule: completely hidden and non-interactive
-        gsap.set(navCapsuleRef.current, {
-          opacity: 0,
-          y: -20,
-          scale: 0.96,
-          pointerEvents: 'none',
-        });
+          // Position floating logo over Hero anchor at scroll = 0
+          gsap.set(floatingLogoRef.current, {
+            position: 'fixed',
+            top: startTop,
+            left: startLeft,
+            width: startWidth,
+            height: startHeight,
+            transformOrigin: 'top left',
+            x: 0,
+            y: 0,
+            scale: 1,
+            opacity: 1,
+            visibility: 'visible',
+            zIndex: 60,
+          });
 
-        // Master Hero ScrollTrigger timeline
-        const heroTl = gsap.timeline({
-          scrollTrigger: {
-            trigger: heroContainerRef.current,
-            start: 'top top',
-            end: 'bottom 25%',
-            scrub: 1,
-            invalidateOnRefresh: true,
-          },
-        });
-
-        // Continuous smooth trajectory for the logo
-        heroTl.to(
-          floatingLogoRef.current,
-          {
-            x: deltaX,
-            y: deltaY,
-            scale: scaleRatio,
-            ease: 'power2.inOut',
-            duration: 1,
-          },
-          0
-        );
-
-        // Synchronized iPhone Dark Mirror Glass Navbar materialization
-        heroTl.fromTo(
-          navCapsuleRef.current,
-          {
+          // Initial state of navbar capsule: completely hidden and non-interactive
+          gsap.set(navCapsuleRef.current, {
             opacity: 0,
             y: -20,
             scale: 0.96,
             pointerEvents: 'none',
-          },
-          {
+          });
+
+          // Master Hero ScrollTrigger timeline
+          const heroTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: heroContainerRef.current,
+              start: 'top top',
+              end: 'bottom 25%',
+              scrub: 1,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          // Continuous smooth trajectory for the logo
+          heroTl.to(
+            floatingLogoRef.current,
+            {
+              x: deltaX,
+              y: deltaY,
+              scale: scaleRatio,
+              ease: 'power2.inOut',
+              duration: 1,
+            },
+            0
+          );
+
+          // Fade out ambient dark back shadow early in the scroll so it doesn't spill over navbar
+          if (backShadowRef.current) {
+            heroTl.to(
+              backShadowRef.current,
+              {
+                opacity: 0,
+                duration: 0.25,
+                ease: 'power1.out',
+              },
+              0
+            );
+          }
+
+          // Smoothly blend white logo to pure official color logo during scroll for seamless navbar docking
+          if (whiteLayerRef.current) {
+            heroTl.to(
+              whiteLayerRef.current,
+              {
+                opacity: 0,
+                duration: 0.35,
+                ease: 'power1.inOut',
+              },
+              0
+            );
+          }
+
+          if (scrollSolidRef.current) {
+            heroTl.to(
+              scrollSolidRef.current,
+              {
+                opacity: 1,
+                duration: 0.35,
+                ease: 'power1.inOut',
+              },
+              0
+            );
+          }
+
+          // Synchronized iPhone Dark Mirror Glass Navbar materialization
+          heroTl.fromTo(
+            navCapsuleRef.current,
+            {
+              opacity: 0,
+              y: -20,
+              scale: 0.96,
+              pointerEvents: 'none',
+            },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              pointerEvents: 'auto',
+              ease: 'power2.out',
+              duration: 0.55,
+            },
+            0.45
+          );
+
+          // Reverse Transition: when approaching the footer, navbar glides out cleanly
+          const footerEl = document.getElementById('footer');
+          if (footerEl) {
+            ScrollTrigger.create({
+              trigger: footerEl,
+              start: 'top 85%',
+              end: 'bottom bottom',
+              onEnter: () => {
+                gsap.to(navCapsuleRef.current, {
+                  opacity: 0,
+                  y: -25,
+                  scale: 0.96,
+                  pointerEvents: 'none',
+                  duration: 0.4,
+                  ease: 'power2.in',
+                  overwrite: 'auto',
+                });
+                gsap.to(floatingLogoRef.current, {
+                  opacity: 0,
+                  y: deltaY - 25,
+                  duration: 0.4,
+                  ease: 'power2.in',
+                  overwrite: 'auto',
+                });
+              },
+              onLeaveBack: () => {
+                const heroBottom = heroContainerRef.current?.getBoundingClientRect().bottom || 0;
+                // Re-reveal only if user has scrolled past hero
+                if (heroBottom <= window.innerHeight * 0.35) {
+                  gsap.to(navCapsuleRef.current, {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    pointerEvents: 'auto',
+                    duration: 0.4,
+                    ease: 'power2.out',
+                    overwrite: 'auto',
+                  });
+                  gsap.to(floatingLogoRef.current, {
+                    opacity: 1,
+                    y: deltaY,
+                    scale: scaleRatio,
+                    duration: 0.4,
+                    ease: 'power2.out',
+                    overwrite: 'auto',
+                  });
+                }
+              },
+            });
+          }
+        });
+
+        // -------------------------------------------------------------------------
+        // MOBILE (< 768px): Clean, Glitch-Free Natural Scroll & Smooth Navbar Fade
+        // -------------------------------------------------------------------------
+        mm.add('(max-width: 767px)', () => {
+          gsap.set(floatingLogoRef.current, { display: 'none' });
+          gsap.set(navCapsuleRef.current, { opacity: 0, y: -15, scale: 0.98, pointerEvents: 'none' });
+
+          const mobileTl = gsap.timeline({
+            scrollTrigger: {
+              trigger: heroContainerRef.current,
+              start: 'top top',
+              end: 'bottom 40%',
+              scrub: 0.5,
+              invalidateOnRefresh: true,
+            },
+          });
+
+          mobileTl.to(navCapsuleRef.current, {
             opacity: 1,
             y: 0,
             scale: 1,
             pointerEvents: 'auto',
             ease: 'power2.out',
-            duration: 0.55,
-          },
-          0.45
-        );
-
-        // Reverse Transition: when approaching the footer, navbar glides out cleanly
-        const footerEl = document.getElementById('footer');
-        if (footerEl) {
-          ScrollTrigger.create({
-            trigger: footerEl,
-            start: 'top 85%',
-            end: 'bottom bottom',
-            onEnter: () => {
-              gsap.to(navCapsuleRef.current, {
-                opacity: 0,
-                y: -25,
-                scale: 0.96,
-                pointerEvents: 'none',
-                duration: 0.4,
-                ease: 'power2.in',
-                overwrite: 'auto',
-              });
-              gsap.to(floatingLogoRef.current, {
-                opacity: 0,
-                y: deltaY + 40,
-                duration: 0.4,
-                ease: 'power2.in',
-                overwrite: 'auto',
-              });
-            },
-            onLeaveBack: () => {
-              const heroBottom = heroContainerRef.current?.getBoundingClientRect().bottom || 0;
-              // Re-reveal only if user has scrolled past hero
-              if (heroBottom <= window.innerHeight * 0.35) {
-                gsap.to(navCapsuleRef.current, {
-                  opacity: 1,
-                  y: 0,
-                  scale: 1,
-                  pointerEvents: 'auto',
-                  duration: 0.4,
-                  ease: 'power2.out',
-                  overwrite: 'auto',
-                });
-                gsap.to(floatingLogoRef.current, {
-                  opacity: 1,
-                  y: deltaY,
-                  scale: scaleRatio,
-                  duration: 0.4,
-                  ease: 'power2.out',
-                  overwrite: 'auto',
-                });
-              }
-            },
+            duration: 1,
           });
-        }
+
+          const footerEl = document.getElementById('footer');
+          if (footerEl) {
+            ScrollTrigger.create({
+              trigger: footerEl,
+              start: 'top 85%',
+              end: 'bottom bottom',
+              onEnter: () => {
+                gsap.to(navCapsuleRef.current, {
+                  opacity: 0,
+                  y: -20,
+                  pointerEvents: 'none',
+                  duration: 0.3,
+                  ease: 'power2.in',
+                  overwrite: 'auto',
+                });
+              },
+              onLeaveBack: () => {
+                const heroBottom = heroContainerRef.current?.getBoundingClientRect().bottom || 0;
+                if (heroBottom <= window.innerHeight * 0.35) {
+                  gsap.to(navCapsuleRef.current, {
+                    opacity: 1,
+                    y: 0,
+                    pointerEvents: 'auto',
+                    duration: 0.3,
+                    ease: 'power2.out',
+                    overwrite: 'auto',
+                  });
+                }
+              },
+            });
+          }
+        });
       }, containerRef);
     };
 
@@ -234,25 +404,25 @@ export default function HeroNavbarTransition() {
       {/* ========================================================================= */}
       {/* 01 — Fixed iPhone Dark Mirror Glass Navbar */}
       {/* ========================================================================= */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3 sm:pt-5 pointer-events-none">
+      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3 sm:pt-5 pointer-events-none font-sans">
         <div
           ref={navCapsuleRef}
           aria-label="Main Navigation"
-          className="w-full max-w-5xl rounded-full relative transition-all duration-300 flex items-center justify-between px-4 sm:px-6 py-2.5 sm:py-3 border border-white/[0.12] pointer-events-none"
+          className="w-full max-w-4xl rounded-full relative flex items-center justify-between px-5 sm:px-7 py-2.5 sm:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)]"
           style={{
-            backgroundColor: 'rgba(10, 15, 30, 0.84)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            backgroundColor: 'rgba(6, 8, 16, 0.30)',
+            backdropFilter: 'blur(16px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
             boxShadow:
-              '0 20px 40px -15px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
+              '0 25px 60px -12px rgba(0, 0, 0, 0.95), 0 10px 25px -5px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
           }}
-        > 
-          {/* Specular Top Reflection Sheen */}
+        >
+          {/* Specular Top Reflection Highlight (iPhone Polished Mirror Glass effect) */}
           <div
-            className="absolute inset-x-5 top-0 h-[45%] rounded-t-full pointer-events-none opacity-75"
+            className="absolute inset-x-0 top-0 h-[40%] rounded-t-full pointer-events-none opacity-60"
             style={{
               background:
-                'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 55%, transparent 100%)',
+                'linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.02) 70%, transparent 100%)',
             }}
           />
 
@@ -260,13 +430,21 @@ export default function HeroNavbarTransition() {
           <Link
             href="/"
             aria-label="Nexus Vyoma Home"
-            className="flex items-center relative z-10 focus:outline-none group"
+            className="flex items-center gap-2 relative z-10 focus:outline-none group flex-shrink-0"
           >
             <div
               ref={navLogoSlotRef}
-              className="w-28 sm:w-36 md:w-40 h-6 sm:h-7 md:h-8 flex items-center relative"
+              className="flex items-center relative"
             >
-              {/* Target bounding box for measuring exact coordinates */}
+              {/* Target bounding box / Navbar logo (visible on mobile naturally; on desktop docked by flying logo) */}
+              <Image
+                src="/brand/nexus-wordmark-official.png"
+                alt="Nexus Vyoma Logo Slot"
+                width={140}
+                height={32}
+                className="h-5 sm:h-6 w-auto object-contain opacity-100 md:opacity-0 select-none"
+                priority
+              />
             </div>
           </Link>
 
@@ -276,43 +454,68 @@ export default function HeroNavbarTransition() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="text-xs lg:text-sm font-medium text-zinc-300 hover:text-white transition-colors duration-200 relative group tracking-wide font-sans"
+                className="text-xs sm:text-sm font-semibold text-zinc-100 hover:text-white transition-colors duration-200 relative group tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
               >
                 <span>{link.label}</span>
-                <span className="absolute -bottom-1 left-0 right-0 h-[1px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                <span className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
               </Link>
             ))}
           </div>
 
-          {/* RIGHT: Ticket Action CTA */}
-          <div className="flex items-center gap-3 z-10">
-            <Link
-              href="/register"
-              className="relative group overflow-hidden rounded-full p-[1px] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00]"
+          {/* RIGHT: SpecularButton CTA Action */}
+          <div className="flex items-center gap-2.5 sm:gap-3 z-10 flex-shrink-0">
+            <SpecularButton
+              size="sm"
+              radius={999}
+              tint="#ffffff"
+              tintOpacity={0.06}
+              blur={10}
+              textColor="#ffffff"
+              lineColor="#ffffff"
+              baseColor="#3a3a4c"
+              intensity={1.2}
+              shineSize={14}
+              shineFade={40}
+              thickness={1.1}
+              speed={0.35}
+              followMouse
+              proximity={220}
+              autoAnimate={false}
+              onClick={() => router.push('/register')}
+              className="!font-sans !text-[10px] xs:!text-[11px] sm:!text-xs !font-black !tracking-wider uppercase !py-2 !px-3.5 sm:!px-5 !rounded-full select-none"
             >
-              <span className="absolute inset-0 bg-gradient-to-r from-[#FF6A00] via-[#FF382E] to-[#D8182B]" />
-              <span className="relative flex items-center gap-1.5 px-4 sm:px-5 py-1.5 rounded-full bg-[#0A0F1E] hover:bg-[#0A0F1E]/80 text-white text-xs sm:text-sm font-bold tracking-wider uppercase transition-all duration-200 group-hover:shadow-[0_0_20px_rgba(255,106,0,0.6)] font-sans">
-                <span>TICKET</span>
-                <span className="text-[#FF6A00] transition-transform duration-200 group-hover:translate-x-0.5 font-bold">
-                  →
-                </span>
-              </span>
-            </Link>
+              <span>CLAIM YOUR PASS</span>
+              <svg
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/90 flex-shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 17L17 7" />
+                <path d="M7 7h10v10" />
+              </svg>
+            </SpecularButton>
 
             {/* Mobile Menu Toggle */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
-              className="md:hidden flex flex-col justify-center items-center w-8 h-8 rounded-full bg-white/5 border border-white/10 text-white focus:outline-none"
+              className="md:hidden flex flex-col justify-center items-center w-8 h-8 rounded-full bg-white/10 border border-white/15 text-white focus:outline-none"
             >
               <span
-                className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-0.5'
-                  }`}
+                className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${
+                  mobileMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-0.5'
+                }`}
               />
               <span
-                className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-0.5'
-                  }`}
+                className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${
+                  mobileMenuOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-0.5'
+                }`}
               />
             </button>
           </div>
@@ -351,34 +554,147 @@ export default function HeroNavbarTransition() {
       </header>
 
       {/* ========================================================================= */}
-      {/* 02 — Single Continuous Transitioning Logo Actor */}
+      {/* 02 — Single Continuous Transitioning Logo Actor with Cursor Color Reveal (Desktop md+) */}
       {/* ========================================================================= */}
       <div
         ref={floatingLogoRef}
-        className="fixed z-50 flex items-center justify-center pointer-events-none will-change-transform"
+        onPointerMove={handlePointerMove}
+        onPointerEnter={handlePointerEnter}
+        onPointerLeave={handlePointerLeave}
+        className="hidden md:flex fixed z-50 items-center justify-center pointer-events-auto select-none will-change-transform cursor-crosshair"
       >
-        <Image
-          src="/brand/nexus-wordmark-official.png"
-          alt="Nexus Vyoma Logo"
-          width={900}
-          height={300}
-          priority
-          className="w-full h-full object-contain select-none filter drop-shadow-[0_15px_45px_rgba(0,0,0,0.85)]"
+        {/* Ambient Dark Back Shadow Elevation (Elevates text above moving tiles in Hero) */}
+        <div
+          ref={backShadowRef}
+          className="absolute inset-x-[-8%] inset-y-[-18%] rounded-full opacity-85 blur-2xl pointer-events-none -z-10"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0.35) 70%, transparent 100%)',
+          }}
         />
+
+        {/* Layer A: Solid Pure White Filled Logo with Back Shadow Elevation */}
+        <div
+          ref={whiteLayerRef}
+          className="relative w-full h-full flex items-center justify-center pointer-events-none"
+        >
+          <Image
+            src="/brand/nexus-wordmark-white.png"
+            alt="Nexus Vyoma Logo White"
+            width={1024}
+            height={341}
+            priority
+            className="w-full h-full object-contain select-none filter drop-shadow-[0_4px_12px_rgba(0,0,0,1)] drop-shadow-[0_16px_35px_rgba(0,0,0,0.95)] drop-shadow-[0_0_2px_rgba(0,0,0,1)] drop-shadow-[0_0_25px_rgba(255,255,255,0.15)]"
+          />
+        </div>
+
+        {/* Layer B: Official Full-Color Logo Revealed by Cursor Mask */}
+        <div
+          ref={colorMaskLayerRef}
+          className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none"
+          style={
+            {
+              '--cursor-x': '-9999px',
+              '--cursor-y': '-9999px',
+              '--reveal-radius': '0px',
+              maskImage:
+                'radial-gradient(circle var(--reveal-radius) at var(--cursor-x) var(--cursor-y), black 0%, black 40%, transparent 100%)',
+              WebkitMaskImage:
+                'radial-gradient(circle var(--reveal-radius) at var(--cursor-x) var(--cursor-y), black 0%, black 40%, transparent 100%)',
+            } as React.CSSProperties
+          }
+        >
+          <Image
+            src="/brand/nexus-wordmark-official.png"
+            alt="Nexus Vyoma Logo Color Reveal"
+            width={1024}
+            height={341}
+            priority
+            className="w-full h-full object-contain select-none drop-shadow-[0_0_45px_rgba(255,106,0,0.85)]"
+          />
+        </div>
+
+        {/* Layer C: Solid Full-Color Blend on Scroll (for seamless docking into navbar) */}
+        <div
+          ref={scrollSolidRef}
+          className="absolute inset-0 w-full h-full flex items-center justify-center pointer-events-none opacity-0"
+        >
+          <Image
+            src="/brand/nexus-wordmark-official.png"
+            alt="Nexus Vyoma Logo"
+            width={1024}
+            height={341}
+            priority
+            className="w-full h-full object-contain select-none"
+          />
+        </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 03 — Ultra-Minimal Full-Screen Viewport Hero */}
+      {/* 03 — 3-Layer Hero Viewport (Gradient + DriftWall + Nexus Vyoma Logo) */}
       {/* ========================================================================= */}
       <section
         ref={heroContainerRef}
         className="relative min-h-screen min-h-[100svh] w-full flex items-center justify-center px-4 sm:px-8 bg-transparent overflow-hidden select-none"
       >
-        {/* Center Target Anchor: ONLY the centered NEXUS VYOMA logo */}
+        {/* LAYER 1: Ambient Brand Mesh Gradient (Strictly in the back, compact vertical height, subtle mobile scale) */}
+        <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
+          <div
+            className="w-[50vw] sm:w-[28vw] max-w-[180px] sm:max-w-[320px] h-[5vh] sm:h-[10vh] max-h-[40px] sm:max-h-[90px] rounded-full opacity-15 sm:opacity-35 blur-[35px] sm:blur-[55px]"
+            style={{
+              background:
+                'radial-gradient(ellipse at center, rgba(255,106,0,0.6) 0%, rgba(255,32,125,0.3) 45%, rgba(123,44,255,0.1) 70%, transparent 100%)',
+            }}
+          />
+        </div>
+
+        {/* LAYER 2: React Bits DriftWall 3D Perspective Tile Wall (Subdued & Darkened Ambient Background Images) */}
+        <div className="absolute inset-0 z-10 pointer-events-auto">
+          <DriftWall
+            columns={7}
+            tileWidth={180}
+            tileHeight={120}
+            gap={14}
+            tilt={14}
+            turn={-12}
+            perspective={1200}
+            depth={130}
+            speed={36}
+            direction="up"
+            variance={0.45}
+            parallax={0.5}
+            lift={64}
+            fade={0.35}
+            dim={0.48}
+            overlayColor="#04060e"
+            grayscale={false}
+          />
+        </div>
+
+        {/* LAYER 3: Nexus Vyoma Text/Logo Anchor (Foreground Target with Exact 3:1 Aspect Ratio) */}
         <div
           ref={heroLogoAnchorRef}
-          className="w-full max-w-xl sm:max-w-2xl md:max-w-3xl lg:max-w-4xl h-28 sm:h-40 md:h-52 lg:h-64 flex items-center justify-center relative z-10"
-        />
+          className="w-[85vw] max-w-[280px] xs:max-w-[340px] sm:max-w-[480px] md:max-w-[620px] lg:max-w-[760px] aspect-[1024/341] flex items-center justify-center relative z-10 pointer-events-none"
+        >
+          {/* On mobile (< md), render the solid white logo and back shadow directly in the Hero */}
+          <div className="md:hidden relative w-full h-full flex items-center justify-center">
+            <div
+              className="absolute inset-x-[-8%] inset-y-[-18%] rounded-full opacity-85 blur-2xl pointer-events-none -z-10"
+              style={{
+                background:
+                  'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0.35) 70%, transparent 100%)',
+              }}
+            />
+            <Image
+              src="/brand/nexus-wordmark-white.png"
+              alt="Nexus Vyoma Logo"
+              width={1024}
+              height={341}
+              priority
+              className="w-full h-full object-contain select-none filter drop-shadow-[0_4px_12px_rgba(0,0,0,1)] drop-shadow-[0_16px_35px_rgba(0,0,0,0.95)] drop-shadow-[0_0_2px_rgba(0,0,0,1)]"
+            />
+          </div>
+        </div>
       </section>
     </div>
   );

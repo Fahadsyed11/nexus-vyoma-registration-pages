@@ -43,6 +43,147 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-09 — Refined Navbar Background Blur
+
+**Done**
+- **Updated Backdrop Blur**:
+  - Calibrated navbar glassmorphism backdrop blur to a subtle `blur(16px) saturate(180%)` across [`HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx) and [`Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx).
+  - Preserved 30% background fill visibility (`rgba(6, 8, 16, 0.30)`), top specular reflection, and border glows.
+
+### 2026-10-09 — Integrated React Bits <SpecularButton /> in Navbar (CLAIM YOUR PASS)
+
+**Done**
+- **Created SpecularButton Component (`components/ui/SpecularButton.tsx`, `components/ui/SpecularButton.css`)**:
+  - Integrated React Bits WebGL hardware-accelerated `<SpecularButton />` using `ogl`.
+  - Configured signed distance field (SDF) rounded rectangle shader with dynamic rim lighting, elliptical normal calculation, cursor proximity detection, and symmetric specular highlight reflections.
+- **Navbar CTA Integration (`HeroNavbarTransition.tsx`, `Navbar.tsx`)**:
+  - Replaced the navbar CTA button with `<SpecularButton />`:
+    - **Label:** `CLAIM YOUR PASS` with arrow glyph (`↗`).
+    - **Visual Styling:** Translucent glass tint, moving specular highlight line (`lineColor="#ffffff"`, `baseColor="#3a3a4c"`, `intensity={1.2}`), `rounded-full` pill geometry (`radius={999}`), and smooth mouse tracking (`followMouse={true}`, `proximity={220}`).
+    - **Navigation:** Triggers router push to `/register` on click.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
+### 2026-10-09 — Smooth Sweep Animated Navbar Button (CLAIM YOUR PASS)
+
+**Done**
+- **Navbar Button Animation Redesign (`HeroNavbarTransition.tsx`, `Navbar.tsx`)**:
+  - Implemented a smooth directional sweep animation for the `CLAIM YOUR PASS` navbar button:
+    - **Resting State:** Solid White (`#FFFFFF`) pill with high-contrast `#10101B` bold text and Electric Blue `#0066FF` arrow.
+    - **Hover Animation:** An Electric Blue (`#0066FF`) fill layer smoothly sweeps across the button from left to right (`-translate-x-full → translate-x-0` with 300ms `ease-out`), while text and arrow transition fluidly to white with an upward-right arrow glide (`group-hover:translate-x-0.5 group-hover:-translate-y-0.5`) and luminous blue ambient glow (`hover:shadow-[0_0_22px_rgba(0,102,255,0.55)]`).
+    - **Click Feedback:** Added tactile bounce micro-interaction (`active:scale-95`).
+    - **Accessibility:** Keyboard focus ring configured (`focus-visible:ring-[#0066FF]`).
+  - Preserved existing `/register` navigation destination and responsive navbar capsule layout with zero external side effects.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
+### 2026-10-09 — 1px Solid Pixel Outline on Flagship Arena Cards (Outer Outline Only)
+
+**Done**
+- **Flagship Arena Card Outline Refinement (`FlagshipScrollDeck.tsx`, `FlagshipCardItem.tsx`)**:
+  - Reduced outer card border thickness to crisp **1px** (`border` instead of `border-2`) using the event's category accent color.
+  - Removed colored borders from all inside elements (inner visual container now has a subtle neutral `border-white/[0.08]` and category badge uses clean neutral `border-white/15 bg-white/[0.05]`).
+  - The single solid color accent border now strictly and cleanly frames ONLY the outer boundary of each card.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
+### 2026-10-09 — Fixed Mobile Logo Transition Glitch & Unstacked Footer Meta Items
+
+**Done**
+- **Mobile Hero-to-Navbar Transition Fix (`HeroNavbarTransition.tsx`)**:
+  - Separated desktop and mobile timeline orchestration using `gsap.matchMedia()`.
+  - On desktop (`md+` / `>= 768px`): Preserved the exact GSAP flying logo transition, interactive cursor color reveal physics, and footer exit choreography.
+  - On mobile (`< 768px`): Rendered the pure white Hero logo directly inside the Hero container in the DOM so it scrolls naturally with the hero section. When scrolling past the hero, the fixed navbar capsule smoothly fades in with its official color logo cleanly mounted in `navLogoSlotRef` (`opacity-100 md:opacity-0`).
+  - Restricted the fixed `floatingLogoRef` element to `hidden md:flex`, completely eliminating the floating logo from getting stuck mid-screen on mobile.
+- **Mobile Footer Unstacked Layout (`FooterSection.tsx`)**:
+  - Switched the bottom meta bar from `flex-col` to `flex-row items-center justify-between` on mobile.
+  - Formatted Left (Instagram `@nexusvyoma`), Center (Venue `ISL Engineering College`), and Right (Dates `10, 11, 12 Nov` on mobile, `10, 11, 12 November` on desktop) on a single horizontal row across mobile devices with zero vertical stacking.
+  - Preserved desktop 3-column layout untouched.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
+### 2026-10-09 — 6 UI Refinements & Enhancements (Hero, Flagship Arenas, Sponsors, Footer, CTA & Mobile Gradients)
+
+**Done**
+- **Task 1: Darkened Hero Drifting Images (`HeroNavbarTransition.tsx`)**:
+  - Darkened drifting images by applying `dim={0.48}` and `overlayColor="#04060e"` in `DriftWall`.
+  - Images now behave as a subtle background texture behind the sharp, pure white centered NEXUS VYOMA logo.
+- **Task 2: Flagship Arena Cards Solid Pixel Borders (`FlagshipScrollDeck.tsx`, `FlagshipCardItem.tsx`)**:
+  - Removed decorative multi-color gradient fills, blur flares, and glow shadows.
+  - Replaced with crisp, solid 2px pixel-style borders and high-contrast solid `#060913` / `#0C101D` backgrounds using dedicated event category accent colors (`Cosplay #FF207D`, `DJ #FF6A00`, `Auto Expo #FF382E`, `Qawwali #FBB03B`, `Tech Battles #0066FF`, `Food Fest #7B2CFF`).
+- **Task 3: Increased Sponsor Carousel Circle Width (`CircularCarousel.tsx`, `SponsorsSection.tsx`)**:
+  - Expanded the circular/elliptical horizontal orbit spread (`spread: 1.35`) so cards travel along a wider, more spacious horizontal path while preserving vertical orbit height, card dimensions, speed, and 3D perspective.
+- **Task 4: Simplified Footer Layout (`FooterSection.tsx`)**:
+  - Removed boxed card containers and borders from the footer meta bar.
+  - Positioned the three elements directly on the page background: Left Instagram handle (`@nexusvyoma`), Center Venue name (`ISL Engineering College`), and Right Dates (`10, 11, 12 November`).
+- **Task 5: Fixed CTA Mobile Logo & Text Overlap (`RegisterCTASection.tsx`)**:
+  - Restricted absolute concentric background circles to desktop/tablet (`hidden sm:flex`) to prevent collisions on narrow mobile viewports.
+  - Added a clean top mobile emblem header (`sm:hidden`) with dedicated spacing so text and logo never collide or overlap.
+- **Task 6: Reduced Mobile Gradient Height and Opacity (`HeroNavbarTransition.tsx`, `DualBackground.tsx`)**:
+  - Reduced ambient mesh gradient size and opacity on mobile screens (`opacity-15 sm:opacity-35 max-w-[180px] sm:max-w-[320px]`).
+  - Added responsive `opacity-40 sm:opacity-100` wrapper on the global WebGL Aurora layer so mobile viewports have a clean, subtle atmosphere with zero screen overpowering.
+- **Verification**: Next.js production build (`npm run build`) succeeded with 0 errors.
+
+### 2026-10-09 — Simplified Footer Venue Display
+
+**Done**
+- **Footer Venue Information (`FooterSection.tsx`)**:
+  - Removed image container and simplified venue presentation to clean text format (`Venue — ISL Engineering College` with subtitle `Hyderabad, Telangana`).
+  - Removed unused `Image` import.
+- **Verification**: Ran `npm run build` with 0 compilation errors.
+
+### 2026-10-09 — Final UI Fixes: About Title, Manifesto Reveal Timing & Sponsor Compact Layout
+
+**Done**
+- **About Section Title Typography (`AboutSection.tsx`)**:
+  - Ensured the "ABOUT NEXUS VYOMA" title is styled with brand display font `Anton` (`font-[family-name:var(--font-display)] font-bold`), preserving official warm flame gradients and spark flair.
+- **Manifesto Text Reveal Timing & Readability (`AboutSection.tsx`)**:
+  - Re-calibrated `ScrollReveal` parameters to `wordAnimationStart: "top 80%"`, `wordAnimationEnd: "bottom 35%"`, and `scrub: 1`.
+  - Expanded the word-by-word reveal span across a natural ~350px scroll window so the manifesto does not rush, ensuring 100% of words are fully sharp and readable before the section transitions into Flagship Events.
+- **Sponsor Section Typography & Gap Elimination (`SponsorsSection.tsx`)**:
+  - Refined sponsor heading (`text-xl xs:text-2xl sm:text-3xl lg:text-4xl`) and supporting copy for balanced visual scale.
+  - Eliminated excessive vertical gaps: text-to-carousel margin reduced to `mb-2 sm:mb-3 lg:mb-4`, section padding tightened to `py-8 sm:py-12 lg:py-14`, and carousel stage height reduced to `h-[320px] sm:h-[380px] lg:h-[420px]` to tightly frame the 310px cards.
+  - Closed horizontal gaps between cards by tuning `gap={14}` in `CircularCarousel`.
+- **Mobile Scroll Progression & Pacing (`SponsorsSection.tsx`)**:
+  - Calibrated the GSAP entrance timeline (`start: "top 85%"`, `end: "top 45%"`, `scrub: 1`) to slow down and smooth out the reveal progression on mobile, giving users comfortable time to view the heading, description, and interactive carousel.
+- **Verification**: Ran `npm run build` with 0 compilation errors.
+
+### 2026-10-09 — Enlarged Sponsor Cards & Added 3D Reflective Glass Back Faces
+
+**Done**
+- **Enlarged Card Dimensions (`SponsorsSection.tsx`, `CircularCarousel.tsx`)**:
+  - Increased sponsor card width from `260` to `310` (~20% increase) and expanded stage wrapper height to `h-[380px] xs:h-[420px] sm:h-[520px] lg:h-[600px]`, allowing cards to render bold, large, and unobstructed.
+- **Reflective Glass Back Cards (`CircularCarousel.tsx`)**:
+  - Implemented dual-sided 3D card architecture with inward-facing `[transform:rotateY(180deg)] [backface-visibility:hidden]` back faces.
+  - Styled back faces with deep translucent iPhone Dark Mirror Glass (`bg-[#080D1E]/80 backdrop-blur-xl border border-white/[0.18]`), specular diagonal light streak reflections (`linear-gradient(115deg, ...)`), specular top mirror highlights, subtle micro-grid texturing, and soft glowing ✦ NEXUS VYOMA emblem watermarks.
+  - Reduced `depthFade` to `0.2` so cards at the back of the cylinder remain visibly reflective and create a complete 3D cylindrical glass ring carousel.
+- **Verification**: Ran `npm run build` — compiled with 0 errors.
+
+### 2026-10-09 — Strict UI Refinement: About Title Font, Text-Reveal Timing & Sponsor Spacing
+
+**Done**
+- **About Section Title Font (`AboutSection.tsx`)**:
+  - Updated the "ABOUT NEXUS VYOMA" title font from generic `font-sans` to the brand's bold, condensed display font `Anton` (`font-display font-bold`), preserving all color gradients, letter tracking, spacing, and icon alignment.
+- **Text-Reveal Animation Timing (`AboutSection.tsx`)**:
+  - Re-calibrated `ScrollReveal` trigger boundaries (`wordAnimationStart: "top 82%"`, `wordAnimationEnd: "center 48%"`, `scrub: 0.8`), ensuring all words reach 100% opacity and 0px blur while centered in the viewport.
+  - Eliminated premature exit so the entire manifesto message remains sharp, stable, and readable across both desktop and mobile before moving toward Flagship Events.
+- **Sponsor Typography & Vertical Gap Reduction (`SponsorsSection.tsx`)**:
+  - Scaled down the oversized sponsor heading (`text-2xl xs:text-3xl sm:text-4xl lg:text-5xl`) and supporting description to establish a balanced, premium editorial hierarchy without dominating the page.
+  - Reduced excessive vertical gap between text and 3D carousel from `mb-10 sm:mb-16` to `mb-4 xs:mb-5 sm:mb-7 lg:mb-8`.
+  - Adjusted section padding from `py-24 sm:py-32` to `py-14 xs:py-16 sm:py-20 lg:py-24`.
+- **Sponsor Mobile Responsiveness & Touch Capture (`SponsorsSection.tsx`, `CircularCarousel.tsx`)**:
+  - Responsive carousel wrapper height scaling (`h-[340px] xs:h-[380px] sm:h-[460px] lg:h-[520px]`) eliminating vertical dead space on screens from 320px to 767px (tested at 320px, 360px, 375px, 390px, 430px).
+  - Added pointer capture (`setPointerCapture` / `releasePointerCapture`) on pointer drag in `CircularCarousel.tsx` for seamless, un-dropped touch swipes on mobile devices.
+  - Refined bottom sponsor CTA typography and margins to avoid awkward wrapping on narrow mobile screens.
+- **Verification**: Verified Next.js build (`npm run build`) succeeded with 0 errors.
+
+### 2026-10-09 — Fixed Navbar Logo Docking Alignment & Capsule Visual Consistency
+
+**Done**
+- **Hero-to-Navbar Docking Fix (`HeroNavbarTransition.tsx`)**:
+  - Replaced bounding container measurements with exact 3:1 image aspect ratio bounding boxes (`heroLogoAnchorRef` and `navLogoSlotRef`), resolving the vertical overflow and coordinate clipping issue where the logo extended beyond the navbar capsule.
+  - Aligned transform origin to `'top left'` with exact `deltaX` and `deltaY` translation formulas, guaranteeing subpixel docking precision across mobile and desktop.
+  - Linked `backShadowRef` to the master scroll timeline to fade out the ambient dark elevation shadow during initial scroll, preventing black glow clouds from spilling over the navbar border.
+  - Replaced white logo drop-shadow layer with pure official full-color logo on scroll completion.
+  - Harmonized navbar capsule styling to match approved iPhone mirror-glass design: `max-w-4xl`, `rgba(5, 7, 14, 0.94)` deep translucent background, `blur(36px)`, specular top reflection, and rich elevation shadow.
+- **Verification**: Ran `npm run build` with clean 0-error compilation.
+
 ### 2026-10-09 — Resolved PR Merge Conflicts with `main`
 
 **Done**
@@ -52,6 +193,54 @@ Newest first.
 - **Verified**:
   - `npm run test` (passes; no test files currently present)
   - `npm run lint` (completes with 1 existing warning in `app/api/event/route.ts` for unused `request` parameter)
+
+### 2026-10-09 — Comprehensive Mobile Responsiveness Audit & Fixes
+
+**Done**
+- **Mobile Responsiveness Fixes (Desktop Strictly Locked)**:
+  - **DriftWall (`DriftWall.tsx`)**: Added dynamic container-width responsive scaling (Mobile: 4 cols / 130px tiles; Tablet: 5 cols / 165px tiles; Desktop: 7 cols / 200px tiles locked).
+  - **Sponsors Section (`SponsorsSection.tsx`)**: Made bottom sponsor CTA wrap smoothly on mobile (`flex-col sm:flex-row`), adjusted carousel height on small screens (`h-[460px] sm:h-[540px] lg:h-[580px]`).
+  - **About Section (`AboutSection.tsx`)**: Refined mobile typography to `text-[24px] xs:text-[28px] sm:text-[36px]` preventing awkward line breaks on 320px–360px viewports.
+  - **Flagship Arenas (`FlagshipCardItem.tsx`)**: Reduced mobile card padding (`p-5 sm:p-10 lg:p-14`) and scaled title (`text-2xl sm:text-4xl lg:text-6xl`) with proportionate icon sizes.
+  - **Register CTA (`RegisterCTASection.tsx`)**: Adjusted card padding (`p-6 sm:p-14 lg:p-16`) and scaled concentric background arcs (`w-[260px] sm:w-[460px] lg:w-[540px]`).
+  - **Footer Section (`FooterSection.tsx`)**: Symmetrically centered Venue and Date cards with full-width mobile container wrappers (`w-full max-w-sm sm:w-auto`).
+- **Verified**: Next.js production build (`npm run build`) passed with 0 errors; desktop layouts verified identical.
+
+### 2026-10-09 — Solid Pure White Filled Hero Logo Text
+
+**Done**
+- **Hero Logo (`HeroNavbarTransition.tsx`)**:
+  - Replaced the outline text on the Hero page with the solid pure white wordmark ([`nexus-wordmark-white.png`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/public/brand/nexus-wordmark-white.png)).
+  - Retained deep multi-stage back shadows and ambient occlusion so the white text stands out with bold, crisp contrast over the 3D moving image tiles.
+  - Maintained interactive cursor color reveal and seamless scroll docking into the fixed navbar.
+- **Verified**: Next.js production build (`npm run build`) passed with 0 errors.
+
+### 2026-10-09 — Elevated Hero Logo with Multi-Layer Back Shadows
+
+**Done**
+- **Hero Logo (`HeroNavbarTransition.tsx`)**:
+  - Elevated the transparent outline *"NEXUS VYOMA"* logo above the 3D drifting background tiles using multi-stage directional and ambient back shadows (`drop-shadow-[0_4px_10px_rgba(0,0,0,1)] drop-shadow-[0_12px_28px_rgba(0,0,0,0.95)]`).
+  - Added an ambient dark occlusion backdrop layer behind the logo letters to provide crisp contrast and 3D separation over the moving image tiles.
+- **Verified**: Next.js production build (`npm run build`) compiled successfully with 0 errors.
+
+### 2026-10-09 — Foreground Image Sharpness & Reduced Background Gradient Height
+
+**Done**
+- **Hero Background Gradient (`HeroNavbarTransition.tsx`)**:
+  - Decreased vertical height significantly (`h-[10vh] max-h-[90px] w-[28vw] max-w-[320px]`) and positioned strictly in the background at `z-0` with a smooth radial edge fade (`blur-[55px] opacity-35`).
+- **Foreground Images (`HeroNavbarTransition.tsx`, `DriftWall.tsx`)**:
+  - Positioned DriftWall in the foreground at `z-10` with high resting brightness (`dim={0.92}`) and `overlayColor="transparent"`, ensuring images remain sharp, bright, and distinct with zero wash-out.
+- **Verified**: Next.js production build (`npm run build`) passed with 0 errors.
+
+### 2026-10-09 — Enhanced Navbar Density, Backdrop Blur & Multi-Layer Dropshadow
+
+**Done**
+- **Navbar (`Navbar.tsx`)**:
+  - Increased background opacity and density to `rgba(5, 7, 14, 0.94)` with an upgraded `blur(36px) saturate(210%)` backdrop filter for clear readability over any page content.
+  - Added multi-layer ambient and directional drop shadows (`0 25px 60px -12px rgba(0,0,0,0.95), 0 10px 25px -5px rgba(0,0,0,0.85)`).
+  - Enhanced text contrast and sharpness for nav links (`text-zinc-100 font-semibold`).
+  - Refined capsule sizing (`max-w-4xl`) and added `overflow-hidden` to ensure smooth, clean containment with no clipping or extended edges.
+- **Verified**: Next.js production build (`npm run build`) passed cleanly with 0 errors.
 
 ### 2026-10-09 — Footer Venue & Date Info with Official ISL College Logo
 
