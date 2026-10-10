@@ -10,6 +10,10 @@
     "test": "node --import tsx --test \"test/**/*.test.mts\""
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1148.0",
+    "@aws-sdk/client-ses": "^3.1148.0",
+    "@types/jsonwebtoken": "^9.0.10",
+    "jsonwebtoken": "^9.0.3",
     "@base-ui/react": "^1.8.0",
     "@gsap/react": "^2.1.2",
     "class-variance-authority": "^0.7.1",

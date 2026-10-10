@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/database/db";
 import Event from "@/database/schema/event.schema";
 import { NextRequest, NextResponse } from "next/server";
-import enrolledEventModel from "@/database/schema/enrolled_event.schema";
+import enrolledEventModel from "@/database/schema/enrolled-event.schema";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
@@ -15,6 +15,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 message: "Event not found",
                 data: null,
                 error: null,
+                redirect: true,
+                redirect_url: "/events"
             }, { status: 404 })
         }
 
@@ -36,13 +38,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 ...events.toObject(),
                 isSoldOut
             },
-            error: null
-        })
+            error: null,
+            redirect: false,
+            redirect_url: null
+        }, { status: 200 })
     } catch (error) {
         return NextResponse.json({
             message: "Error fetching event data",
             data: null,
             error: error instanceof Error ? error.message : "Unknown error",
+            redirect: true,
+            redirect_url: "/events"
         }, { status: 500 })
     }
 }
