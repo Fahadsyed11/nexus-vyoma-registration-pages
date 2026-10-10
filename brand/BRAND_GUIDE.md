@@ -1,96 +1,100 @@
-# Nexus Vyoma — Brand Style Guide
+# Nexus Vyoma — Official Brand Style Guide & Design System
 
-Transcribed from the official *Brand Style Guide* image. Source image: `brand/assets/brand-style-guide.png` (see [assets/README.md](./assets/README.md)). Tokens: [`tokens.css`](./tokens.css), [`tokens.json`](./tokens.json).
+Source: Official Nexus Vyoma Brand Style Guide & Poster Specifications.  
+Tokens: [`tokens.css`](./tokens.css), [`tokens.json`](./tokens.json)  
+Components: [`components/brand/`](../components/brand/)
 
-## 1. Event identity
+---
 
-| | |
+## 1. Event Identity
+
+| Property | Value |
 |---|---|
-| Event name | **NEXUS VYOMA** |
-| Tagline | A THREE-DAY INTER-COLLEGE FEST |
-| Organized by | ISL Engineering College, Hyderabad |
-| Dates | 10 · 11 · 12 Nov 2026 |
-| Highlights | Cosplay, DJ, Automobile Expo, Qawwali Night, Tech Battles, Food Fest and much more |
+| **Event Name** | **NEXUS VYOMA** |
+| **Tagline / Main Line** | **A THREE-DAY INTER-COLLEGE FEST** |
+| **Organized by** | **ISL Engineering College, Hyderabad** |
+| **Dates** | **10 · 11 · 12 NOV 2026** |
+| **Motto / Core Idea** | **Ideas • People • Culture • Beyond** |
+| **Location** | Bandlaguda, Chandrayangutta, Hyderabad, Telangana 500005 |
 
-## 2–4. Logos
+---
 
-- **Event logo:** the "NEXUS VYOMA" wordmark with a fiery orange-to-white gradient and star sparks either side, over the tagline.
-- **Symbol/mark:** a bold diagonal **X** (orange/red) crossed by a white orbit ring, with a four-point spark.
-- **College logo:** ISL Engineering College (green + purple/blue on dark).
-- Don't recolor, stretch or add effects beyond the glow shown in the guide.
+## 2. Brand Components & Vector Assets
 
-## 5. Color palette
+### 2.1 Symbol / Mark (`NexusMark.tsx`)
+- **Structure:** 3-tier horizontal sliced diagonal **X** crossed by a white orbital ellipse loop with a 4-point golden star spark.
+- **Top Segment:** Crimson Red gradient (`#D8182B` → `#9C0B1B`) with smooth curved top-left shoulder.
+- **Middle Segment:** Vivid Deep Orange (`#FF6A00` → `#E54E00`).
+- **Bottom Segment:** Golden Amber (`#FBB03B` → `#D98A00`) with clean 45-degree sheared base.
+- **Orbit Ring:** High-contrast crisp White (`#FFFFFF`) swooping across the mid-section.
+- **Star Spark:** 4-point golden star with warm halo.
 
-**Primary / base**
+### 2.2 Event Logo / Flaming Wordmark (`NexusWordmark.tsx`)
+- High-impact condensed bold uppercase with curved bottom arch.
+- Fire/flame gradient core fill (`#FFFFFF` → `#FFE0B2` → `#FF6A00` → `#B80F1F`) with ambient fiery glow.
+- Flanked by four-point white/gold sparks.
+- Subtitle: `A THREE-DAY INTER-COLLEGE FEST` with wide letter-spacing (`tracking-[0.35em]`).
 
-| Name | Hex |
-|---|---|
-| Deep Black | `#000000` |
-| Navy Blue | `#0A0F1E` |
-| Crimson Red | `#B80F1F` |
-| Deep Orange | `#FF6A00` |
+### 2.3 College Logo (`ISLLogo.tsx`)
+- Geometric Lime Green crest (`#98D800` / `#A3E635`): Apex circle + dual vertical chevron wings.
+- Royal / Indigo Blue institutional typography (`#3B49DF`): `ISL` over `ENGINEERING` and `COLLEGE`.
 
-**Accent (gradient / glow)**
+### 2.4 Star / Spark Element (`Spark.tsx`)
+- Minimalist 4-point flare element with center core highlight and golden/white glow aura.
 
-| Name | Hex |
-|---|---|
-| Electric Blue | `#0066FF` |
-| Magenta / Pink | `#FF207D` |
-| Red Orange | `#FF3B2E` |
-| Subtle Purple | `#7B2CFF` |
+---
 
-**Neutral (text / backgrounds)**
+## 3. Color Palette
 
-| Name | Hex |
-|---|---|
-| White | `#FFFFFF` |
-| Light Grey | `#E5E5E5` |
-| Dark Grey | `#1A1A1A` |
+### Primary / Base Colors
+| Swatch | Name | Hex | Description |
+|---|---|---|---|
+| ⬛ | Deep Black | `#000000` | Core backdrop & void space |
+| 🌌 | Navy Blue | `#0A0F1E` | Deep atmospheric layers & card backings |
+| 🔴 | Crimson Red | `#D8182B` | Upper mark segment & ember highlights |
+| 🏮 | Crimson Dark | `#B80F1F` | Deep shadow embers & border gradients |
+| 🟠 | Deep Orange | `#FF6A00` | Core energy, mark mid-tier & primary CTA |
+| 🟡 | Golden Amber | `#FBB03B` | Mark bottom segment & spark accents |
 
-> Hex values were read from the image. If a swatch looks off, correct it in `tokens.css` and `tokens.json`.
+### Accent Colors (Gradients & Glows)
+| Swatch | Name | Hex | Description |
+|---|---|---|---|
+| 🔵 | Electric Blue | `#0066FF` | Cosmic nebula highlights & lasers |
+| 💖 | Magenta / Pink | `#FF207D` | Secondary cosmic rim lighting |
+| 🔴 | Red Orange | `#FF3B2E` | Intermediate flame transitions |
+| 🟣 | Subtle Purple | `#7B2CFF` | Cosmic nebula depth transitions |
 
-## 6. Typography
+### Neutral Colors
+| Swatch | Name | Hex | Description |
+|---|---|---|---|
+| ⚪ | White | `#FFFFFF` | Primary headings, orbit rings & key text |
+| 🔘 | Light Grey | `#E5E5E5` | Secondary text, captions & subheadings |
+| ⬛ | Dark Grey | `#1A1A1A` | Surface backgrounds & container cards |
 
-- **Primary (headings/titles):** a bold, condensed, wide-tracked display face like the poster. Use the same style for event-name headings.
-- **Secondary (subheadings):** clean, modern, widely letter-spaced uppercase, like "A THREE-DAY INTER-COLLEGE FEST".
-- **Body:** a clean, readable sans-serif.
-- Suggested web fonts (via `next/font`; confirm in the plan):
-  - Display: **Anton** or **Bebas Neue** (condensed) with a gradient fill.
-  - Sub/Body: **Inter** or **Manrope**.
+---
 
-## 7. Visual elements & textures
+## 4. Typography
 
-- **Gradient waves:** smooth flowing blue/red/orange waves like the poster.
-- **Light glows:** subtle glows and light effects for depth.
-- **Star/spark element:** minimal four-point star accents.
-- **Abstract background:** dark textured background with subtle grain.
-- **Diagonal streaks:** minimal diagonal lines when needed.
+- **Headings & Poster Titles:** `Bebas Neue` (Display) / `Anton` — Bold condensed, uppercase, high tracking.
+- **Subheadings & Badges:** `Inter` / `Manrope` — Medium weight, wide tracking (`0.3em` to `0.45em`).
+- **Body & Rules Text:** `Inter` — Clean, legible, high-contrast sans-serif.
 
-## 8. Icon style
+---
 
-Thin, white line icons on dark, each with a label and a one-line caption.
+## 5. Official Category Icons & Captions (`EventIcons.tsx`)
 
-| Event | Caption |
-|---|---|
-| Cosplay | Characters live on |
-| DJ | Feel every beat |
-| Automobile Expo | Machines move people |
-| Qawwali Night | Let the soul sing |
-| Tech Battles | Think. Build. Conquer. |
-| Food Fest | Taste the celebration |
+| Category | Official Caption | Icon Motif |
+|---|---|---|
+| **Cosplay** | `CHARACTERS LIVE ON` | Drama mask with dual shadow split |
+| **DJ** | `FEEL EVERY BEAT` | Studio headphones with acoustic cups |
+| **Automobile Expo** | `MACHINES MOVE PEOPLE` | Aerodynamic sports car with speed streaks |
+| **Qawwali Night** | `LET THE SOUL SING` | Traditional Mughal dome arch silhouette |
+| **Tech Battles** | `THINK. BUILD. CONQUER.` | Laptop terminal with connected node graph |
+| **Food Fest** | `TASTE THE CELEBRATION` | Cloche serving platter with dome lid |
 
-## 9–10. Poster reference & layout
+---
 
-- Wordmark at the top with spark accents. The ISL logo sits above "PRESENTS", with the X symbol below.
-- Dates are stacked vertically on the right: **10 / 11 / 12 NOV 2026**.
-
-## 11. Design tone & mood
-
-Modern · Bold · Youthful · Energetic · Tech + Cultural · Dark Aesthetic · Clean & Readable
-
-## 12. Key messaging
-
-- NEXUS VYOMA
-- A Three-Day Inter-College Fest
-- ISL Engineering College, Hyderabad
-- Ideas • People • Culture • Beyond
+## 6. Design Tone & Rules
+- **Modern · Bold · Youthful · Energetic · Tech + Cultural · Dark Aesthetic**
+- **No generic AI slop:** Always use official color tokens, high-contrast dark space backgrounds, clean typography, and precise geometry.
+- **Responsive & Accessible:** Minimum touch targets of 44px, AA contrast compliance, and support for `prefers-reduced-motion`.
