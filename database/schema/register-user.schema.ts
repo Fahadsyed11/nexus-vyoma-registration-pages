@@ -50,6 +50,10 @@ const registrationUserSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
     }
 },
     { timestamps: true, overwriteModels: true });
