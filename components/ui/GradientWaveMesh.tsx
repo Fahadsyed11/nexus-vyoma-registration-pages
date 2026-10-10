@@ -13,7 +13,11 @@ interface GradientWaveMeshProps {
 export default function GradientWaveMesh({ className = '' }: GradientWaveMeshProps) {
   return (
     <div
-      className={`pointer-events-none fixed inset-0 w-full h-full overflow-hidden select-none -z-10 ${className}`}
+      className={`pointer-events-none fixed top-0 left-0 right-0 w-full h-[35vh] max-h-[35vh] overflow-hidden select-none -z-10 ${className}`}
+      style={{
+        maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+      }}
       aria-hidden="true"
     >
       {/* 01 — Primary Flowing Gradient Wave Ribbon (SVG Curved Path with multi-stop chromatic fills) */}
@@ -22,7 +26,7 @@ export default function GradientWaveMesh({ className = '' }: GradientWaveMeshPro
         viewBox="0 0 1440 900"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        style={{ mixBlendMode: 'screen', opacity: 0.85 }}
+        style={{ mixBlendMode: 'screen', opacity: 0.35 }}
       >
         <defs>
           {/* Main Chromatic Wave Gradient */}

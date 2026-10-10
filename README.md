@@ -43,6 +43,26 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-10 — Static Fixed Background Gradient across All Sections (35% Height)
+
+**Done**
+- **Static Global Ambient Gradient**:
+  - Configured static `fixed` background gradient covering the top `35vh` (35% height) of the viewport across all sections.
+  - Applied a refined vertical fade mask (`maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'`) for smooth transition into the deep obsidian theme.
+  - Updated both [`components/ui/DualBackground.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/DualBackground.tsx) and [`components/ui/GradientWaveMesh.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/GradientWaveMesh.tsx).
+
+### 2026-10-10 — Enabled Full Mobile Flying Logo & Navbar Transition
+
+**Done**
+- **Unified Responsive Flying Logo**:
+  - Enabled continuous `floatingLogoRef` actor on mobile viewports (< 768px).
+  - Removed duplicate static mobile hero image and set navbar destination logo slot to `opacity-0`.
+  - Added `opacity-0` base state to navbar capsule to eliminate initial top overlap before scroll.
+- **GSAP Mobile Scroll Integration (`HeroNavbarTransition.tsx`)**:
+  - Implemented responsive coordinate and scale ratio calculation (`deltaX`, `deltaY`, `scaleRatio`) for mobile screen widths (360px - 767px).
+  - Configured synchronized ScrollTrigger scrub timeline: the logo glides smoothly up into the navbar slot while the mirror-glass capsule materializes with soft ease.
+  - Preserved 100% of desktop (`>= 768px`) timeline and cursor color reveal mask.
+
 ### 2026-10-09 — Refined Navbar Background Blur
 
 **Done**
