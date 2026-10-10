@@ -43,6 +43,15 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-10 — Created and Integrated Circular Brand Favicon
+
+**Done**
+- **Circular Favicon Asset Creation**:
+  - Cropped and rendered the uploaded Nexus Vyoma emblem with a high-resolution anti-aliased circular alpha mask.
+  - Generated `app/icon.png` (512x512), `public/favicon.png`, `public/apple-touch-icon.png`, and multi-size `public/favicon.ico`.
+- **Metadata Integration (`app/layout.tsx`)**:
+  - Added `icons` configuration to Next.js metadata supporting standard icon, PNG favicon, and Apple touch icon.
+
 ### 2026-10-10 — Static Fixed Background Gradient across All Sections (35% Height)
 
 **Done**

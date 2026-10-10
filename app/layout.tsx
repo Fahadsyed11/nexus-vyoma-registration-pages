@@ -42,6 +42,13 @@ export const metadata: Metadata = {
     description: "Ideas • People • Culture • Beyond | ISL Engineering College, Hyderabad",
     type: "website",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
