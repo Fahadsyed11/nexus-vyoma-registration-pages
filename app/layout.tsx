@@ -24,7 +24,7 @@ const barlowCondensed = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "NEXUS VYOMA 2026 | A Three-Day Inter-College Fest | ISL Engineering College",
+  title: "Nexus Vyoma islec",
   description:
     "Official registration portal for Nexus Vyoma (10–12 Nov 2026) organized by ISL Engineering College, Hyderabad. Featuring Cosplay Championship, Mega DJ Night, Automobile Expo, Sufi & Qawwali Night, Tech Battles, and Food Fest.",
   keywords: [
@@ -38,7 +38,7 @@ export const metadata: Metadata = {
     "Registration",
   ],
   openGraph: {
-    title: "NEXUS VYOMA 2026 | A Three-Day Inter-College Fest",
+    title: "Nexus Vyoma islec ",
     description: "Ideas • People • Culture • Beyond | ISL Engineering College, Hyderabad",
     type: "website",
   },
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
       { url: "/favicon.ico", sizes: "any" },
       { url: "/favicon.png", type: "image/png", sizes: "512x512" },
     ],
-    apple: "/apple-touch-icon.png",
+    apple: "/favicon.ico",
   },
 };
 
