@@ -1,11 +1,11 @@
+import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
-import path from "node:path";
+
 import { uploadImageToS3 } from "@/utilities/aws/helper.aws";
 import { destructureSumbitBody } from "./destructure-body";
-import { sendWelcomeEmail } from "@/utilities/emails/welcome-qr";
 
 export async function POST(request: NextRequest) {
     try {
@@ -78,8 +78,6 @@ export async function POST(request: NextRequest) {
                 redirectUrl: null
             }, { status: 500 })
         }
-
-        await sendWelcomeEmail(email, full_name);
 
         return NextResponse.json({
             message: "User created successfully",
