@@ -521,11 +521,11 @@ export default function HeroNavbarTransition() {
       {/* ========================================================================= */}
       {/* 01 — Fixed iPhone Dark Mirror Glass Navbar */}
       {/* ========================================================================= */}
-      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 pt-3 sm:pt-5 pointer-events-none font-sans">
+      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-2.5 xs:px-4 pt-2.5 sm:pt-5 pointer-events-none font-sans">
         <div
           ref={navCapsuleRef}
           aria-label="Main Navigation"
-          className="w-full max-w-4xl rounded-full relative flex items-center justify-between px-5 sm:px-7 py-2.5 sm:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)] opacity-0"
+          className="w-full max-w-4xl rounded-full relative flex items-center justify-between px-3 xs:px-4 sm:px-7 py-2 sm:py-2.5 md:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)] opacity-0"
           style={{
             backgroundColor: 'rgba(6, 8, 16, 0.30)',
             backdropFilter: 'blur(16px) saturate(180%)',
@@ -559,7 +559,7 @@ export default function HeroNavbarTransition() {
                 alt="Nexus Vyoma Logo Slot"
                 width={140}
                 height={32}
-                className="h-5 sm:h-6 w-auto object-contain opacity-0 select-none"
+                className="h-4.5 xs:h-5 sm:h-6 w-auto object-contain opacity-0 select-none"
                 priority
               />
             </div>
@@ -580,7 +580,7 @@ export default function HeroNavbarTransition() {
           </div>
 
           {/* RIGHT: SpecularButton CTA Action */}
-          <div className="flex items-center gap-2.5 sm:gap-3 z-10 flex-shrink-0">
+          <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-3 z-10 flex-shrink-0">
             <Link href="/register" className="inline-flex">
               <SpecularButton
                 size="sm"
@@ -599,11 +599,11 @@ export default function HeroNavbarTransition() {
                 followMouse
                 proximity={220}
                 autoAnimate={false}
-                className="!font-sans !text-[10px] xs:!text-[11px] sm:!text-xs !font-black !tracking-wider uppercase !py-2 !px-3.5 sm:!px-5 !rounded-full select-none cursor-pointer"
+                className="!font-sans !text-[9px] xs:!text-[11px] sm:!text-xs !font-black !tracking-wider uppercase !py-1.5 xs:!py-2 !px-2.5 xs:!px-3.5 sm:!px-5 !rounded-full select-none cursor-pointer"
               >
                 <span>CLAIM YOUR PASS</span>
                 <svg
-                  className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/90 flex-shrink-0"
+                  className="w-2.5 h-2.5 xs:w-3 xs:h-3 sm:w-3.5 sm:h-3.5 text-white/90 flex-shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -623,7 +623,7 @@ export default function HeroNavbarTransition() {
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle navigation menu"
-              className="md:hidden flex flex-col justify-center items-center w-8 h-8 rounded-full bg-white/10 border border-white/15 text-white focus:outline-none"
+              className="md:hidden flex flex-col justify-center items-center w-9 h-9 xs:w-8 xs:h-8 rounded-full bg-white/10 border border-white/15 text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00] touch-manipulation cursor-pointer"
             >
               <span
                 className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${
@@ -639,35 +639,42 @@ export default function HeroNavbarTransition() {
           </div>
         </div>
 
-        {/* Mobile Mirror Glass Drawer */}
+        {/* Mobile Mirror Glass Drawer & Backdrop Overlay */}
         {mobileMenuOpen && (
-          <div
-            className="md:hidden fixed inset-x-4 top-16 pointer-events-auto rounded-3xl p-6 border border-white/10 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-200 font-sans"
-            style={{
-              backgroundColor: 'rgba(10, 15, 30, 0.95)',
-              backdropFilter: 'blur(24px) saturate(180%)',
-              boxShadow:
-                '0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
-            }}
-          >
-            <div className="flex flex-col gap-3">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="px-4 py-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-sm font-medium text-zinc-200 hover:text-white transition-all flex items-center justify-between"
-                >
-                  <span>{link.label}</span>
-                  <span className="text-[#FF6A00] text-xs">→</span>
-                </Link>
-              ))}
-              <div className="pt-3 mt-1 border-t border-white/10 flex items-center justify-between text-xs text-zinc-400 font-mono">
-                <span>ISL ENGINEERING COLLEGE</span>
-                <span className="text-[#FF6A00]">HYDERABAD</span>
+          <>
+            <div
+              className="md:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm pointer-events-auto"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
+            <div
+              className="md:hidden fixed inset-x-4 top-16 z-50 pointer-events-auto rounded-3xl p-6 border border-white/10 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-200 font-sans"
+              style={{
+                backgroundColor: 'rgba(10, 15, 30, 0.95)',
+                backdropFilter: 'blur(24px) saturate(180%)',
+                boxShadow:
+                  '0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+              }}
+            >
+              <div className="flex flex-col gap-3">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="px-4 py-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-sm font-medium text-zinc-200 hover:text-white transition-all flex items-center justify-between"
+                  >
+                    <span>{link.label}</span>
+                    <span className="text-[#FF6A00] text-xs">→</span>
+                  </Link>
+                ))}
+                <div className="pt-3 mt-1 border-t border-white/10 flex items-center justify-between text-xs text-zinc-400 font-mono">
+                  <span>ISL ENGINEERING COLLEGE</span>
+                  <span className="text-[#FF6A00]">HYDERABAD</span>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </header>
 
@@ -767,7 +774,7 @@ export default function HeroNavbarTransition() {
         </div>
 
         {/* LAYER 2: React Bits DriftWall 3D Perspective Tile Wall (Subdued & Darkened Ambient Background Images) */}
-        <div className="absolute inset-0 z-10 pointer-events-auto">
+        <div className="absolute inset-0 z-10 pointer-events-none sm:pointer-events-auto">
           <DriftWall
             columns={7}
             tileWidth={180}

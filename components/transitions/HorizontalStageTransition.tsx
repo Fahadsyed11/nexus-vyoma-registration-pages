@@ -36,7 +36,8 @@ export default function HorizontalStageTransition() {
 
       isTransitioningRef.current = true;
 
-      // Enable pointer events during transition to prevent rapid clicking
+      // Enable visibility and pointer events during transition
+      stageRef.current.style.visibility = 'visible';
       stageRef.current.style.pointerEvents = 'auto';
 
       // Barba Horizontal Slide — Leave phase: slide stage panel in from right to center FIRST
@@ -111,14 +112,16 @@ export default function HorizontalStageTransition() {
           if (stageRef.current) {
             gsap.set(stageRef.current, { xPercent: 100 });
             stageRef.current.style.pointerEvents = 'none';
+            stageRef.current.style.visibility = 'hidden';
           }
           isTransitioningRef.current = false;
         },
       });
     } else {
-      // Direct initial load / once hook: ensure stage is parked off-screen right
+      // Direct initial load / once hook: ensure stage is parked off-screen right and hidden
       gsap.set(stageRef.current, { xPercent: 100 });
       stageRef.current.style.pointerEvents = 'none';
+      stageRef.current.style.visibility = 'hidden';
     }
   }, [pathname]);
 
@@ -128,6 +131,7 @@ export default function HorizontalStageTransition() {
       className="fixed inset-0 z-[9999] pointer-events-none select-none flex items-center justify-center will-change-transform shadow-[0_0_80px_rgba(255,106,0,0.3)]"
       style={{
         transform: 'translate3d(100%, 0, 0)',
+        visibility: 'hidden',
         backgroundColor: '#05070d',
         backgroundImage:
           'radial-gradient(ellipse at 50% 50%, rgba(255, 106, 0, 0.12) 0%, rgba(10, 15, 30, 0.95) 70%, #030408 100%)',

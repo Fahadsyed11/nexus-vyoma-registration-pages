@@ -92,7 +92,7 @@ export default function ContactTitleRolling({ className = '' }: ContactTitleRoll
   return (
     <h1
       ref={containerRef}
-      className={`font-[family-name:var(--font-display)] text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight sm:tracking-normal text-white uppercase select-none leading-none flex flex-wrap items-baseline gap-x-3 sm:gap-x-4 ${className}`}
+      className={`font-[family-name:var(--font-display)] text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight sm:tracking-normal text-white uppercase select-none leading-none flex flex-wrap items-baseline gap-x-3 sm:gap-x-4 ${className}`}
       style={{ perspective: '800px' }}
       aria-label="CONTACT US"
     >

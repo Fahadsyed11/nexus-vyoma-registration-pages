@@ -43,6 +43,105 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-11 — Master Mobile Responsiveness Audit & Multi-Device Bug Fix
+
+**Done**
+- **Global Viewport & Scroll Spill Mitigation (`app/globals.css`, `components/ui/DualBackground.tsx`, `components/transitions/HorizontalStageTransition.tsx`)**:
+  - Configured `overflow-x: clip;` on `html, body` to eliminate accidental horizontal spill across mobile screens while fully maintaining `position: sticky` and GSAP `ScrollTrigger` pin anchors.
+  - Replaced `width: '100vw'` with `width: '100%'` in the dynamic SVG dual background canvas to avoid scrollbar-induced mobile overflow.
+  - Set `visibility: 'hidden'` when offscreen stages are parked at `xPercent: 100`, eliminating off-canvas glow overflow on WebKit mobile browsers.
+- **Responsive Navbars & Touch Usability (`components/navbar/Navbar.tsx`, `components/hero/HeroNavbarTransition.tsx`)**:
+  - Added responsive padding scaling (`px-3 xs:px-4 sm:px-7`) to the glass capsule so it fits 320px–390px screens with zero horizontal overflow.
+  - Scaled CTA buttons (`!px-2.5 xs:!px-3.5 sm:!px-5 !py-1 sm:!py-1.5 text-[10px] sm:text-xs`) to prevent awkward line breaks or button truncation.
+  - Enhanced hamburger toggle button touch hit area to 36px–44px with `touch-manipulation`.
+  - Added tap-outside backdrop overlay to dismiss the open mobile navigation drawer intuitively on touchscreen devices.
+  - Made DriftWall 3D background tiles `pointer-events-none sm:pointer-events-auto` on mobile to ensure smooth touch scrolling without tile drag conflicts.
+- **Events Page Mobile Ergonomics (`components/events/EventsExplorer.tsx`, `components/events/EventsTitleRolling.tsx`, `app/events/page.tsx`)**:
+  - Scoped independent inner list scrolling (`overflow-y-auto lg:max-h-[620px]`) strictly to desktop (`lg:`), allowing natural, smooth page scrolling on mobile/tablet viewports.
+  - Added `min-h-[44px]` touch target sizing to date, category, and clear filter buttons.
+  - Responsive headline typography scaling (`text-4xl xs:text-5xl sm:text-6xl lg:text-7xl`) for "EVENTS" rolling display to prevent text clipping on 320px screens.
+- **Contact Page Responsive Inputs & Touch Targets (`components/contact/ContactSection.tsx`, `components/contact/ContactTitleRolling.tsx`)**:
+  - Replaced `max-w-[97vw]` with `max-w-full` on the form container to prevent horizontal scroll issues.
+  - Configured `text-base sm:text-sm` font sizing on inputs and textareas to prevent iOS Safari auto-zooming on focus while preserving desktop 14px styling.
+  - Added `min-h-[44px]` touch target sizing to the submit button and interactive contact link rows.
+  - Scaled "CONTACT US" headline typography (`text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl`).
+- **Footer Metadata Clean Mobile Reflow (`components/footer/FooterSection.tsx`)**:
+  - Reflowed footer metadata on mobile (`flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-3.5 sm:gap-4 md:gap-8`) to eliminate horizontal collisions between Instagram handle, venue, and dates on 320px–360px displays while preserving the exact 3-column desktop layout.
+
+**Files Changed**
+- `app/globals.css`
+- `components/ui/DualBackground.tsx`
+- `components/transitions/HorizontalStageTransition.tsx`
+- `components/navbar/Navbar.tsx`
+- `components/hero/HeroNavbarTransition.tsx`
+- `components/events/EventsExplorer.tsx`
+- `components/events/EventsTitleRolling.tsx`
+- `app/events/page.tsx`
+- `components/contact/ContactSection.tsx`
+- `components/contact/ContactTitleRolling.tsx`
+- `components/footer/FooterSection.tsx`
+- `README.md` (updated activity log)
+
+### 2026-10-11 — Aligned Navbar with Page Section Transition and Scroll on Events & Contact Pages
+
+**Done**
+- **Page Transition Isolation (`app/template.tsx`)**:
+  - Scoped the synchronized horizontal stage slide (`{ x: 30 } -> { x: 0 }`) strictly to dynamic page content (`<main>`) rather than the top-level template wrapper.
+  - Fixes the CSS containing block issue where fixed elements inside transformed parents lose viewport anchoring and shift sideways during transitions. The fixed navbar now remains perfectly anchored in viewport coordinates at the top of the screen during all route transitions.
+- **Scroll & ScrollTrigger Alignment (`components/navbar/Navbar.tsx`)**:
+  - Removed `transition-all duration-300` from the navbar capsule to eliminate CSS transitions interfering with GSAP's `transform`, `y`, and `opacity` updates.
+  - Added `ScrollTrigger.refresh()` upon mounting `alwaysVisible` to ensure accurate document and trigger measurements on route entry.
+  - Refined ScrollTrigger threshold (`start: 'top 30%'`) so the navbar stays visible throughout the entire content section and dissolves cleanly as the section ends and the user transitions into the footer.
+
+**Files Changed**
+- `app/template.tsx`
+- `components/navbar/Navbar.tsx`
+- `README.md` (updated activity log)
+
+### 2026-10-11 — Implemented Official Nexus Vyoma Events Listing Page
+
+**Done**
+- **Events Listing Page (`app/events/page.tsx`)**:
+  - Built the Server Component route for `/events` matching the authoritative final screenshot and wireframe layout.
+  - Reused the shared `Navbar` (`alwaysVisible={true}`) and cinematic `FooterSection` without redesigning them.
+  - Framed main container with subtle dark borders (`border-zinc-800`), rounded corners (`rounded-3xl`), and high-contrast dark space background.
+- **Centralized Event Catalog (`lib/data/eventsCatalog.ts`)**:
+  - Implemented typed catalog featuring all 8 requested events:
+    1. *RPM (Gear Up) — Auto Show* (11 November | Competition | Team | Flagship sample)
+    2. *Eclipse 404 — DJ* (12 November | Talk | Individual | Flagship sample)
+    3. *Signal Hunt* (10 November | Competition | Team)
+    4. *Vibe Coding — CodeCraft* (11 November | Competition | Individual)
+    5. *Nexus Arena — E-Sports* (10 November | Competition | Team | Flagship sample)
+    6. *Financial Detective* (10 November | Workshop | Individual)
+    7. *Future City* (11 November | Workshop | Team)
+    8. *Drug Discovery Challenge* (12 November | Talk | Individual)
+  - Clearly separated mock/sample indicators from confirmed schedules.
+- **Stationary Filter Panel & Independent Scrolling (`components/events/EventsExplorer.tsx`)**:
+  - Integrated `EventsTitleRolling` (`components/events/EventsTitleRolling.tsx`) matching the 2-cycle 3D rolling text reveal from `ContactTitleRolling` (`CONTACT US`) for the `EVENTS` headline.
+  - Left filter panel stays stationary while only the right event listing scrolls vertically (`overflow-y-auto` with slim themed scrollbar).
+  - Multi-criteria filtering:
+    - **Date**: 10 November, 11 November, 12 November.
+    - **Category**: Workshop, Competition, Talk.
+    - **Flagship only**: Functional custom toggle checkbox.
+    - **Clear Filters**: Orange-red outlined action button resetting all active filters.
+  - Responsive layout: 2-column desktop grid collapsing gracefully to single-column on mobile/tablet without breaking layout.
+- **Event Card Design (`components/events/EventCard.tsx`)**:
+  - Replicated screenshot appearance: dark charcoal card (`bg-[#0c0d13]`), left mock block (`XX / MOCK` in bold orange-red `#FF6A00`), condensed display title, muted description, venue/time metadata with highlighted orange-red date, category badge, and flagship status.
+- **Active Navigation Highlighting (`components/navbar/Navbar.tsx`)**:
+  - Integrated `usePathname()` so `Events` is highlighted in `#FF6A00` across desktop and mobile menus when visiting `/events`.
+- **Verification**:
+  - Verified static compilation & SSR build (`next build`) passing with zero errors.
+  - Verified catalog filtering logic across dates, categories, and flagship states.
+
+**Files Changed / Added**
+- `app/events/page.tsx` (created)
+- `lib/data/eventsCatalog.ts` (created)
+- `components/events/EventsExplorer.tsx` (created)
+- `components/events/EventsTitleRolling.tsx` (created)
+- `components/events/EventCard.tsx` (created)
+- `components/navbar/Navbar.tsx` (updated active route highlight)
+- `README.md` (updated activity log)
+
 ### 2026-10-11 — Implemented Barba.js Horizontal Stage Slide Page Transitions
 
 **Done**

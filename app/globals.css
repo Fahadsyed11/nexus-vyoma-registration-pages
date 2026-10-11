@@ -125,9 +125,11 @@
   body {
     @apply text-foreground;
     background-color: transparent;
+    overflow-x: clip;
   }
   html {
     @apply font-sans;
     background-color: #000000;
+    overflow-x: clip;
   }
 }

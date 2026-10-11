@@ -18,9 +18,11 @@ export default function Template({ children }: { children: React.ReactNode }) {
       const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (isReduced) return;
 
-      // Synchronized horizontal stage arrival for dynamic page content
+      // Synchronized horizontal stage arrival for dynamic page content (targets main so fixed navbar stays rock-solid)
+      const target = containerRef.current.querySelector('main') || containerRef.current;
+
       gsap.fromTo(
-        containerRef.current,
+        target,
         { x: 30, opacity: 0.92 },
         {
           x: 0,
