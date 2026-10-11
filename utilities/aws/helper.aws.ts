@@ -53,7 +53,7 @@ export async function uploadImageToS3(file: Buffer, extension: string, contentTy
 }
 
 export async function sendEmailWithSES(to: string, subject: string, html: string, text?: string) {
-    const from = "no-reply@islec.edu.in";
+    const from = '"Team Nexus Vyoma" <no-reply@islec.edu.in>';
 
     try {
         const response = await sesClient.send(
@@ -80,6 +80,8 @@ export async function sendEmailWithSES(to: string, subject: string, html: string
                 },
             }),
         )
+
+        console.log("Email sent successfully. Message ID:", response.MessageId);
 
         return {
             success: true,
