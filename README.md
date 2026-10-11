@@ -43,6 +43,33 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-11 — Implemented Barba.js Horizontal Stage Slide Page Transitions
+
+**Done**
+- **Horizontal Stage Slider (`components/transitions/HorizontalStageTransition.tsx`)**:
+  - Implemented the Barba.js `slide-horizontal` pattern using GSAP:
+    - **Leave phase**: Dark obsidian glass stage with orange-crimson leading edge glow sweeps across from right to left (`xPercent: 100` → `0`, `ease: 'power3.inOut'`).
+    - **Enter phase**: Stage slides smoothly off-screen to the left (`xPercent: 0` → `-100`, `ease: 'power3.inOut'`), resetting for subsequent navigations.
+  - Global link click interceptor with strict event propagation stopping (`e.stopPropagation()` & `e.stopImmediatePropagation()`), guaranteeing the transition stage sweeps in and fully covers the viewport BEFORE Next.js routes to the new page.
+  - Synchronized parallel enter reveal: the transition stage and incoming page content glide simultaneously (`ease: 'power3.out'`) without content flashing beforehand.
+- **Synchronized Route Content Entrance (`app/template.tsx`)**:
+  - Added Next.js App Router template coordinating content horizontal arrival (`x: 30` → `0`, `opacity: 0.92` → `1`) upon route switch.
+- **Root Layout & Navigation Integration**:
+  - Mounted `HorizontalStageTransition` in `app/layout.tsx`.
+  - Wrapped `SpecularButton` in `components/navbar/Navbar.tsx` and `components/hero/HeroNavbarTransition.tsx` with `<Link href="/register">` to participate in seamless page transitions.
+- **Accessibility**:
+  - Honors `prefers-reduced-motion` to bypass transition animations.
+  - Validated type safety (`npx tsc --noEmit` exited 0).
+
+### 2026-10-11 — Resolved Browser Extension Hydration Warning on RootLayout
+
+**Done**
+- **Hydration Fix (`app/layout.tsx`)**:
+  - Added `suppressHydrationWarning` to `<html>` and `<body>` to prevent React hydration mismatch warnings caused by browser extensions (such as Grammarly injecting `data-new-gr-c-s-check-loaded` and `data-gr-ext-installed`).
+- **Dependencies & Build**:
+  - Installed pulled dependencies (`@aws-sdk/client-s3`, `@aws-sdk/client-ses`, `jsonwebtoken`).
+  - Validated clean TypeScript check (`npx tsc --noEmit` exited 0).
+
 ### 2026-10-11 — Implemented Official `/contact` Page
 
 **Done**

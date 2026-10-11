@@ -51,6 +51,8 @@ export const metadata: Metadata = {
   },
 };
 
+import HorizontalStageTransition from "@/components/transitions/HorizontalStageTransition";
+
 export default function RootLayout({
   children,
 }: {
@@ -60,8 +62,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${anton.variable} ${spaceGrotesk.variable} ${barlowCondensed.variable} dark h-full antialiased bg-black text-white`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col font-sans bg-transparent text-[#FFFFFF] selection:bg-[#FF6A00] selection:text-white">
+      <body
+        className="min-h-full flex flex-col font-sans bg-transparent text-[#FFFFFF] selection:bg-[#FF6A00] selection:text-white"
+        suppressHydrationWarning  
+      >
+        <HorizontalStageTransition />
         <DualBackground />
         {children}
       </body>

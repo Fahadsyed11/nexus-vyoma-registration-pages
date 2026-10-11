@@ -195,41 +195,42 @@ export default function Navbar({ alwaysVisible = false }: NavbarProps = {}) {
 
         {/* RIGHT: SpecularButton CTA Action */}
         <div className="flex items-center gap-2.5 sm:gap-3 z-10 flex-shrink-0">
-          <SpecularButton
-            size="sm"
-            radius={999}
-            tint="#ffffff"
-            tintOpacity={0.06}
-            blur={10}
-            textColor="#ffffff"
-            lineColor="#ffffff"
-            baseColor="#3a3a4c"
-            intensity={1.2}
-            shineSize={14}
-            shineFade={40}
-            thickness={1.1}
-            speed={0.35}
-            followMouse
-            proximity={220}
-            autoAnimate={false}
-            onClick={() => router.push('/register')}
-            className="!font-sans !text-[10px] xs:!text-[11px] sm:!text-xs !font-black !tracking-wider uppercase !py-2 !px-3.5 sm:!px-5 !rounded-full select-none"
-          >
-            <span>CLAIM YOUR PASS</span>
-            <svg
-              className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/90 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
+          <Link href="/register" className="inline-flex">
+            <SpecularButton
+              size="sm"
+              radius={999}
+              tint="#ffffff"
+              tintOpacity={0.06}
+              blur={10}
+              textColor="#ffffff"
+              lineColor="#ffffff"
+              baseColor="#3a3a4c"
+              intensity={1.2}
+              shineSize={14}
+              shineFade={40}
+              thickness={1.1}
+              speed={0.35}
+              followMouse
+              proximity={220}
+              autoAnimate={false}
+              className="!font-sans !text-[10px] xs:!text-[11px] sm:!text-xs !font-black !tracking-wider uppercase !py-2 !px-3.5 sm:!px-5 !rounded-full select-none cursor-pointer"
             >
-              <path d="M7 17L17 7" />
-              <path d="M7 7h10v10" />
-            </svg>
-          </SpecularButton>
+              <span>CLAIM YOUR PASS</span>
+              <svg
+                className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white/90 flex-shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M7 17L17 7" />
+                <path d="M7 7h10v10" />
+              </svg>
+            </SpecularButton>
+          </Link>
 
           {/* Mobile Menu Toggle */}
           <button
