@@ -13,21 +13,45 @@ export async function POST(request: NextRequest) {
         // Add DTO validation Here
         const body = await request.formData();
 
-        const {
-            full_name,
-            email,
-            phone_number,
-            state,
-            city,
-            degree,
-            institution,
-            year_of_study } = destructureSumbitBody(body);
+        const { data, issues, success: isValid } = destructureSumbitBody(body);
+
+        if (!isValid) {
+            return NextResponse.json({
+                message: "Invalid form data",
+                data: null,
+                error: issues,
+                redirect: false,
+                redirectUrl: null
+            }, { status: 400 })
+        } else if (!data) {
+            return NextResponse.json({
+                message: "No data provided",
+                data: null,
+                error: "No data provided",
+                redirect: false,
+                redirectUrl: null
+            }, { status: 400 })
+        }
+
+        const { city, state, full_name, email, phone_number, institution, degree, year_of_study } = data;
 
         // Check if the image is present and is a File
         const image = body.get("image");
-        if (!(image instanceof File)) {
-            throw new Error("Image is required");
+        if (!(image instanceof File) || image.size === 0) {
+            return NextResponse.json(
+                { message: "A valid image is required" },
+                { status: 400 }
+            );
         }
+
+        const maxSize = 20 * 1024 * 1024; // 20 MB
+        if (image.size > maxSize) {
+            return NextResponse.json(
+                { message: "Image must be 20 MB or smaller" },
+                { status: 400 }
+            );
+        }
+
         const extension = path.extname(image.name).toLowerCase().replace(".", "");
 
         const buffer = Buffer.from(await image.arrayBuffer());
@@ -42,7 +66,7 @@ export async function POST(request: NextRequest) {
                 data: null,
                 error: null,
                 redirect: true,
-                redirectUrl: `/check-email?email=${email}`
+                redirectUrl: `/register/check-email?email=${email}`
             }, { status: 400 })
         }
 
@@ -84,7 +108,7 @@ export async function POST(request: NextRequest) {
             data: createUser,
             error: null,
             redirect: true,
-            redirectUrl: `/check-email?email=${email}`
+            redirectUrl: `/register/check-email?email=${email}`
         }, { status: 201 });
 
 
