@@ -20,12 +20,17 @@ export default function DualBackground({
     <div
       style={{
         position: 'fixed',
-        inset: 0,
+        top: 0,
+        left: 0,
+        right: 0,
         width: '100vw',
-        height: '100vh',
-        zIndex: -10,
+        height: '55vh',
+        maxHeight: '55vh',
+        zIndex: -9,
         overflow: 'hidden',
         pointerEvents: 'none',
+        maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
+        WebkitMaskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)',
         ...style,
       }}
       className={className}
@@ -39,13 +44,13 @@ export default function DualBackground({
             zIndex: 1,
             pointerEvents: 'none',
           }}
-          className="opacity-40 sm:opacity-100 transition-opacity duration-300"
+          className="opacity-25 sm:opacity-40 transition-opacity duration-300"
         >
           <Aurora
             colorStops={['#3c0fef', '#f51414', '#ffb127']}
-            amplitude={1}
+            amplitude={0.8}
             blend={0.5}
-            speed={1}
+            speed={0.8}
           />
         </div>
       </div>

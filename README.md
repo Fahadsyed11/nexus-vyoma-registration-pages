@@ -43,6 +43,54 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-11 — Implemented Official `/contact` Page
+
+**Done**
+- **SSR Contact Page Route (`app/contact/page.tsx`)**:
+  - Implemented Server Component page with complete SEO metadata, OpenGraph tags, and pure black background.
+  - Reused existing shared Home page components: fixed mirror-glass `Navbar` and cinematic text-stroke `FooterSection`.
+- **Reusable Navbar (`components/navbar/Navbar.tsx`)**:
+  - Added optional `alwaysVisible?: boolean` prop that keeps the navbar firmly in its resting position without disappearance or position jumps when redirecting to `/contact`.
+  - Added subtle GSAP color & ambient rim glow transition (`borderColor` and ambient shadow from warm brand glow to dark mirror glass over 0.65s) for a smooth and seamless feel.
+  - Integrated footer `ScrollTrigger` identical to the Home page so the navbar glides out seamlessly when approaching `#footer` and returns upon scrolling back up.
+- **GSAP Rolling-Text Title Reveal (`components/contact/ContactTitleRolling.tsx`)**:
+  - Built opening vertical rolling-text reveal for `CONTACT US` title using `@gsap/react` `useGSAP` with a 2-cycle roll sequence at consistent speed before permanently locking into place.
+  - Added `prefers-reduced-motion` compliance, 3D perspective depth, character-level overflow clipping, and automatic unmount cleanup.
+- **Contact Layout & Form (`components/contact/ContactSection.tsx`)**:
+  - Created 2-column container with dark translucent interior and subtle border, optimized width to `max-w-[97vw] xl:max-w-[1440px] 2xl:max-w-[1600px]` and reduced outer margins (`px-2.5 sm:px-4 md:px-6`), tightened top spacing below the navbar (`pt-20 sm:pt-24`), and aligned the bottom of the Instagram card precisely with the bottom of the Message box.
+  - Left column: Large `CONTACT US` title, interactive `EMAIL` card (`mailto:nexusvyoma@islec.edu.in`) with Lucide envelope icon, and `INSTAGRAM` card (`@nexusvyoma`) with external arrow.
+  - Right column: Accessible contact form with `NAME`, side-by-side `EMAIL` & `PH NO`, `MESSAGE` multiline textarea, truthful delivery status notice (`Message delivery is not configured yet.`), and orange-to-red gradient `SUBMIT` button.
+  - Implemented client-side validation for form fields.
+
+### 2026-10-10 — Created and Integrated Circular Brand Favicon
+
+**Done**
+- **Circular Favicon Asset Creation**:
+  - Cropped and rendered the uploaded Nexus Vyoma emblem with a high-resolution anti-aliased circular alpha mask.
+  - Generated `app/icon.png` (512x512), `public/favicon.png`, `public/apple-touch-icon.png`, and multi-size `public/favicon.ico`.
+- **Metadata Integration (`app/layout.tsx`)**:
+  - Added `icons` configuration to Next.js metadata supporting standard icon, PNG favicon, and Apple touch icon.
+
+### 2026-10-10 — Static Fixed Background Gradient across All Sections (35% Height)
+
+**Done**
+- **Static Global Ambient Gradient**:
+  - Configured static `fixed` background gradient covering the top `35vh` (35% height) of the viewport across all sections.
+  - Applied a refined vertical fade mask (`maskImage: 'linear-gradient(to bottom, black 50%, transparent 100%)'`) for smooth transition into the deep obsidian theme.
+  - Updated both [`components/ui/DualBackground.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/DualBackground.tsx) and [`components/ui/GradientWaveMesh.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/GradientWaveMesh.tsx).
+
+### 2026-10-10 — Enabled Full Mobile Flying Logo & Navbar Transition
+
+**Done**
+- **Unified Responsive Flying Logo**:
+  - Enabled continuous `floatingLogoRef` actor on mobile viewports (< 768px).
+  - Removed duplicate static mobile hero image and set navbar destination logo slot to `opacity-0`.
+  - Added `opacity-0` base state to navbar capsule to eliminate initial top overlap before scroll.
+- **GSAP Mobile Scroll Integration (`HeroNavbarTransition.tsx`)**:
+  - Implemented responsive coordinate and scale ratio calculation (`deltaX`, `deltaY`, `scaleRatio`) for mobile screen widths (360px - 767px).
+  - Configured synchronized ScrollTrigger scrub timeline: the logo glides smoothly up into the navbar slot while the mirror-glass capsule materializes with soft ease.
+  - Preserved 100% of desktop (`>= 768px`) timeline and cursor color reveal mask.
+
 ### 2026-10-09 — Refined Navbar Background Blur
 
 **Done**

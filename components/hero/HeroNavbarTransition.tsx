@@ -304,30 +304,132 @@ export default function HeroNavbarTransition() {
         });
 
         // -------------------------------------------------------------------------
-        // MOBILE (< 768px): Clean, Glitch-Free Natural Scroll & Smooth Navbar Fade
+        // MOBILE (< 768px): Smooth Responsive Flying Logo & Synchronized Navbar Materialization
         // -------------------------------------------------------------------------
         mm.add('(max-width: 767px)', () => {
-          gsap.set(floatingLogoRef.current, { display: 'none' });
-          gsap.set(navCapsuleRef.current, { opacity: 0, y: -15, scale: 0.98, pointerEvents: 'none' });
+          gsap.set(navCapsuleRef.current, { clearProps: 'all' });
+          gsap.set(floatingLogoRef.current, { clearProps: 'all' });
+
+          const currentScrollY = window.scrollY || window.pageYOffset || 0;
+          const currentScrollX = window.scrollX || window.pageXOffset || 0;
+
+          const heroRect = heroLogoAnchorRef.current!.getBoundingClientRect();
+          const navRect = navLogoSlotRef.current!.getBoundingClientRect();
+
+          const startWidth = heroRect.width;
+          const startHeight = heroRect.height;
+          const startLeft = heroRect.left + currentScrollX;
+          const startTop = heroRect.top + currentScrollY;
+
+          const endHeight = navRect.height;
+          const endLeft = navRect.left;
+          const endTop = navRect.top;
+
+          const scaleRatio = endHeight / startHeight;
+          const deltaX = endLeft - startLeft;
+          const deltaY = endTop - startTop;
+
+          // Position floating logo over Hero anchor at scroll = 0
+          gsap.set(floatingLogoRef.current, {
+            position: 'fixed',
+            top: startTop,
+            left: startLeft,
+            width: startWidth,
+            height: startHeight,
+            transformOrigin: 'top left',
+            x: 0,
+            y: 0,
+            scale: 1,
+            opacity: 1,
+            visibility: 'visible',
+            zIndex: 60,
+          });
+
+          // Initial state of navbar capsule: hidden
+          gsap.set(navCapsuleRef.current, {
+            opacity: 0,
+            y: -15,
+            scale: 0.96,
+            pointerEvents: 'none',
+          });
 
           const mobileTl = gsap.timeline({
             scrollTrigger: {
               trigger: heroContainerRef.current,
               start: 'top top',
-              end: 'bottom 40%',
-              scrub: 0.5,
+              end: 'bottom 25%',
+              scrub: 0.8,
               invalidateOnRefresh: true,
             },
           });
 
-          mobileTl.to(navCapsuleRef.current, {
-            opacity: 1,
-            y: 0,
-            scale: 1,
-            pointerEvents: 'auto',
-            ease: 'power2.out',
-            duration: 1,
-          });
+          // Continuous smooth trajectory for the logo
+          mobileTl.to(
+            floatingLogoRef.current,
+            {
+              x: deltaX,
+              y: deltaY,
+              scale: scaleRatio,
+              ease: 'power2.inOut',
+              duration: 1,
+            },
+            0
+          );
+
+          if (backShadowRef.current) {
+            mobileTl.to(
+              backShadowRef.current,
+              {
+                opacity: 0,
+                duration: 0.25,
+                ease: 'power1.out',
+              },
+              0
+            );
+          }
+
+          if (whiteLayerRef.current) {
+            mobileTl.to(
+              whiteLayerRef.current,
+              {
+                opacity: 0,
+                duration: 0.35,
+                ease: 'power1.inOut',
+              },
+              0
+            );
+          }
+
+          if (scrollSolidRef.current) {
+            mobileTl.to(
+              scrollSolidRef.current,
+              {
+                opacity: 1,
+                duration: 0.35,
+                ease: 'power1.inOut',
+              },
+              0
+            );
+          }
+
+          mobileTl.fromTo(
+            navCapsuleRef.current,
+            {
+              opacity: 0,
+              y: -15,
+              scale: 0.96,
+              pointerEvents: 'none',
+            },
+            {
+              opacity: 1,
+              y: 0,
+              scale: 1,
+              pointerEvents: 'auto',
+              ease: 'power2.out',
+              duration: 0.55,
+            },
+            0.4
+          );
 
           const footerEl = document.getElementById('footer');
           if (footerEl) {
@@ -344,6 +446,13 @@ export default function HeroNavbarTransition() {
                   ease: 'power2.in',
                   overwrite: 'auto',
                 });
+                gsap.to(floatingLogoRef.current, {
+                  opacity: 0,
+                  y: deltaY - 20,
+                  duration: 0.3,
+                  ease: 'power2.in',
+                  overwrite: 'auto',
+                });
               },
               onLeaveBack: () => {
                 const heroBottom = heroContainerRef.current?.getBoundingClientRect().bottom || 0;
@@ -352,6 +461,14 @@ export default function HeroNavbarTransition() {
                     opacity: 1,
                     y: 0,
                     pointerEvents: 'auto',
+                    duration: 0.3,
+                    ease: 'power2.out',
+                    overwrite: 'auto',
+                  });
+                  gsap.to(floatingLogoRef.current, {
+                    opacity: 1,
+                    y: deltaY,
+                    scale: scaleRatio,
                     duration: 0.3,
                     ease: 'power2.out',
                     overwrite: 'auto',
@@ -408,7 +525,7 @@ export default function HeroNavbarTransition() {
         <div
           ref={navCapsuleRef}
           aria-label="Main Navigation"
-          className="w-full max-w-4xl rounded-full relative flex items-center justify-between px-5 sm:px-7 py-2.5 sm:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)]"
+          className="w-full max-w-4xl rounded-full relative flex items-center justify-between px-5 sm:px-7 py-2.5 sm:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)] opacity-0"
           style={{
             backgroundColor: 'rgba(6, 8, 16, 0.30)',
             backdropFilter: 'blur(16px) saturate(180%)',
@@ -436,13 +553,13 @@ export default function HeroNavbarTransition() {
               ref={navLogoSlotRef}
               className="flex items-center relative"
             >
-              {/* Target bounding box / Navbar logo (visible on mobile naturally; on desktop docked by flying logo) */}
+              {/* Target bounding box / Navbar logo (docked by flying logo on all viewports) */}
               <Image
                 src="/brand/nexus-wordmark-official.png"
                 alt="Nexus Vyoma Logo Slot"
                 width={140}
                 height={32}
-                className="h-5 sm:h-6 w-auto object-contain opacity-100 md:opacity-0 select-none"
+                className="h-5 sm:h-6 w-auto object-contain opacity-0 select-none"
                 priority
               />
             </div>
@@ -561,7 +678,7 @@ export default function HeroNavbarTransition() {
         onPointerMove={handlePointerMove}
         onPointerEnter={handlePointerEnter}
         onPointerLeave={handlePointerLeave}
-        className="hidden md:flex fixed z-50 items-center justify-center pointer-events-auto select-none will-change-transform cursor-crosshair"
+        className="flex fixed z-50 items-center justify-center pointer-events-auto select-none will-change-transform cursor-crosshair"
       >
         {/* Ambient Dark Back Shadow Elevation (Elevates text above moving tiles in Hero) */}
         <div
@@ -675,26 +792,7 @@ export default function HeroNavbarTransition() {
         <div
           ref={heroLogoAnchorRef}
           className="w-[85vw] max-w-[280px] xs:max-w-[340px] sm:max-w-[480px] md:max-w-[620px] lg:max-w-[760px] aspect-[1024/341] flex items-center justify-center relative z-10 pointer-events-none"
-        >
-          {/* On mobile (< md), render the solid white logo and back shadow directly in the Hero */}
-          <div className="md:hidden relative w-full h-full flex items-center justify-center">
-            <div
-              className="absolute inset-x-[-8%] inset-y-[-18%] rounded-full opacity-85 blur-2xl pointer-events-none -z-10"
-              style={{
-                background:
-                  'radial-gradient(ellipse at center, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.75) 45%, rgba(0, 0, 0, 0.35) 70%, transparent 100%)',
-              }}
-            />
-            <Image
-              src="/brand/nexus-wordmark-white.png"
-              alt="Nexus Vyoma Logo"
-              width={1024}
-              height={341}
-              priority
-              className="w-full h-full object-contain select-none filter drop-shadow-[0_4px_12px_rgba(0,0,0,1)] drop-shadow-[0_16px_35px_rgba(0,0,0,0.95)] drop-shadow-[0_0_2px_rgba(0,0,0,1)]"
-            />
-          </div>
-        </div>
+        />
       </section>
     </div>
   );
