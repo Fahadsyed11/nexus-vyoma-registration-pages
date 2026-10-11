@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { s3Client, sesClient, SendEmailCommand, PutObjectCommand } from "./client"
 
 
-export async function uploadImageToS3(file: Buffer, extension: string, contentType: string) {
+export async function uploadImageToS3(file: Buffer, extension: string, contentType: string, cloud_folder = "profile") {
     const allowedTypes: Record<string, string> = {
         "image/jpeg": "jpg",
         "image/png": "png",
@@ -21,7 +21,7 @@ export async function uploadImageToS3(file: Buffer, extension: string, contentTy
     }
 
     const fileName = `${randomUUID()}.${extension.toLowerCase()}`;
-    const key = `profile/${fileName}`;
+    const key = `${cloud_folder}/${fileName}`;
     console.log({ key })
 
     try {
