@@ -43,6 +43,25 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-11 — Implemented Official `/contact` Page
+
+**Done**
+- **SSR Contact Page Route (`app/contact/page.tsx`)**:
+  - Implemented Server Component page with complete SEO metadata, OpenGraph tags, and pure black background.
+  - Reused existing shared Home page components: fixed mirror-glass `Navbar` and cinematic text-stroke `FooterSection`.
+- **Reusable Navbar (`components/navbar/Navbar.tsx`)**:
+  - Added optional `alwaysVisible?: boolean` prop that keeps the navbar firmly in its resting position without disappearance or position jumps when redirecting to `/contact`.
+  - Added subtle GSAP color & ambient rim glow transition (`borderColor` and ambient shadow from warm brand glow to dark mirror glass over 0.65s) for a smooth and seamless feel.
+  - Integrated footer `ScrollTrigger` identical to the Home page so the navbar glides out seamlessly when approaching `#footer` and returns upon scrolling back up.
+- **GSAP Rolling-Text Title Reveal (`components/contact/ContactTitleRolling.tsx`)**:
+  - Built opening vertical rolling-text reveal for `CONTACT US` title using `@gsap/react` `useGSAP` with a 2-cycle roll sequence at consistent speed before permanently locking into place.
+  - Added `prefers-reduced-motion` compliance, 3D perspective depth, character-level overflow clipping, and automatic unmount cleanup.
+- **Contact Layout & Form (`components/contact/ContactSection.tsx`)**:
+  - Created 2-column container with dark translucent interior and subtle border, optimized width to `max-w-[97vw] xl:max-w-[1440px] 2xl:max-w-[1600px]` and reduced outer margins (`px-2.5 sm:px-4 md:px-6`), tightened top spacing below the navbar (`pt-20 sm:pt-24`), and aligned the bottom of the Instagram card precisely with the bottom of the Message box.
+  - Left column: Large `CONTACT US` title, interactive `EMAIL` card (`mailto:nexusvyoma@islec.edu.in`) with Lucide envelope icon, and `INSTAGRAM` card (`@nexusvyoma`) with external arrow.
+  - Right column: Accessible contact form with `NAME`, side-by-side `EMAIL` & `PH NO`, `MESSAGE` multiline textarea, truthful delivery status notice (`Message delivery is not configured yet.`), and orange-to-red gradient `SUBMIT` button.
+  - Implemented client-side validation for form fields.
+
 ### 2026-10-10 — Created and Integrated Circular Brand Favicon
 
 **Done**

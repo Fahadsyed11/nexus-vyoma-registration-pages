@@ -13,7 +13,11 @@ if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
 
-export default function Navbar() {
+interface NavbarProps {
+  alwaysVisible?: boolean;
+}
+
+export default function Navbar({ alwaysVisible = false }: NavbarProps = {}) {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navContainerRef = useRef<HTMLDivElement>(null);
@@ -25,8 +29,66 @@ export default function Navbar() {
 
       const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      if (isReducedMotion) {
-        gsap.set(navCapsuleRef.current, { opacity: 1, y: 0, scale: 1, pointerEvents: 'auto' });
+      if (alwaysVisible) {
+        // Keep navbar firmly in place without jumping or vanishing during page navigation
+        gsap.set(navCapsuleRef.current, {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          pointerEvents: 'auto',
+        });
+
+        // Smooth seamless color & sheen transition from Home page atmosphere to Contact page
+        if (!isReducedMotion) {
+          gsap.fromTo(
+            navCapsuleRef.current,
+            {
+              borderColor: 'rgba(255, 106, 0, 0.4)',
+              boxShadow:
+                '0 25px 60px -12px rgba(255, 106, 0, 0.18), 0 0 24px 2px rgba(255, 106, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.35)',
+            },
+            {
+              borderColor: 'rgba(255, 255, 255, 0.14)',
+              boxShadow:
+                '0 25px 60px -12px rgba(0, 0, 0, 0.95), 0 10px 25px -5px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
+              duration: 0.65,
+              ease: 'power2.out',
+              clearProps: 'borderColor,boxShadow',
+            }
+          );
+        }
+
+        // Dissolve / glide out before the footer, identical to Home page
+        const footerEl = document.getElementById('footer');
+        if (footerEl) {
+          ScrollTrigger.create({
+            trigger: footerEl,
+            start: 'top 85%',
+            end: 'bottom bottom',
+            onEnter: () => {
+              gsap.to(navCapsuleRef.current, {
+                opacity: 0,
+                y: -25,
+                scale: 0.96,
+                pointerEvents: 'none',
+                duration: 0.4,
+                ease: 'power2.in',
+                overwrite: 'auto',
+              });
+            },
+            onLeaveBack: () => {
+              gsap.to(navCapsuleRef.current, {
+                opacity: 1,
+                y: 0,
+                scale: 1,
+                pointerEvents: 'auto',
+                duration: 0.4,
+                ease: 'power2.out',
+                overwrite: 'auto',
+              });
+            },
+          });
+        }
         return;
       }
 
