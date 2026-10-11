@@ -1,5 +1,5 @@
 import { RegisterUserFormInput, registerUserFormDto } from "@/dto/(register)/register-user.dto";
-import { validateRegisterDto } from "@/dto/validate.dto-helper";
+import { validateDto } from "@/dto/validate.dto-helper";
 
 // use DTO types here
 export function destructureSumbitBody(body: FormData) {
@@ -14,7 +14,7 @@ export function destructureSumbitBody(body: FormData) {
         degree: body.get("degree") as string,
     }
 
-    const {data, issues, success} = validateRegisterDto(registerUserFormDto, rawData);
+    const {data, issues, success} = validateDto(registerUserFormDto, rawData);
 
     return {
         data,
