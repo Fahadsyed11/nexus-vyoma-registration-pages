@@ -6,19 +6,34 @@ import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
 import { sendWelcomeEmail } from "@/utilities/emails/welcome-qr";
 import { signJWT } from "@/utilities/jwt";
+import { validateDto } from "@/dto/validate.dto-helper";
+import { verifyUserEmailDto } from "@/dto/(register)/verify-email.dto";
 
 export async function POST(request: NextRequest) {
     try {
         // Add DTO validation Here
         const body = await request.json();
-        const { otp, email } = body;
+
+        const { success, data, issues } = validateDto(verifyUserEmailDto, body);
+
+        if (!success || !data) {
+            return NextResponse.json({
+                message: "Invalid request body",
+                data: null,
+                error: issues,
+                redirect: false,
+                redirect_url: null
+            }, { status: 400 });
+        }
+
+        const { otp, email } = data;
 
         await connectToDatabase();
 
-        const otpRecord = await OtpVerification.findOne({ email, otp });
+        const otpRecord = await OtpVerification.findOne({ email, otp }).sort({ time: -1 });
         const currentTime = new Date();
 
-        if (!otpRecord) {
+        if (!otpRecord || otpRecord.is_verified || otpRecord.otp !== otp) {
             return NextResponse.json({
                 message: "Invalid OTP",
                 data: null,
@@ -50,15 +65,19 @@ export async function POST(request: NextRequest) {
             }, { status: 404 });
         }
 
+        otpRecord.is_verified = true;
+        await otpRecord.save();
+
         // If user verifies for first time, send him the welcome email
-        if (user && user.isverified === false) {
-            user.isverified = true;
+        if (user && user.is_verified === false) {
+            user.is_verified = true;
             await user.save();
 
-            await sendWelcomeEmail(user.email, user.full_name);
+
+
+            await sendWelcomeEmail(user._id, user.email, user.full_name);
         }
 
-        await OtpVerification.deleteOne({ email, otp });
 
         // set the cookie for the user session for 2 hours
         const cookieStore = await cookies();

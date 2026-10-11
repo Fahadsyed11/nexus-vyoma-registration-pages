@@ -8,9 +8,9 @@ const otpSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    attempt: {
-        type: Number,
-        default: 0,
+    is_verified: {
+        type: Boolean,
+        default: false,
     },
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
