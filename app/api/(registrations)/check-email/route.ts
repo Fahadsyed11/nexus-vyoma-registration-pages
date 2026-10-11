@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
 
         const otp = generateOtp();
 
-        await sendOTPEmail(user.email, user.full_name, otp);
+        await sendOTPEmail(user._id, user.email, user.full_name, otp);
 
         await OtpVerification.create({
             user_id: user._id,

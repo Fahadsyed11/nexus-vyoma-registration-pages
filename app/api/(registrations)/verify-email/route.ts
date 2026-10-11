@@ -74,7 +74,8 @@ export async function POST(request: NextRequest) {
             await user.save();
 
 
-            await sendWelcomeEmail(user.email, user.full_name);
+
+            await sendWelcomeEmail(user._id, user.email, user.full_name);
         }
 
 
