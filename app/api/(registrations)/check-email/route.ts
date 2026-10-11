@@ -60,7 +60,17 @@ export async function POST(request: NextRequest) {
 
         const otp = generateOtp();
 
-        await sendOTPEmail(user._id, user.email, user.full_name, otp);
+        const { success: emailSuccess, error } = await sendOTPEmail(user._id, user.email, user.full_name, otp);
+
+        if (!emailSuccess) {
+            return NextResponse.json({
+                message: "Failed to send OTP email",
+                data: null,
+                error: error,
+                redirect: false,
+                redirect_url: null
+            }, { status: 500 });
+        }
 
         await OtpVerification.create({
             user_id: user._id,
