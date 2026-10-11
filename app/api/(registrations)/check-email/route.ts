@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
 
         const otp = generateOtp();
 
+        console.log("Generated OTP:", otp, "for user:", user.email, "at time:", currentTime);
         const { success: emailSuccess, error } = await sendOTPEmail(user._id, user.email, user.full_name, otp);
 
         if (!emailSuccess) {
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
         await OtpVerification.create({
             user_id: user._id,
             email: user.email,
-            otp: String(otp),
+            code: String(otp),
             time: currentTime.getTime(),
         });
 
