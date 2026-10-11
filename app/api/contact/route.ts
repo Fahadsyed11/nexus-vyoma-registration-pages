@@ -22,8 +22,6 @@ export async function POST(request: NextRequest) {
         }
         await connectToDatabase();
 
-        // TODO: Add DTO Here
-
         const createContact = await Contact.create(data);
 
         if (!createContact) {
