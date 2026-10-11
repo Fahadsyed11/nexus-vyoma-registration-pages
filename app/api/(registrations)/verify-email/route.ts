@@ -30,10 +30,11 @@ export async function POST(request: NextRequest) {
 
         await connectToDatabase();
 
-        const otpRecord = await OtpVerification.findOne({ email, otp }).sort({ time: -1 });
+        const otpRecord = await OtpVerification.findOne({ email, code: otp });
         const currentTime = new Date();
 
-        if (!otpRecord || otpRecord.is_verified || otpRecord.otp !== otp) {
+        if (!otpRecord || otpRecord.is_verified || otpRecord.code !== otp) {
+
             return NextResponse.json({
                 message: "Invalid OTP",
                 data: null,
@@ -55,6 +56,8 @@ export async function POST(request: NextRequest) {
 
         const user = await RegisterUser.findOne({ email });
 
+        console.log("User found:", user, "for email:", email, "with otpRecord:", otpRecord)
+
         if (!user) {
             return NextResponse.json({
                 message: "User not found",
@@ -72,8 +75,6 @@ export async function POST(request: NextRequest) {
         if (user && user.is_verified === false) {
             user.is_verified = true;
             await user.save();
-
-
 
             await sendWelcomeEmail(user._id, user.email, user.full_name);
         }
