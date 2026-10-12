@@ -5,12 +5,26 @@ import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
 import { generateOtp } from "@/utilities/generate-otp";
 import { sendOTPEmail } from "@/utilities/emails/otp-qr";
+import { validateDto } from "@/dto/validate.dto-helper";
+import { checkUserEmailDto } from "@/dto/(register)/check-email.dto";
 
 export async function POST(request: NextRequest) {
     try {
-        // Add DTO validation Here
         const body = await request.json();
-        const { email } = body;
+
+        const { success, data, issues } = validateDto(checkUserEmailDto, body);
+
+        if (!success || !data) {
+            return NextResponse.json({
+                message: "Invalid request body",
+                data: null,
+                error: issues,
+                redirect: false,
+                redirect_url: null
+            }, { status: 400 });
+        }
+
+        const { email } = data;
 
         await connectToDatabase();
         const user = await RegisterUser.findOne({
@@ -27,12 +41,9 @@ export async function POST(request: NextRequest) {
             }, { status: 404 });
         }
 
-        // If user found, send him the OTP on email
-        // TODO: Implement email sending logic here
-
         const checkOtp = await OtpVerification.findOne({
             user_id: user._id
-        });
+        }).sort({ time: -1 });
 
         const currentTime = new Date();
 
@@ -49,12 +60,23 @@ export async function POST(request: NextRequest) {
 
         const otp = generateOtp();
 
-        await sendOTPEmail(user.email, user.full_name, otp);
+        console.log("Generated OTP:", otp, "for user:", user.email, "at time:", currentTime);
+        const { success: emailSuccess, error } = await sendOTPEmail(user._id, user.email, user.full_name, otp);
+
+        if (!emailSuccess) {
+            return NextResponse.json({
+                message: "Failed to send OTP email",
+                data: null,
+                error: error,
+                redirect: false,
+                redirect_url: null
+            }, { status: 500 });
+        }
 
         await OtpVerification.create({
             user_id: user._id,
             email: user.email,
-            otp: String(otp),
+            code: String(otp),
             time: currentTime.getTime(),
         });
 

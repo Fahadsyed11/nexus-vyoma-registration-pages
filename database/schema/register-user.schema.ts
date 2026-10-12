@@ -1,6 +1,13 @@
+import { RegisterUserFormInput } from "@/dto/(register)/register-user.dto";
 import mongoose from "mongoose";
 
-const registrationUserSchema = new mongoose.Schema({
+export interface RegisterUserModel
+    extends RegisterUserFormInput {
+    profile_image: string;
+    is_verified: boolean;
+}
+
+const registrationUserSchema = new mongoose.Schema<RegisterUserModel, RegisterUserFormInput>({
     // personal details
     full_name: {
         type: String,
@@ -51,7 +58,7 @@ const registrationUserSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    isVerified: {
+    is_verified: {
         type: Boolean,
         default: false
     }

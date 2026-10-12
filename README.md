@@ -344,6 +344,12 @@ Newest first.
 - **Dependencies & Build**:
   - Installed pulled dependencies (`@aws-sdk/client-s3`, `@aws-sdk/client-ses`, `jsonwebtoken`).
   - Validated clean TypeScript check (`npx tsc --noEmit` exited 0).
+### 2026-10-11 — Resolved PR Merge Conflict with `main`
+
+**Done**
+- Merged `origin/main` into `issue-11` using progressive shallow fetch/deepen strategy.
+- Resolved the only merge conflict in `app/favicon.ico` by accepting deletion from `main` to align with the current favicon asset setup.
+- Verified merge commit has both parents and ran available checks (`npm test`; `npm run lint` reports pre-existing lint issues not introduced by this merge).
 
 ### 2026-10-11 — Implemented Official `/contact` Page
 

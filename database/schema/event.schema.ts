@@ -57,10 +57,18 @@ const eventSchema = new mongoose.Schema({
     requirements: {
         type: [String],
         required: true
-    }
+    },
+    min_team_size: {
+        type: Number,
+        default: 1,
+        min: 1
+    },
+    max_team_size: {
+        type: Number,
+        default: 1,
+        min: 1
+    },
 }, { timestamps: true, overwriteModels: true });
-
-eventSchema.index({ email: 1 }, { unique: true });
 
 const Event = mongoose.models.Event || mongoose.model("Event", eventSchema);
 
