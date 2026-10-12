@@ -70,8 +70,6 @@ const eventSchema = new mongoose.Schema({
     },
 }, { timestamps: true, overwriteModels: true });
 
-eventSchema.index({ email: 1 }, { unique: true });
-
 const Event = mongoose.models.Event || mongoose.model("Event", eventSchema);
 
 export default Event;
