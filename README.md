@@ -43,6 +43,97 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-12 — Organizers Page: 9 Incoming Board Member Placeholders
+
+**Done**
+- **9 Incoming Board Member Slots (`lib/data/organizersData.ts`, `components/organizers/OrganizersSection.tsx`)**:
+  - Expanded the Board Members section to exactly 9 slots (`board-01` through `board-09`), labeled `Profile 05` through `Profile 13` as incoming members.
+  - Omitted image and social link references so all 9 slots render with the approved high-fidelity monochrome editorial silhouette mask in compliance with Rule 6.
+  - Adjusted container to `max-w-3xl mx-auto` with balanced responsive gap rhythm, creating a symmetrical 3×3 matrix across tablet & desktop.
+  - Updated sequential numbering for Tech Team (`Profile 14`–`17`) and Coordinators (`Profile 18`+).
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK on `/organizers`.
+
+### 2026-10-12 — Organizers Page: Uniform Image Dimensions & Geolocation Metadata Header
+
+**Done**
+- **Uniform Image Dimensions (`components/organizers/OrganizerProfile.tsx`, `lib/data/organizersData.ts`)**:
+  - Standardized circular portrait dimensions across all organizer levels (Patrons, Co-Patrons, Board Members, Tech Team, Coordinators) to uniform `w-24 h-24 xs:w-26 xs:h-26 sm:w-28 sm:h-28 md:w-30 md:h-30` (96px to 120px) with identical container metrics (`w-26 xs:w-28 sm:w-32 md:w-34`).
+  - Standardized section config size to `size: 'md'` across all groups in `organizersData.ts`.
+- **Editorial Header & Geolocation Metadata (`components/organizers/OrganizersView.tsx`)**:
+  - Matched the exact reference layout below the rolling `THE ORGANIZERS` title.
+  - Updated editorial description: *"Meet the minds, mentors, and teams bringing Nexus Vyoma to life."*
+  - Added precise festival geolocation and venue metadata line: `17.38405° N / 78.45636° E   —   ISL ENGINEERING COLLEGE, HYDERABAD` in monospace uppercase with clean em-dash divider.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`.
+
+### 2026-10-12 — Typography & Letter Spacing Parity: Events and Organizers Headings
+
+**Done**
+- **Heading Style & Tracking Parity (`components/events/EventsTitleRolling.tsx`, `components/organizers/OrganizersTitleRolling.tsx`)**:
+  - Matched the exact typography, scale (`text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl`), natural font weight (removed artificial `font-black`), and responsive letter tracking (`tracking-tight sm:tracking-normal`) of the signature `CONTACT US` heading ([ContactTitleRolling.tsx](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/contact/ContactTitleRolling.tsx)).
+  - Harmonized `EVENTS` on `/events` and `THE ORGANIZERS` on `/organizers` with identical Anton display font characteristics and clean poster kerning.
+  - Retained GSAP 2-cycle 3D rolling text reveal animations and `prefers-reduced-motion` fallbacks.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors. Verified HTTP 200 OK responses across `/events`, `/organizers`, and `/contact`.
+
+### 2026-10-12 — Organizers Page: Instagram & LinkedIn Redirect Options & Smooth 700ms Hover
+
+**Done**
+- **Member Social Action Links (`lib/data/organizersData.ts`, `components/organizers/OrganizerProfile.tsx`, `components/organizers/OrganizersSection.tsx`)**:
+  - Added Instagram and LinkedIn redirect options beneath each organizer's designation with minimalist SVG icons and accessible `aria-label` tags.
+  - Implemented secure external link attributes (`target="_blank" rel="noopener noreferrer"`) and smooth brand color hover transitions (`text-zinc-500` to `#FF6A00` for Instagram, `#0088FF` for LinkedIn).
+- **Slow & Buttery Smooth Hover Animation (`components/organizers/OrganizerProfile.tsx`)**:
+  - Increased image hover transition duration to `700ms ease-out` on the circular mask, outer ring, and B&W-to-color filter reveal (`[filter:grayscale(100%)]` -> `[filter:grayscale(0%)]`) for a slow, cinematic reveal.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`.
+
+### 2026-10-12 — Organizers Page: Defined Compact Gaps & Uniform Coordinator Dimensions
+
+**Done**
+- **Defined, Tighter Spacing (`components/organizers/OrganizersSection.tsx`, `components/organizers/OrganizersView.tsx`)**:
+  - Reduced section divider margins from `my-16` down to `my-6 sm:my-8`.
+  - Tightened section heading margins to `mb-4 sm:mb-6` and bottom credits to `mt-8 sm:mt-12 pt-6`.
+  - Compressed profile row and column gaps to defined `gap-x-4 sm:gap-x-6` and `gap-y-4 sm:gap-y-6`.
+- **Uniform Coordinator Dimensions (`lib/data/organizersData.ts`, `components/organizers/OrganizerProfile.tsx`, `components/organizers/OrganizersSection.tsx`)**:
+  - Upgraded Coordinators to `size: 'md'`, giving them the exact same portrait circle dimensions (`w-24 h-24 sm:w-28 sm:h-28 md:w-30 md:h-30`) as Board Members and Tech Team.
+  - Aligned Coordinators into a 4-column desktop layout (3-column tablet, 2-column mobile) with matching visual prominence.
+- **Hardware-Accelerated B&W to Color Hover Transition (`components/organizers/OrganizerProfile.tsx`)**:
+  - Implemented explicit `[filter:grayscale(100%)_contrast(1.05)_brightness(0.95)]` transitioning to `group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]` with smooth `500ms` easing and subtle outer ring glow.
+- **Title Rolling Font Parity (`components/organizers/OrganizersTitleRolling.tsx`)**:
+  - Switched `"THE ORGANIZERS"` to `font-[family-name:var(--font-display)]` with bold headline weights, identical to `Events` and `Contact` pages.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`.
+
+### 2026-10-12 — Organizers Page: Rolling Title Animation & B&W-to-Color Portrait Hover
+
+**Done**
+- **Rolling Title Reveal (`components/organizers/OrganizersTitleRolling.tsx`, `components/organizers/OrganizersView.tsx`)**:
+  - Implemented signature 2-cycle GSAP 3D rolling text reveal for `"THE ORGANIZERS"`, matching `EventsTitleRolling` and `ContactTitleRolling` with responsive condensed typography and `prefers-reduced-motion` compliance.
+- **Grayscale-to-Color Portrait Hover (`components/organizers/OrganizerProfile.tsx`, `lib/data/organizersData.ts`, `public/organizers/`)**:
+  - Sourced and placed 12 realistic full-color portrait photos in `public/organizers/` for natural, human editorial presentation without synthetic/AI-looking placeholder artifacts.
+  - Implemented smooth CSS filter transitions (`grayscale contrast-[1.08] brightness-[0.95]` by default → `group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100 group-hover:scale-105 duration-500`) with subtle outer ring glow on hover.
+- **Turbopack Dev Server Fix**:
+  - Removed corrupted 0-byte `app/favicon.ico` that caused Turbopack compilation crash (`failed to fill whole buffer`).
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`.
+
+### 2026-10-12 — The Organizers Page Implementation
+
+**Done**
+- **Data Collections (`lib/data/organizersData.ts`)**:
+  - Structured typed collections for Patrons (2), Co-Patrons (2), Board Members (7), Tech Team (4), and Coordinators (24), enabling dynamic profile rendering without markup changes.
+- **Reusable Components (`components/organizers/OrganizerProfile.tsx`, `components/organizers/OrganizersSection.tsx`, `components/organizers/OrganizersView.tsx`)**:
+  - `OrganizerProfile`: Circular portrait masks with thin outlines (`border-zinc-800`), responsive sizes (`lg`, `md`, `sm`), subtle hover scale/border transitions, and high-fidelity monochrome editorial silhouette placeholders strictly complying with Rule 6.
+  - `OrganizersSection`: Renders section index headers (`01 — PATRONS`, `02 — CO-PATRONS`, `03 — BOARD MEMBERS`, `04 — TECH TEAM`, `05 — COORDINATORS`) with low-contrast horizontal dividers and responsive wrapping grids (e.g. Board Members wrapping 4 + 3 centered).
+  - `OrganizersView`: Features the editorial intro (`THE PEOPLE BEHIND THE EXPERIENCE`, `THE ORGANIZERS`, and subtitle), 5 ordered sections, and festival credit notice.
+- **Server Page (`app/organizers/page.tsx`)**:
+  - Built SSR page with SEO/OpenGraph metadata, shared mirror-glass Navbar (`alwaysVisible`), and cinematic Footer.
+- **Routing & Navigation (`components/navbar/Navbar.tsx`, `components/hero/HeroNavbarTransition.tsx`)**:
+  - Standardized navbar links to `/organizers` for consistent active-state highlighting.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`, `/events`, and `/contact`.
+
 ### 2026-10-12 — Dev Server Fix: Partial Prefetching Suspense, Hydration & WebGL Guards
 
 **Done**

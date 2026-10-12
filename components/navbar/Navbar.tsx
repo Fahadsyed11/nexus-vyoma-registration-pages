@@ -138,7 +138,7 @@ export default function Navbar({ alwaysVisible = false }: NavbarProps = {}) {
   const navLinks = [
     { label: 'Home', href: '/' },
     { label: 'Events', href: '/events' },
-    { label: 'Organizers', href: '/Organizers' },
+    { label: 'Organizers', href: '/organizers' },
     { label: 'Contact', href: '/contact' },
   ];
 
