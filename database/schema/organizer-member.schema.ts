@@ -8,14 +8,13 @@ const organizerMemberSchema = new mongoose.Schema({
     role: {
         type: String,
         required: true,
-        enum: ["organizer", "co-organizer", "volunteer"]
+        enum: ["patrons", "co-patrons", "board-members", "tech-team", "coordinators"]
     },
     linkedin: {
         type: String,
     },
     instagram: {
         type: String,
-        required: true
     },
     profile_image: {
         type: String,
