@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
                 redirect: true,
                 redirect_url: "/enrollment-event"
             }, { status: 400 });
-        } else if (userToken && !tempToken) {
+        } else if (userToken && !tempToken || !userToken && tempToken) {
             cookieStore.delete("nv-session");
         }
 
