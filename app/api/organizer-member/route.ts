@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
         const role = body.get("role") as string;
         const linkedin = body.get("linkedin") as string;
         const instagram = body.get("instagram") as string;
+        const title = body.get("title") as string;
 
         const image = body.get("profile_picture") as File;
         if (!(image instanceof File) || image.size === 0) {
@@ -86,6 +87,7 @@ export async function POST(request: NextRequest) {
             role,
             linkedin,
             instagram,
+            title,
             profile_image: url
         });
 
