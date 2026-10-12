@@ -5,12 +5,28 @@ import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
 import { sendWelcomeEmail } from "@/utilities/emails/welcome-qr";
-import { signJWT } from "@/utilities/jwt";
+import { signJWT, verifyJWT } from "@/utilities/jwt";
 import { validateDto } from "@/dto/validate.dto-helper";
 import { verifyUserEmailDto } from "@/dto/(register)/verify-email.dto";
 
 export async function POST(request: NextRequest) {
     try {
+        const cookieStore = await cookies();
+        const userToken = verifyJWT(cookieStore.get("nv-session")?.value as string);
+        const tempToken = verifyJWT(cookieStore.get("nv-session-temp")?.value as string);
+
+        if (userToken && tempToken) {
+            return NextResponse.json({
+                message: "User already verified",
+                data: null,
+                error: null,
+                redirect: true,
+                redirect_url: "/enrollment-event"
+            }, { status: 400 });
+        } else if (userToken && !tempToken) {
+            cookieStore.delete("nv-session");
+        }
+
         // Add DTO validation Here
         const body = await request.json();
 
@@ -81,14 +97,26 @@ export async function POST(request: NextRequest) {
 
 
         // set the cookie for the user session for 2 hours
-        const cookieStore = await cookies();
         const token = signJWT({ user: { id: user._id, name: user.full_name, email: user.email } }, { expiresIn: "2h" });
-        const tempToken = signJWT({ user: { id: user._id, name: user.full_name, email: user.email } }, { expiresIn: "690000000Ms" });
+        const createTempToken = signJWT({ user: { id: user._id, name: user.full_name, email: user.email } }, { expiresIn: 6900 });
 
-        cookieStore.set("nv-session", token, { httpOnly: true, path: "/", sameSite: "strict", secure: process.env.NODE_ENV === "production", expires: 2 * 60 * 60 * 1000 })
+        // Main session: 2 hours
+        cookieStore.set("nv-session", token, {
+            httpOnly: true,
+            path: "/",
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 2 * 60 * 60,
+        });
 
-        // set temporary cookie for 1 hour 55 mins so if this expires then user will be redirected to check-email page to verify his email again
-        cookieStore.set("nv-session-temp", tempToken, { httpOnly: true, path: "/", sameSite: "strict", secure: process.env.NODE_ENV === "production", expires: 1 * 60 * 60 * 1000 + 55 * 60 * 1000 })
+        // Temporary session: 1 hour 55 minutes
+        cookieStore.set("nv-session-temp", createTempToken, {
+            httpOnly: true,
+            path: "/",
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 6900,
+        });
 
         return NextResponse.json({
             message: "OTP verified successfully",
