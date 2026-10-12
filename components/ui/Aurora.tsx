@@ -142,6 +142,14 @@ export default function Aurora(props: AuroraProps) {
     const ctn = ctnDom.current;
     if (!ctn) return;
 
+    // Verify WebGL support before instantiating ogl Renderer
+    const testCanvas = document.createElement('canvas');
+    const hasWebGL = Boolean(
+      window.WebGLRenderingContext &&
+      (testCanvas.getContext('webgl2') || testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl'))
+    );
+    if (!hasWebGL) return;
+
     let renderer: Renderer | null = null;
     try {
       renderer = new Renderer({
@@ -153,7 +161,8 @@ export default function Aurora(props: AuroraProps) {
       return;
     }
 
-    const gl = renderer.gl;
+    const gl = renderer?.gl;
+    if (!gl) return;
     gl.clearColor(0, 0, 0, 0);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);

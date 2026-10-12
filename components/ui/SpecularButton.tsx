@@ -154,12 +154,27 @@ export default function SpecularButton({
     const fx = fxRef.current;
     if (!btn || !fx) return;
 
+    // Verify WebGL support before instantiating ogl Renderer
+    const testCanvas = document.createElement('canvas');
+    const hasWebGL = Boolean(
+      window.WebGLRenderingContext &&
+      (testCanvas.getContext('webgl2') || testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl'))
+    );
+    if (!hasWebGL) return;
+
     const dpr = window.devicePixelRatio || 1;
-    const renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: true, dpr });
-    const gl = renderer.gl;
-    gl.clearColor(0, 0, 0, 0);
-    gl.enable(gl.BLEND);
-    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    let renderer: Renderer | null = null;
+    let gl: any = null;
+    try {
+      renderer = new Renderer({ alpha: true, premultipliedAlpha: true, antialias: true, dpr });
+      gl = renderer.gl;
+      if (!gl) return;
+      gl.clearColor(0, 0, 0, 0);
+      gl.enable(gl.BLEND);
+      gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    } catch {
+      return;
+    }
 
     const geometry = new Triangle(gl);
     if ((geometry.attributes as Record<string, unknown>).uv) {
@@ -259,7 +274,7 @@ export default function SpecularButton({
       program.uniforms.uShineSize.value = (p.shineSize * Math.PI) / 180;
       program.uniforms.uShineFade.value = (p.shineFade * Math.PI) / 180;
       program.uniforms.uThickness.value = p.thickness * dpr;
-      renderer.render({ scene: mesh });
+      renderer?.render({ scene: mesh });
     };
     raf = requestAnimationFrame(update);
 
@@ -267,8 +282,8 @@ export default function SpecularButton({
       cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener('pointermove', onPointerMove);
-      if (gl.canvas.parentNode === fx) fx.removeChild(gl.canvas);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      if (gl?.canvas?.parentNode === fx) fx.removeChild(gl.canvas);
+      gl?.getExtension('WEBGL_lose_context')?.loseContext();
     };
   }, []);
 

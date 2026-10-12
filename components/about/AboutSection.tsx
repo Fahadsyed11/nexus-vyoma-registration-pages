@@ -71,6 +71,7 @@ export default function AboutSection() {
               width={600}
               height={400}
               className="w-full max-w-[480px] h-auto object-contain"
+              style={{ height: 'auto' }}
             />
           </div>
 

@@ -43,6 +43,307 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-12 — Organizers Page: 9 Incoming Board Member Placeholders
+
+**Done**
+- **9 Incoming Board Member Slots (`lib/data/organizersData.ts`, `components/organizers/OrganizersSection.tsx`)**:
+  - Expanded the Board Members section to exactly 9 slots (`board-01` through `board-09`), labeled `Profile 05` through `Profile 13` as incoming members.
+  - Omitted image and social link references so all 9 slots render with the approved high-fidelity monochrome editorial silhouette mask in compliance with Rule 6.
+  - Adjusted container to `max-w-3xl mx-auto` with balanced responsive gap rhythm, creating a symmetrical 3×3 matrix across tablet & desktop.
+  - Updated sequential numbering for Tech Team (`Profile 14`–`17`) and Coordinators (`Profile 18`+).
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK on `/organizers`.
+
+### 2026-10-12 — Organizers Page: Uniform Image Dimensions & Geolocation Metadata Header
+
+**Done**
+- **Uniform Image Dimensions (`components/organizers/OrganizerProfile.tsx`, `lib/data/organizersData.ts`)**:
+  - Standardized circular portrait dimensions across all organizer levels (Patrons, Co-Patrons, Board Members, Tech Team, Coordinators) to uniform `w-24 h-24 xs:w-26 xs:h-26 sm:w-28 sm:h-28 md:w-30 md:h-30` (96px to 120px) with identical container metrics (`w-26 xs:w-28 sm:w-32 md:w-34`).
+  - Standardized section config size to `size: 'md'` across all groups in `organizersData.ts`.
+- **Editorial Header & Geolocation Metadata (`components/organizers/OrganizersView.tsx`)**:
+  - Matched the exact reference layout below the rolling `THE ORGANIZERS` title.
+  - Updated editorial description: *"Meet the minds, mentors, and teams bringing Nexus Vyoma to life."*
+  - Added precise festival geolocation and venue metadata line: `17.38405° N / 78.45636° E   —   ISL ENGINEERING COLLEGE, HYDERABAD` in monospace uppercase with clean em-dash divider.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`.
+
+### 2026-10-12 — Typography & Letter Spacing Parity: Events and Organizers Headings
+
+**Done**
+- **Heading Style & Tracking Parity (`components/events/EventsTitleRolling.tsx`, `components/organizers/OrganizersTitleRolling.tsx`)**:
+  - Matched the exact typography, scale (`text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl`), natural font weight (removed artificial `font-black`), and responsive letter tracking (`tracking-tight sm:tracking-normal`) of the signature `CONTACT US` heading ([ContactTitleRolling.tsx](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/contact/ContactTitleRolling.tsx)).
+  - Harmonized `EVENTS` on `/events` and `THE ORGANIZERS` on `/organizers` with identical Anton display font characteristics and clean poster kerning.
+  - Retained GSAP 2-cycle 3D rolling text reveal animations and `prefers-reduced-motion` fallbacks.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors. Verified HTTP 200 OK responses across `/events`, `/organizers`, and `/contact`.
+
+### 2026-10-12 — Organizers Page: Instagram & LinkedIn Redirect Options & Smooth 700ms Hover
+
+**Done**
+- **Member Social Action Links (`lib/data/organizersData.ts`, `components/organizers/OrganizerProfile.tsx`, `components/organizers/OrganizersSection.tsx`)**:
+  - Added Instagram and LinkedIn redirect options beneath each organizer's designation with minimalist SVG icons and accessible `aria-label` tags.
+  - Implemented secure external link attributes (`target="_blank" rel="noopener noreferrer"`) and smooth brand color hover transitions (`text-zinc-500` to `#FF6A00` for Instagram, `#0088FF` for LinkedIn).
+- **Slow & Buttery Smooth Hover Animation (`components/organizers/OrganizerProfile.tsx`)**:
+  - Increased image hover transition duration to `700ms ease-out` on the circular mask, outer ring, and B&W-to-color filter reveal (`[filter:grayscale(100%)]` -> `[filter:grayscale(0%)]`) for a slow, cinematic reveal.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`.
+
+### 2026-10-12 — Organizers Page: Defined Compact Gaps & Uniform Coordinator Dimensions
+
+**Done**
+- **Defined, Tighter Spacing (`components/organizers/OrganizersSection.tsx`, `components/organizers/OrganizersView.tsx`)**:
+  - Reduced section divider margins from `my-16` down to `my-6 sm:my-8`.
+  - Tightened section heading margins to `mb-4 sm:mb-6` and bottom credits to `mt-8 sm:mt-12 pt-6`.
+  - Compressed profile row and column gaps to defined `gap-x-4 sm:gap-x-6` and `gap-y-4 sm:gap-y-6`.
+- **Uniform Coordinator Dimensions (`lib/data/organizersData.ts`, `components/organizers/OrganizerProfile.tsx`, `components/organizers/OrganizersSection.tsx`)**:
+  - Upgraded Coordinators to `size: 'md'`, giving them the exact same portrait circle dimensions (`w-24 h-24 sm:w-28 sm:h-28 md:w-30 md:h-30`) as Board Members and Tech Team.
+  - Aligned Coordinators into a 4-column desktop layout (3-column tablet, 2-column mobile) with matching visual prominence.
+- **Hardware-Accelerated B&W to Color Hover Transition (`components/organizers/OrganizerProfile.tsx`)**:
+  - Implemented explicit `[filter:grayscale(100%)_contrast(1.05)_brightness(0.95)]` transitioning to `group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]` with smooth `500ms` easing and subtle outer ring glow.
+- **Title Rolling Font Parity (`components/organizers/OrganizersTitleRolling.tsx`)**:
+  - Switched `"THE ORGANIZERS"` to `font-[family-name:var(--font-display)]` with bold headline weights, identical to `Events` and `Contact` pages.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`.
+
+### 2026-10-12 — Organizers Page: Rolling Title Animation & B&W-to-Color Portrait Hover
+
+**Done**
+- **Rolling Title Reveal (`components/organizers/OrganizersTitleRolling.tsx`, `components/organizers/OrganizersView.tsx`)**:
+  - Implemented signature 2-cycle GSAP 3D rolling text reveal for `"THE ORGANIZERS"`, matching `EventsTitleRolling` and `ContactTitleRolling` with responsive condensed typography and `prefers-reduced-motion` compliance.
+- **Grayscale-to-Color Portrait Hover (`components/organizers/OrganizerProfile.tsx`, `lib/data/organizersData.ts`, `public/organizers/`)**:
+  - Sourced and placed 12 realistic full-color portrait photos in `public/organizers/` for natural, human editorial presentation without synthetic/AI-looking placeholder artifacts.
+  - Implemented smooth CSS filter transitions (`grayscale contrast-[1.08] brightness-[0.95]` by default → `group-hover:grayscale-0 group-hover:contrast-100 group-hover:brightness-100 group-hover:scale-105 duration-500`) with subtle outer ring glow on hover.
+- **Turbopack Dev Server Fix**:
+  - Removed corrupted 0-byte `app/favicon.ico` that caused Turbopack compilation crash (`failed to fill whole buffer`).
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`.
+
+### 2026-10-12 — The Organizers Page Implementation
+
+**Done**
+- **Data Collections (`lib/data/organizersData.ts`)**:
+  - Structured typed collections for Patrons (2), Co-Patrons (2), Board Members (7), Tech Team (4), and Coordinators (24), enabling dynamic profile rendering without markup changes.
+- **Reusable Components (`components/organizers/OrganizerProfile.tsx`, `components/organizers/OrganizersSection.tsx`, `components/organizers/OrganizersView.tsx`)**:
+  - `OrganizerProfile`: Circular portrait masks with thin outlines (`border-zinc-800`), responsive sizes (`lg`, `md`, `sm`), subtle hover scale/border transitions, and high-fidelity monochrome editorial silhouette placeholders strictly complying with Rule 6.
+  - `OrganizersSection`: Renders section index headers (`01 — PATRONS`, `02 — CO-PATRONS`, `03 — BOARD MEMBERS`, `04 — TECH TEAM`, `05 — COORDINATORS`) with low-contrast horizontal dividers and responsive wrapping grids (e.g. Board Members wrapping 4 + 3 centered).
+  - `OrganizersView`: Features the editorial intro (`THE PEOPLE BEHIND THE EXPERIENCE`, `THE ORGANIZERS`, and subtitle), 5 ordered sections, and festival credit notice.
+- **Server Page (`app/organizers/page.tsx`)**:
+  - Built SSR page with SEO/OpenGraph metadata, shared mirror-glass Navbar (`alwaysVisible`), and cinematic Footer.
+- **Routing & Navigation (`components/navbar/Navbar.tsx`, `components/hero/HeroNavbarTransition.tsx`)**:
+  - Standardized navbar links to `/organizers` for consistent active-state highlighting.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors. Verified HTTP 200 OK for `/organizers`, `/events`, and `/contact`.
+
+### 2026-10-12 — Dev Server Fix: Partial Prefetching Suspense, Hydration & WebGL Guards
+
+**Done**
+- **Next.js 16 Partial Prefetching (`app/events/[eventSlug]/page.tsx`)**:
+  - Wrapped dynamic URL `params` consumption in `<Suspense fallback={<EventDetailsSkeleton />}>` around an inner async `EventDetailsContent` component, resolving Next.js `instant-shell-url-data` insight and allowing instant App Shell prefetching.
+- **Hydration Attribute Mismatch Fix (`app/template.tsx`)**:
+  - Migrated template page-stage GSAP animation from `useGSAP` (`useLayoutEffect`) to `useEffect` with `gsap.context`, eliminating pre-hydration inline `style` mutations on `<main>`.
+- **Image Aspect Ratio Warnings (`components/events/EventDetailsView.tsx`, `components/about/AboutSection.tsx`)**:
+  - Added explicit `style={{ width: 'auto', height: 'auto' }}` / `style={{ height: 'auto' }}` to `/brand/nexus-emblem-watermark.png` `<Image />` tags to satisfy Next.js image sizing rules.
+- **WebGL Guard (`components/ui/Aurora.tsx`, `components/ui/SpecularButton.tsx`)**:
+  - Added canvas context capability checks before initializing `ogl` `Renderer` instances to gracefully skip WebGL rendering and prevent context allocation errors when unavailable or exhausted.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors and verified `curl` endpoints (`/`, `/events`, `/events/financial-detective`) returning 200 OK with `x-nextjs-prerender: 1`.
+
+### 2026-10-12 — Navbar: Fix Syntax & Unclosed ScrollTrigger Error
+
+**Done**
+- **Syntax & Component Structure Repair (`components/navbar/Navbar.tsx`)**:
+  - Restored missing `ScrollTrigger.create` callbacks (`onLeaveBack`), `useGSAP` closure, `navLinks` list, and root `<header>` tag.
+  - Removed accidental stray characters and rogue `styled-jsx` import that caused TypeScript operator `>` parsing error.
+  - Verified compilation via `npx tsc --noEmit`.
+
+### 2026-10-12 — Event Card: Category Aligned Above Heading Beside Image
+
+**Done**
+- **Category Alignment (`components/events/EventCard.tsx`)**:
+  - Moved the Category label (`Competition`, `Hackathon`, `Talk`, `Entertainment`, `Workshop`) to sit directly above the event title in the right column, beside the event image (`font-mono text-[11px] sm:text-xs font-bold uppercase text-[#FF6A00] block mb-1`).
+  - Restored natural symmetrical card padding (`p-4 sm:p-5 md:p-6`).
+  - Kept team size (`Team` / `Individual`) pinned to the bottom-right corner.
+
+### 2026-10-12 — Event Card: Top-Center Category & Bottom-Right Team Size Separation
+
+**Done**
+- **Distinct Category & Team Placements (`components/events/EventCard.tsx`)**:
+  - Positioned **only the Category** at the top-center of each card (`absolute top-2.5 sm:top-3 left-1/2 -translate-x-1/2` with `font-mono text-xs sm:text-sm font-bold uppercase text-[#FF6A00]`).
+  - Positioned **only the team size** (`Team` / `Individual`) at the bottom-right corner of each card (`absolute bottom-3 sm:bottom-4 md:bottom-5 right-3.5 sm:right-5 md:right-6` with `font-sans text-xs sm:text-sm text-zinc-400 font-medium`).
+  - Added dedicated right padding on the metadata row to avoid any text clipping or collision with the bottom-right team label.
+
+### 2026-10-12 — Event Card Layout: Top-Center Category & Team Labels
+
+**Done**
+- **Top-Center Placement (`components/events/EventCard.tsx`)**:
+  - Positioned both the Category and Team / Participation text labels horizontally centered along the top edge of each event card (`absolute top-2.5 sm:top-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 sm:gap-2.5`).
+  - Added subtle separator dot (`•`) between Category (`font-mono text-xs sm:text-sm text-[#FF6A00] font-bold uppercase tracking-wider`) and Team (`font-sans text-xs sm:text-sm text-zinc-400 font-medium`).
+  - Adjusted card top padding (`pt-9 sm:pt-10`) to provide comfortable breathing room without overlapping event image or title.
+
+### 2026-10-12 — Event Card Layout: Vertically Centered Category & Team Labels
+
+**Done**
+- **Right Edge Vertical Centering (`components/events/EventCard.tsx`)**:
+  - Vertically centered both the Category (top) and Team / Participation (bottom) text labels along the right edge of each event card (`absolute right-3.5 sm:right-5 md:right-6 top-1/2 -translate-y-1/2`).
+  - Maintained clean, un-pill typography (`font-mono text-xs sm:text-sm text-[#FF6A00]` for Category and `font-sans text-xs sm:text-sm text-zinc-400` for Team).
+  - Maintained generous right padding (`pr-24 sm:pr-28`) on card contents to prevent overlap across viewports.
+
+### 2026-10-12 — Event Detail Heading Rolling Reveal & Event Card Clean Text Update
+
+**Done**
+- **Individual Event Detail Rolling Heading (`components/events/EventDetailTitleRolling.tsx`, `components/events/EventDetailsView.tsx`)**:
+  - Implemented the 2-cycle GSAP rolling letter reveal on individual event page headings (`/events/[eventSlug]`), matching the typography and motion characteristics of `EventsTitleRolling` and `ContactTitleRolling`.
+  - Added perspective-based 3D X-axis flip roll-in, upward rollout, reset, and lock-in, with full support for `prefers-reduced-motion`.
+- **Event Card Text-Only Corner Badges (`components/events/EventCard.tsx`)**:
+  - Removed pill/capsule background and border from top-right Category and bottom-right Participation indicators, rendering clean, typography-led text per user request.
+
+### 2026-10-12 — Event Card Layout Update: Top-Right Category & Bottom-Right Team Badges
+
+**Done**
+- **Event Card Corner Anchoring (`components/events/EventCard.tsx`)**:
+  - Re-anchored the Category badge (`Talk`, `Competition`, `Hackathon`, `Entertainment`, `Workshop`) to the top-right corner of each event card (`absolute top-3.5 sm:top-5 md:top-6 right-3.5 sm:right-5 md:right-6`) with brand orange-red pill styling (`bg-[#FF6A00]/10 border border-[#FF6A00]/25 text-[#FF6A00] font-mono text-xs`).
+  - Re-anchored the Team / Individual participation badge to the bottom-right corner of each card (`absolute bottom-3.5 sm:bottom-5 md:bottom-6 right-3.5 sm:right-5 md:right-6`) with clean white/zinc badge styling.
+  - Added right padding (`pr-20 sm:pr-24`) to title and description containers to prevent text collisions.
+- **Filter and Catalog Synchrony (`components/events/EventsExplorer.tsx`, `lib/data/eventsCatalog.ts`)**:
+  - Expanded category filter to support `Competition`, `Hackathon`, `Talk`, `Entertainment`, and `Workshop`.
+  - Updated catalog items to properly categorize coding sprints as `Hackathon` and DJ sessions as `Entertainment`.
+
+### 2026-10-11 — Event Details Dynamic Page Implementation (`/events/[eventSlug]`)
+
+**Done**
+- **Unified Site Shell & Framed Container (`app/events/[eventSlug]/page.tsx`, `components/events/EventDetailsView.tsx`)**:
+  - Built the dynamic Event Details page following the exact outer frame and design system of the Events and Contact pages (reusing `<Navbar alwaysVisible />`, the rounded thin-bordered dark container, and `<FooterSection />`).
+  - Implemented the desktop two-column layout: Left column featuring event image slot, entry fee, and outlined orange-red `GRAB YOUR SEAT` CTA; Right column featuring `ABOUT THIS EVENT` and `REQUIREMENTS` cards.
+  - Added 5-column compact metadata bar (`PARTICIPATION`, `VENUE`, `DATE`, `TIME`, `CATEGORY`) and truthful status notes.
+  - Built on-brand 404 state at `app/events/[eventSlug]/not-found.tsx`.
+- **Centralized Event Store Extension (`lib/data/eventsCatalog.ts`)**:
+  - Enriched catalog data with full multi-paragraph descriptions, requirement lists, fee amounts, and slug lookup helpers (`getEventBySlug`, `getAllEventSlugs`).
+
+### 2026-10-11 — Master Mobile Responsiveness Audit & Multi-Device Bug Fix
+
+**Done**
+- **Global Viewport & Scroll Spill Mitigation (`app/globals.css`, `components/ui/DualBackground.tsx`, `components/transitions/HorizontalStageTransition.tsx`)**:
+  - Configured `overflow-x: clip;` on `html, body` to eliminate accidental horizontal spill across mobile screens while fully maintaining `position: sticky` and GSAP `ScrollTrigger` pin anchors.
+  - Replaced `width: '100vw'` with `width: '100%'` in the dynamic SVG dual background canvas to avoid scrollbar-induced mobile overflow.
+  - Set `visibility: 'hidden'` when offscreen stages are parked at `xPercent: 100`, eliminating off-canvas glow overflow on WebKit mobile browsers.
+- **Responsive Navbars & Touch Usability (`components/navbar/Navbar.tsx`, `components/hero/HeroNavbarTransition.tsx`)**:
+  - Added responsive padding scaling (`px-3 xs:px-4 sm:px-7`) to the glass capsule so it fits 320px–390px screens with zero horizontal overflow.
+  - Scaled CTA buttons (`!px-2.5 xs:!px-3.5 sm:!px-5 !py-1 sm:!py-1.5 text-[10px] sm:text-xs`) to prevent awkward line breaks or button truncation.
+  - Enhanced hamburger toggle button touch hit area to 36px–44px with `touch-manipulation`.
+  - Added tap-outside backdrop overlay to dismiss the open mobile navigation drawer intuitively on touchscreen devices.
+  - Made DriftWall 3D background tiles `pointer-events-none sm:pointer-events-auto` on mobile to ensure smooth touch scrolling without tile drag conflicts.
+- **Events Page Mobile Ergonomics (`components/events/EventsExplorer.tsx`, `components/events/EventsTitleRolling.tsx`, `app/events/page.tsx`)**:
+  - Scoped independent inner list scrolling (`overflow-y-auto lg:max-h-[620px]`) strictly to desktop (`lg:`), allowing natural, smooth page scrolling on mobile/tablet viewports.
+  - Added `min-h-[44px]` touch target sizing to date, category, and clear filter buttons.
+  - Responsive headline typography scaling (`text-4xl xs:text-5xl sm:text-6xl lg:text-7xl`) for "EVENTS" rolling display to prevent text clipping on 320px screens.
+- **Contact Page Responsive Inputs & Touch Targets (`components/contact/ContactSection.tsx`, `components/contact/ContactTitleRolling.tsx`)**:
+  - Replaced `max-w-[97vw]` with `max-w-full` on the form container to prevent horizontal scroll issues.
+  - Configured `text-base sm:text-sm` font sizing on inputs and textareas to prevent iOS Safari auto-zooming on focus while preserving desktop 14px styling.
+  - Added `min-h-[44px]` touch target sizing to the submit button and interactive contact link rows.
+  - Scaled "CONTACT US" headline typography (`text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl`).
+- **Footer Metadata Clean Mobile Reflow (`components/footer/FooterSection.tsx`)**:
+  - Reflowed footer metadata on mobile (`flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-3.5 sm:gap-4 md:gap-8`) to eliminate horizontal collisions between Instagram handle, venue, and dates on 320px–360px displays while preserving the exact 3-column desktop layout.
+
+**Files Changed**
+- `app/globals.css`
+- `components/ui/DualBackground.tsx`
+- `components/transitions/HorizontalStageTransition.tsx`
+- `components/navbar/Navbar.tsx`
+- `components/hero/HeroNavbarTransition.tsx`
+- `components/events/EventsExplorer.tsx`
+- `components/events/EventsTitleRolling.tsx`
+- `app/events/page.tsx`
+- `components/contact/ContactSection.tsx`
+- `components/contact/ContactTitleRolling.tsx`
+- `components/footer/FooterSection.tsx`
+- `README.md` (updated activity log)
+
+### 2026-10-11 — Aligned Navbar with Page Section Transition and Scroll on Events & Contact Pages
+
+**Done**
+- **Page Transition Isolation (`app/template.tsx`)**:
+  - Scoped the synchronized horizontal stage slide (`{ x: 30 } -> { x: 0 }`) strictly to dynamic page content (`<main>`) rather than the top-level template wrapper.
+  - Fixes the CSS containing block issue where fixed elements inside transformed parents lose viewport anchoring and shift sideways during transitions. The fixed navbar now remains perfectly anchored in viewport coordinates at the top of the screen during all route transitions.
+- **Scroll & ScrollTrigger Alignment (`components/navbar/Navbar.tsx`)**:
+  - Removed `transition-all duration-300` from the navbar capsule to eliminate CSS transitions interfering with GSAP's `transform`, `y`, and `opacity` updates.
+  - Added `ScrollTrigger.refresh()` upon mounting `alwaysVisible` to ensure accurate document and trigger measurements on route entry.
+  - Refined ScrollTrigger threshold (`start: 'top 30%'`) so the navbar stays visible throughout the entire content section and dissolves cleanly as the section ends and the user transitions into the footer.
+
+**Files Changed**
+- `app/template.tsx`
+- `components/navbar/Navbar.tsx`
+- `README.md` (updated activity log)
+
+### 2026-10-11 — Implemented Official Nexus Vyoma Events Listing Page
+
+**Done**
+- **Events Listing Page (`app/events/page.tsx`)**:
+  - Built the Server Component route for `/events` matching the authoritative final screenshot and wireframe layout.
+  - Reused the shared `Navbar` (`alwaysVisible={true}`) and cinematic `FooterSection` without redesigning them.
+  - Framed main container with subtle dark borders (`border-zinc-800`), rounded corners (`rounded-3xl`), and high-contrast dark space background.
+- **Centralized Event Catalog (`lib/data/eventsCatalog.ts`)**:
+  - Implemented typed catalog featuring all 8 requested events:
+    1. *RPM (Gear Up) — Auto Show* (11 November | Competition | Team | Flagship sample)
+    2. *Eclipse 404 — DJ* (12 November | Talk | Individual | Flagship sample)
+    3. *Signal Hunt* (10 November | Competition | Team)
+    4. *Vibe Coding — CodeCraft* (11 November | Competition | Individual)
+    5. *Nexus Arena — E-Sports* (10 November | Competition | Team | Flagship sample)
+    6. *Financial Detective* (10 November | Workshop | Individual)
+    7. *Future City* (11 November | Workshop | Team)
+    8. *Drug Discovery Challenge* (12 November | Talk | Individual)
+  - Clearly separated mock/sample indicators from confirmed schedules.
+- **Stationary Filter Panel & Independent Scrolling (`components/events/EventsExplorer.tsx`)**:
+  - Integrated `EventsTitleRolling` (`components/events/EventsTitleRolling.tsx`) matching the 2-cycle 3D rolling text reveal from `ContactTitleRolling` (`CONTACT US`) for the `EVENTS` headline.
+  - Left filter panel stays stationary while only the right event listing scrolls vertically (`overflow-y-auto` with slim themed scrollbar).
+  - Multi-criteria filtering:
+    - **Date**: 10 November, 11 November, 12 November.
+    - **Category**: Workshop, Competition, Talk.
+    - **Flagship only**: Functional custom toggle checkbox.
+    - **Clear Filters**: Orange-red outlined action button resetting all active filters.
+  - Responsive layout: 2-column desktop grid collapsing gracefully to single-column on mobile/tablet without breaking layout.
+- **Event Card Design (`components/events/EventCard.tsx`)**:
+  - Replicated screenshot appearance: dark charcoal card (`bg-[#0c0d13]`), left mock block (`XX / MOCK` in bold orange-red `#FF6A00`), condensed display title, muted description, venue/time metadata with highlighted orange-red date, category badge, and flagship status.
+- **Active Navigation Highlighting (`components/navbar/Navbar.tsx`)**:
+  - Integrated `usePathname()` so `Events` is highlighted in `#FF6A00` across desktop and mobile menus when visiting `/events`.
+- **Verification**:
+  - Verified static compilation & SSR build (`next build`) passing with zero errors.
+  - Verified catalog filtering logic across dates, categories, and flagship states.
+
+**Files Changed / Added**
+- `app/events/page.tsx` (created)
+- `lib/data/eventsCatalog.ts` (created)
+- `components/events/EventsExplorer.tsx` (created)
+- `components/events/EventsTitleRolling.tsx` (created)
+- `components/events/EventCard.tsx` (created)
+- `components/navbar/Navbar.tsx` (updated active route highlight)
+- `README.md` (updated activity log)
+
+### 2026-10-11 — Implemented Barba.js Horizontal Stage Slide Page Transitions
+
+**Done**
+- **Horizontal Stage Slider (`components/transitions/HorizontalStageTransition.tsx`)**:
+  - Implemented the Barba.js `slide-horizontal` pattern using GSAP:
+    - **Leave phase**: Dark obsidian glass stage with orange-crimson leading edge glow sweeps across from right to left (`xPercent: 100` → `0`, `ease: 'power3.inOut'`).
+    - **Enter phase**: Stage slides smoothly off-screen to the left (`xPercent: 0` → `-100`, `ease: 'power3.inOut'`), resetting for subsequent navigations.
+  - Global link click interceptor with strict event propagation stopping (`e.stopPropagation()` & `e.stopImmediatePropagation()`), guaranteeing the transition stage sweeps in and fully covers the viewport BEFORE Next.js routes to the new page.
+  - Synchronized parallel enter reveal: the transition stage and incoming page content glide simultaneously (`ease: 'power3.out'`) without content flashing beforehand.
+- **Synchronized Route Content Entrance (`app/template.tsx`)**:
+  - Added Next.js App Router template coordinating content horizontal arrival (`x: 30` → `0`, `opacity: 0.92` → `1`) upon route switch.
+- **Root Layout & Navigation Integration**:
+  - Mounted `HorizontalStageTransition` in `app/layout.tsx`.
+  - Wrapped `SpecularButton` in `components/navbar/Navbar.tsx` and `components/hero/HeroNavbarTransition.tsx` with `<Link href="/register">` to participate in seamless page transitions.
+- **Accessibility**:
+  - Honors `prefers-reduced-motion` to bypass transition animations.
+  - Validated type safety (`npx tsc --noEmit` exited 0).
+
+### 2026-10-11 — Resolved Browser Extension Hydration Warning on RootLayout
+
+**Done**
+- **Hydration Fix (`app/layout.tsx`)**:
+  - Added `suppressHydrationWarning` to `<html>` and `<body>` to prevent React hydration mismatch warnings caused by browser extensions (such as Grammarly injecting `data-new-gr-c-s-check-loaded` and `data-gr-ext-installed`).
+- **Dependencies & Build**:
+  - Installed pulled dependencies (`@aws-sdk/client-s3`, `@aws-sdk/client-ses`, `jsonwebtoken`).
+  - Validated clean TypeScript check (`npx tsc --noEmit` exited 0).
 ### 2026-10-11 — Resolved PR Merge Conflict with `main`
 
 **Done**

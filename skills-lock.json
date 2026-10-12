@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "barba-js": {
+      "source": "freshtechbro/claudedesignskills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/barba-js/SKILL.md",
+      "computedHash": "8429138b3ce13a7cba2d786ab03ce3309877f4bd43ed6d7cf1d00afa9768e526"
+    },
     "migrate-radix-to-base": {
       "source": "shadcn/ui",
       "sourceType": "github",

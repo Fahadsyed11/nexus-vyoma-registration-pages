@@ -48,7 +48,7 @@ export default function ContactSection() {
   };
 
   return (
-    <div className="w-full max-w-[97vw] xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto rounded-3xl border border-white/[0.08] bg-[#07080c]/90 backdrop-blur-xl p-6 sm:p-10 lg:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+    <div className="w-full max-w-full xl:max-w-[1440px] 2xl:max-w-[1600px] mx-auto rounded-3xl border border-white/[0.08] bg-[#07080c]/90 backdrop-blur-xl p-5 xs:p-6 sm:p-10 lg:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
       <form onSubmit={handleSubmit} noValidate>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
           {/* ========================================================================= */}
@@ -63,7 +63,7 @@ export default function ContactSection() {
               {/* EMAIL ROW */}
               <a
                 href="mailto:nexusvyoma@islec.edu.in"
-                className="group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border border-white/[0.08] bg-zinc-950/70 hover:bg-zinc-900/60 hover:border-white/20 transition-all duration-200"
+                className="group flex items-center justify-between p-3.5 sm:p-4 min-h-[44px] rounded-xl border border-white/[0.08] bg-zinc-950/70 hover:bg-zinc-900/60 hover:border-white/20 transition-all duration-200"
                 aria-label="Send email to nexusvyoma@islec.edu.in"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
@@ -87,7 +87,7 @@ export default function ContactSection() {
                 href={instagramUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex items-center justify-between p-3.5 sm:p-4 rounded-xl border border-white/[0.08] bg-zinc-950/70 hover:bg-zinc-900/60 hover:border-white/20 transition-all duration-200"
+                className="group flex items-center justify-between p-3.5 sm:p-4 min-h-[44px] rounded-xl border border-white/[0.08] bg-zinc-950/70 hover:bg-zinc-900/60 hover:border-white/20 transition-all duration-200"
                 aria-label="Visit Nexus Vyoma Instagram page"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
@@ -141,7 +141,7 @@ export default function ContactSection() {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className={`w-full rounded-xl bg-[#0c0d12] border ${
                   errors.name ? 'border-red-500' : 'border-white/[0.08]'
-                } px-4 py-3 sm:py-3.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors`}
+                } px-4 py-3 sm:py-3.5 text-base sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors`}
               />
               {errors.name && (
                 <p className="text-[11px] text-red-400 font-mono mt-1">{errors.name}</p>
@@ -165,7 +165,7 @@ export default function ContactSection() {
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className={`w-full rounded-xl bg-[#0c0d12] border ${
                     errors.email ? 'border-red-500' : 'border-white/[0.08]'
-                  } px-4 py-3 sm:py-3.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors`}
+                  } px-4 py-3 sm:py-3.5 text-base sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors`}
                 />
                 {errors.email && (
                   <p className="text-[11px] text-red-400 font-mono mt-1">{errors.email}</p>
@@ -185,7 +185,7 @@ export default function ContactSection() {
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="w-full rounded-xl bg-[#0c0d12] border border-white/[0.08] px-4 py-3 sm:py-3.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors"
+                  className="w-full rounded-xl bg-[#0c0d12] border border-white/[0.08] px-4 py-3 sm:py-3.5 text-base sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors"
                 />
               </div>
             </div>
@@ -206,7 +206,7 @@ export default function ContactSection() {
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 className={`w-full rounded-xl bg-[#0c0d12] border ${
                   errors.message ? 'border-red-500' : 'border-white/[0.08]'
-                } px-4 py-3.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors resize-none`}
+                } px-4 py-3.5 text-base sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors resize-none`}
               />
               {errors.message && (
                 <p className="text-[11px] text-red-400 font-mono mt-1">{errors.message}</p>
@@ -225,7 +225,7 @@ export default function ContactSection() {
 
             <button
               type="submit"
-              className="w-full sm:w-auto ml-auto px-8 py-3 rounded-xl bg-gradient-to-r from-[#FF5E00] to-[#E52020] hover:from-[#ff6a00] hover:to-[#ff207d] text-white font-bold tracking-wider text-xs sm:text-sm uppercase transition-all duration-200 shadow-md active:scale-95 cursor-pointer"
+              className="w-full sm:w-auto ml-auto px-8 py-3.5 sm:py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-[#FF5E00] to-[#E52020] hover:from-[#ff6a00] hover:to-[#ff207d] text-white font-bold tracking-wider text-xs sm:text-sm uppercase transition-all duration-200 shadow-md active:scale-95 cursor-pointer flex items-center justify-center"
             >
               SUBMIT
             </button>

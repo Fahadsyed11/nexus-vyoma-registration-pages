@@ -23,7 +23,7 @@ export default function DualBackground({
         top: 0,
         left: 0,
         right: 0,
-        width: '100vw',
+        width: '100%',
         height: '55vh',
         maxHeight: '55vh',
         zIndex: -9,

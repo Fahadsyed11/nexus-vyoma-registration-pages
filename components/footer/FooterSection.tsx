@@ -18,10 +18,10 @@ export default function FooterSection() {
           <FooterLogoReveal />
         </div>
 
-        {/* Footer Meta & Information Bar - Clean Unboxed Horizontal Layout */}
-        <div className="w-full pt-8 border-t border-white/[0.08] flex flex-row items-center justify-between gap-2 sm:gap-4 md:gap-8 text-left text-[11px] xs:text-xs sm:text-sm">
+        {/* Footer Meta & Information Bar - Clean Unboxed Layout (Stacked on mobile, 3-column on sm+) */}
+        <div className="w-full pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row items-center justify-between gap-3.5 sm:gap-4 md:gap-8 text-center sm:text-left text-xs sm:text-sm">
           {/* Left: Instagram Handle */}
-          <div className="flex md:w-1/3 items-center justify-start">
+          <div className="flex w-full sm:w-auto md:w-1/3 items-center justify-center sm:justify-start">
             <a
               href="https://www.instagram.com/nexusvyoma?utm_source=ig_web_button_share_sheet&rpxt=ZDNlZDc0MzIxNw=="
               target="_blank"
@@ -47,9 +47,9 @@ export default function FooterSection() {
           </div>
 
           {/* Center: Venue Name */}
-          <div className="flex md:w-1/3 items-center justify-center text-center">
+          <div className="flex w-full sm:w-auto md:w-1/3 items-center justify-center text-center">
             <div className="flex items-center justify-center gap-1 font-sans">
-              <span className="hidden sm:inline text-[10px] sm:text-[11px] uppercase font-mono tracking-wider text-zinc-500">
+              <span className="text-[10px] sm:text-[11px] uppercase font-mono tracking-wider text-zinc-500">
                 Venue:
               </span>
               <span className="font-semibold text-zinc-200 tracking-tight whitespace-nowrap">
@@ -59,9 +59,9 @@ export default function FooterSection() {
           </div>
 
           {/* Right: Event Dates */}
-          <div className="flex md:w-1/3 items-center justify-end text-right">
-            <div className="flex items-center justify-end gap-1 font-mono text-zinc-300">
-              <span className="hidden sm:inline text-[10px] sm:text-[11px] uppercase tracking-wider text-zinc-500">
+          <div className="flex w-full sm:w-auto md:w-1/3 items-center justify-center sm:justify-end text-center sm:text-right">
+            <div className="flex items-center justify-center sm:justify-end gap-1 font-mono text-zinc-300">
+              <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-zinc-500">
                 Dates:
               </span>
               <span className="font-semibold text-zinc-200 tracking-wider whitespace-nowrap">
