@@ -43,6 +43,41 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-12 — 404 Error Screen: Official React Bits FluxLines Integration & 3-Layer Architecture
+
+**Done**
+- **Integrated Official React Bits FluxLines (`components/404/FluxLines.jsx`, `components/404/FluxLines.css`, `components/404/FluxLines.d.ts`)**:
+  - Installed and configured official component source with TypeScript declarations.
+  - Applied user's exact props:
+    ```jsx
+    colors={["#ffffff", "#ffffff", "#ffffff"]}
+    glow={2}
+    rimWidth={0.2}
+    lineWidth={1}
+    flowDirection="down"
+    mouseInteraction
+    clickSwirl
+    speed={0.5}
+    scale={1.6}
+    turbulence={1}
+    fluidity={0.1}
+    sharpness={2.5}
+    shimmer={1.5}
+    mouseStrength={1}
+    mouseRadius={0.35}
+    intro
+    lightMode={false}
+    ```
+- **Robust 3-Layer Architecture (`components/404/NotFoundView.tsx`)**:
+  - **Layer 1 (Solid Base)**: Fixed `#080808` background (`zIndex: 0`) preventing white canvas bleed-through.
+  - **Layer 2 (Flux Lines)**: Full-viewport fixed WebGL canvas (`zIndex: 1`) with interactive swirl and pointer reactions.
+  - **Layer 3 (Foreground Content)**: Stacking order `zIndex: 10`, `min-height: 100svh`, with interactive TechText `404`, `SIGNAL_LOST // ERR_404` telemetry badge, `LOST IN SPACE` heading, responsive buttons (`BACK TO HOME`, `RETURN TO PREVIOUS PAGE`), and venue telemetry footer.
+- **Hydration Fix (`app/template.tsx`)**:
+  - Fixed SSR hydration mismatch by targeting container wrapper instead of mutating child `<main>` element inline styles during hydration.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Verified Next.js 404 route rendering and HTTP 404 status.
+
 ### 2026-10-12 — Organizers Page: 9 Incoming Board Member Placeholders
 
 **Done**

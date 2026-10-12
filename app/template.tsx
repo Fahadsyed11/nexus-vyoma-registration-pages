@@ -13,8 +13,9 @@ export default function Template({ children }: { children: React.ReactNode }) {
     if (isReduced) return;
 
     const ctx = gsap.context(() => {
-      // Synchronized horizontal stage arrival for dynamic page content (targets main so fixed navbar stays rock-solid)
-      const target = containerRef.current?.querySelector('main') || containerRef.current;
+      // Synchronized horizontal stage arrival for dynamic page content on wrapper
+      const target = containerRef.current;
+      if (!target) return;
 
       gsap.fromTo(
         target,
