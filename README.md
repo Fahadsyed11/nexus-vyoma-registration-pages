@@ -43,40 +43,33 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
-### 2026-10-12 — 404 Error Screen: Official React Bits FluxLines Integration & 3-Layer Architecture
+### 2026-10-12 — 404 Error Screen: Black Colors Configuration & High-Contrast Visuals (Option A)
 
 **Done**
-- **Integrated Official React Bits FluxLines (`components/404/FluxLines.jsx`, `components/404/FluxLines.css`, `components/404/FluxLines.d.ts`)**:
-  - Installed and configured official component source with TypeScript declarations.
-  - Applied user's exact props:
-    ```jsx
-    colors={["#ffffff", "#ffffff", "#ffffff"]}
-    glow={2}
-    rimWidth={0.2}
-    lineWidth={1}
-    flowDirection="down"
-    mouseInteraction
-    clickSwirl
-    speed={0.5}
-    scale={1.6}
-    turbulence={1}
-    fluidity={0.1}
-    sharpness={2.5}
-    shimmer={1.5}
-    mouseStrength={1}
-    mouseRadius={0.35}
-    intro
-    lightMode={false}
-    ```
-- **Robust 3-Layer Architecture (`components/404/NotFoundView.tsx`)**:
-  - **Layer 1 (Solid Base)**: Fixed `#080808` background (`zIndex: 0`) preventing white canvas bleed-through.
-  - **Layer 2 (Flux Lines)**: Full-viewport fixed WebGL canvas (`zIndex: 1`) with interactive swirl and pointer reactions.
-  - **Layer 3 (Foreground Content)**: Stacking order `zIndex: 10`, `min-height: 100svh`, with interactive TechText `404`, `SIGNAL_LOST // ERR_404` telemetry badge, `LOST IN SPACE` heading, responsive buttons (`BACK TO HOME`, `RETURN TO PREVIOUS PAGE`), and venue telemetry footer.
-- **Hydration Fix (`app/template.tsx`)**:
-  - Fixed SSR hydration mismatch by targeting container wrapper instead of mutating child `<main>` element inline styles during hydration.
+- **Changed FluxLines to Black Ink Mode (`components/404/NotFoundView.tsx`, `components/404/FluxLines.tsx`)**:
+  - Configured `colors={["#000000", "#000000", "#000000"]}` and `lightMode={true}` to activate the WebGL ink pipeline (`outColor = vec4(ink * cover, cover)`), rendering visible black fluid lines with interactive mouse swirls.
+  - Added WebGL shader compile and link error logging in `FluxLines.tsx`.
+- **Configured Black TechText & High-Contrast Typography (`components/404/NotFoundView.tsx`)**:
+  - Set `color="#000000"` and `accentColor="#000000"` on `TechText` for high-contrast `404` dashed letters and particle drift.
+  - Updated headings (`LOST IN SPACE`, `NEXUS VYOMA`), description, badges, and action buttons to crisp high-contrast black/dark styling.
 - **Verification**:
+  - `npx eslint components/404/NotFoundView.tsx components/404/FluxLines.tsx` passed with 0 errors.
   - `npx tsc --noEmit` passed with 0 errors.
-  - Verified Next.js 404 route rendering and HTTP 404 status.
+  - Tested 404 route returning HTTP status 404.
+
+### 2026-10-12 — 404 Error Screen: FluxLines TypeScript Migration & Second Layer TechText Props
+
+**Done**
+- **Resolved `<FluxLines />` Type & React 19 Linting (`components/404/FluxLines.tsx`, `components/ui/FluxLines.tsx`)**:
+  - Migrated `FluxLines` in `components/404/` to a first-class TypeScript component (`FluxLines.tsx`) with strict `FluxLinesProps` typing, removing `.jsx` and `.d.ts` shadowing issues.
+  - Moved `settingsRef.current = settings;` into `useEffect` across `components/404/FluxLines.tsx` and `components/ui/FluxLines.tsx` to comply with React 19 rules and eliminate `react-hooks/refs` errors.
+- **Configured Second Layer `TechText` Properties (`components/404/NotFoundView.tsx`)**:
+  - Implemented the full suite of user-specified props on `<TechText />`: `fontSize={150}`, `reveal="letter"`, `fontFamily=""`, `color="#ffffff"`, `accentColor="#ffffff"`, `letterSpacing={-0.05}`, `reach={200}`, `softness={0.7}`, `strokeWidth={1.5}`, `speed={1}`, `lineStyle="dashed"`, `selection`, `labels`, `draggable`, `sweep`.
+  - Removed synchronous `setState` inside `useEffect` in `NotFoundView.tsx` to eliminate `react-hooks/set-state-in-effect` lint warning.
+- **Verification**:
+  - `npx eslint components/404/NotFoundView.tsx components/404/FluxLines.tsx components/ui/FluxLines.tsx` exited with **0 errors**.
+  - `npx tsc --noEmit` exited with **0 errors**.
+  - HTTP 404 route returns code `404` and renders all layers seamlessly.
 
 ### 2026-10-12 — Organizers Page: 9 Incoming Board Member Placeholders
 

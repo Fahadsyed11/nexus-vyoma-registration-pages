@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import FluxLines from './FluxLines';
@@ -8,18 +8,10 @@ import TechText from './TechText';
 
 export default function NotFoundView() {
   const router = useRouter();
-  const [canGoBack, setCanGoBack] = useState(false);
-
-  useEffect(() => {
-    // Check if the user navigated from another page on the same domain
-    if (typeof window !== 'undefined' && window.history.length > 1) {
-      setCanGoBack(true);
-    }
-  }, []);
 
   const handleReturn = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (canGoBack && typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
       window.history.back();
     } else {
       router.push('/');
@@ -32,19 +24,19 @@ export default function NotFoundView() {
         position: 'relative',
         width: '100%',
         minHeight: '100svh',
-        backgroundColor: '#080808',
-        color: '#ffffff',
+        backgroundColor: '#ffffff',
+        color: '#000000',
         overflow: 'hidden',
       }}
     >
       {/* ========================================================================= */}
-      {/* LAYER 1: Solid dark base background (prevents white page bleed-through)   */}
+      {/* LAYER 1: Solid base background                                            */}
       {/* ========================================================================= */}
       <div
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: '#080808',
+          backgroundColor: '#ffffff',
           zIndex: 0,
           pointerEvents: 'none',
         }}
@@ -52,7 +44,7 @@ export default function NotFoundView() {
       />
 
       {/* ========================================================================= */}
-      {/* LAYER 2: Official React Bits Flux Lines background effect                  */}
+      {/* LAYER 2: Official React Bits Flux Lines background effect (Black Lines)    */}
       {/* ========================================================================= */}
       <div
         style={{
@@ -65,7 +57,7 @@ export default function NotFoundView() {
         }}
       >
         <FluxLines
-          colors={["#ffffff", "#ffffff", "#ffffff"]}
+          colors={["#000000", "#000000", "#000000"]}
           glow={2}
           rimWidth={0.2}
           lineWidth={1}
@@ -81,7 +73,7 @@ export default function NotFoundView() {
           mouseStrength={1}
           mouseRadius={0.35}
           intro
-          lightMode={false}
+          lightMode={true}
         />
       </div>
 
@@ -110,18 +102,12 @@ export default function NotFoundView() {
             className="group flex items-center gap-2 outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
             aria-label="Nexus Vyoma Home"
           >
-            <span className="font-[family-name:var(--font-display)] text-lg sm:text-xl tracking-wider text-white uppercase group-hover:text-zinc-300 transition-colors">
+            <span className="font-[family-name:var(--font-display)] text-lg sm:text-xl tracking-wider text-black uppercase group-hover:text-zinc-600 transition-colors">
               NEXUS VYOMA
             </span>
           </Link>
 
-          {/* Status Badge */}
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-black/70 backdrop-blur-md">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-widest text-zinc-300">
-              SIGNAL_LOST // ERR_404
-            </span>
-          </div>
+          
         </header>
 
         {/* Center Main Stage */}
@@ -130,8 +116,8 @@ export default function NotFoundView() {
           <div
             style={{
               width: '100%',
-              height: 'min(480px, 42vh)',
-              minHeight: '220px',
+              height: 'min(480px, 45vh)',
+              minHeight: '240px',
               position: 'relative',
               pointerEvents: 'auto',
             }}
@@ -145,24 +131,21 @@ export default function NotFoundView() {
               dashLength={4}
               dashGap={2}
               specks={15}
+              fontFamily=""
+              color="#000000"
+              accentColor="#000000"
+              letterSpacing={-0.05}
+              reach={200}
+              softness={0.7}
+              strokeWidth={1.5}
+              speed={1}
+              lineStyle="dashed"
+              selection
+              labels
+              draggable
+              sweep
             />
           </div>
-
-          {/* Secondary Heading */}
-          <h1
-            style={{ pointerEvents: 'auto' }}
-            className="mt-2 sm:mt-4 font-[family-name:var(--font-display)] text-2xl xs:text-3xl sm:text-4xl md:text-5xl uppercase tracking-wider text-white"
-          >
-            LOST IN SPACE
-          </h1>
-
-          {/* Description */}
-          <p
-            style={{ pointerEvents: 'auto' }}
-            className="mt-2.5 sm:mt-3 font-sans text-xs sm:text-sm md:text-base text-zinc-300 max-w-md mx-auto leading-relaxed"
-          >
-            The page you&apos;re looking for has drifted beyond our coordinates.
-          </p>
 
           {/* Action Buttons */}
           <div
@@ -172,7 +155,7 @@ export default function NotFoundView() {
             {/* Primary Action Button */}
             <Link
               href="/"
-              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-7 py-2.5 rounded-lg border border-white/25 bg-black/60 hover:bg-white/10 hover:border-white/50 hover:shadow-[0_0_24px_rgba(255,106,0,0.3)] text-white font-sans font-semibold text-xs sm:text-sm tracking-wider uppercase backdrop-blur-md transition-all duration-200 outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
+              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-7 py-2.5 rounded-lg border border-black/20 bg-black hover:bg-zinc-800 text-white font-sans font-semibold text-xs sm:text-sm tracking-wider uppercase backdrop-blur-md transition-all duration-200 outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
             >
               BACK TO HOME
             </Link>
@@ -181,7 +164,7 @@ export default function NotFoundView() {
             <button
               type="button"
               onClick={handleReturn}
-              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-4 py-2 font-mono text-[11px] sm:text-xs text-zinc-400 hover:text-white tracking-widest uppercase transition-colors duration-200 outline-none focus-visible:ring-1 focus-visible:ring-zinc-500 cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-4 py-2 font-mono text-[11px] sm:text-xs text-zinc-600 hover:text-black tracking-widest uppercase transition-colors duration-200 outline-none focus-visible:ring-1 focus-visible:ring-zinc-400 cursor-pointer"
             >
               RETURN TO PREVIOUS PAGE
             </button>
@@ -191,7 +174,7 @@ export default function NotFoundView() {
         {/* Footer Telemetry */}
         <footer
           style={{ pointerEvents: 'auto' }}
-          className="w-full max-w-7xl mx-auto px-5 sm:px-8 pb-6 sm:pb-8 flex flex-wrap items-center justify-between gap-3 text-[10px] sm:text-[11px] font-mono tracking-widest text-zinc-400 uppercase"
+          className="w-full max-w-7xl mx-auto px-5 sm:px-8 pb-6 sm:pb-8 flex flex-wrap items-center justify-between gap-3 text-[10px] sm:text-[11px] font-mono tracking-widest text-zinc-600 uppercase"
         >
           <span>NEXUS VYOMA // ISL ENGINEERING COLLEGE, HYDERABAD</span>
           <span>17.38405° N / 78.45636° E</span>

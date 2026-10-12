@@ -297,7 +297,6 @@ const FluxLines = ({
     dpr
   };
   const settingsRef = useRef(settings);
-  settingsRef.current = settings;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -523,6 +522,7 @@ const FluxLines = ({
   }, []);
 
   useEffect(() => {
+    settingsRef.current = settings;
     wakeRef.current?.();
   });
 
