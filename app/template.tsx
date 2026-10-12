@@ -1,25 +1,20 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-
-if (typeof window !== 'undefined') {
-  gsap.registerPlugin(useGSAP);
-}
 
 export default function Template({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useGSAP(
-    () => {
-      if (!containerRef.current) return;
+  useEffect(() => {
+    if (!containerRef.current) return;
 
-      const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (isReduced) return;
+    const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (isReduced) return;
 
+    const ctx = gsap.context(() => {
       // Synchronized horizontal stage arrival for dynamic page content (targets main so fixed navbar stays rock-solid)
-      const target = containerRef.current.querySelector('main') || containerRef.current;
+      const target = containerRef.current?.querySelector('main') || containerRef.current;
 
       gsap.fromTo(
         target,
@@ -32,9 +27,10 @@ export default function Template({ children }: { children: React.ReactNode }) {
           clearProps: 'transform,opacity',
         }
       );
-    },
-    { scope: containerRef }
-  );
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
     <div ref={containerRef} className="w-full min-h-full flex-1 flex flex-col">

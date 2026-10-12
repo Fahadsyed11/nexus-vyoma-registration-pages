@@ -43,6 +43,91 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-12 — Dev Server Fix: Partial Prefetching Suspense, Hydration & WebGL Guards
+
+**Done**
+- **Next.js 16 Partial Prefetching (`app/events/[eventSlug]/page.tsx`)**:
+  - Wrapped dynamic URL `params` consumption in `<Suspense fallback={<EventDetailsSkeleton />}>` around an inner async `EventDetailsContent` component, resolving Next.js `instant-shell-url-data` insight and allowing instant App Shell prefetching.
+- **Hydration Attribute Mismatch Fix (`app/template.tsx`)**:
+  - Migrated template page-stage GSAP animation from `useGSAP` (`useLayoutEffect`) to `useEffect` with `gsap.context`, eliminating pre-hydration inline `style` mutations on `<main>`.
+- **Image Aspect Ratio Warnings (`components/events/EventDetailsView.tsx`, `components/about/AboutSection.tsx`)**:
+  - Added explicit `style={{ width: 'auto', height: 'auto' }}` / `style={{ height: 'auto' }}` to `/brand/nexus-emblem-watermark.png` `<Image />` tags to satisfy Next.js image sizing rules.
+- **WebGL Guard (`components/ui/Aurora.tsx`, `components/ui/SpecularButton.tsx`)**:
+  - Added canvas context capability checks before initializing `ogl` `Renderer` instances to gracefully skip WebGL rendering and prevent context allocation errors when unavailable or exhausted.
+- **Verification**:
+  - Passed `npx tsc --noEmit` with 0 errors and verified `curl` endpoints (`/`, `/events`, `/events/financial-detective`) returning 200 OK with `x-nextjs-prerender: 1`.
+
+### 2026-10-12 — Navbar: Fix Syntax & Unclosed ScrollTrigger Error
+
+**Done**
+- **Syntax & Component Structure Repair (`components/navbar/Navbar.tsx`)**:
+  - Restored missing `ScrollTrigger.create` callbacks (`onLeaveBack`), `useGSAP` closure, `navLinks` list, and root `<header>` tag.
+  - Removed accidental stray characters and rogue `styled-jsx` import that caused TypeScript operator `>` parsing error.
+  - Verified compilation via `npx tsc --noEmit`.
+
+### 2026-10-12 — Event Card: Category Aligned Above Heading Beside Image
+
+**Done**
+- **Category Alignment (`components/events/EventCard.tsx`)**:
+  - Moved the Category label (`Competition`, `Hackathon`, `Talk`, `Entertainment`, `Workshop`) to sit directly above the event title in the right column, beside the event image (`font-mono text-[11px] sm:text-xs font-bold uppercase text-[#FF6A00] block mb-1`).
+  - Restored natural symmetrical card padding (`p-4 sm:p-5 md:p-6`).
+  - Kept team size (`Team` / `Individual`) pinned to the bottom-right corner.
+
+### 2026-10-12 — Event Card: Top-Center Category & Bottom-Right Team Size Separation
+
+**Done**
+- **Distinct Category & Team Placements (`components/events/EventCard.tsx`)**:
+  - Positioned **only the Category** at the top-center of each card (`absolute top-2.5 sm:top-3 left-1/2 -translate-x-1/2` with `font-mono text-xs sm:text-sm font-bold uppercase text-[#FF6A00]`).
+  - Positioned **only the team size** (`Team` / `Individual`) at the bottom-right corner of each card (`absolute bottom-3 sm:bottom-4 md:bottom-5 right-3.5 sm:right-5 md:right-6` with `font-sans text-xs sm:text-sm text-zinc-400 font-medium`).
+  - Added dedicated right padding on the metadata row to avoid any text clipping or collision with the bottom-right team label.
+
+### 2026-10-12 — Event Card Layout: Top-Center Category & Team Labels
+
+**Done**
+- **Top-Center Placement (`components/events/EventCard.tsx`)**:
+  - Positioned both the Category and Team / Participation text labels horizontally centered along the top edge of each event card (`absolute top-2.5 sm:top-3 left-1/2 -translate-x-1/2 flex items-center justify-center gap-2 sm:gap-2.5`).
+  - Added subtle separator dot (`•`) between Category (`font-mono text-xs sm:text-sm text-[#FF6A00] font-bold uppercase tracking-wider`) and Team (`font-sans text-xs sm:text-sm text-zinc-400 font-medium`).
+  - Adjusted card top padding (`pt-9 sm:pt-10`) to provide comfortable breathing room without overlapping event image or title.
+
+### 2026-10-12 — Event Card Layout: Vertically Centered Category & Team Labels
+
+**Done**
+- **Right Edge Vertical Centering (`components/events/EventCard.tsx`)**:
+  - Vertically centered both the Category (top) and Team / Participation (bottom) text labels along the right edge of each event card (`absolute right-3.5 sm:right-5 md:right-6 top-1/2 -translate-y-1/2`).
+  - Maintained clean, un-pill typography (`font-mono text-xs sm:text-sm text-[#FF6A00]` for Category and `font-sans text-xs sm:text-sm text-zinc-400` for Team).
+  - Maintained generous right padding (`pr-24 sm:pr-28`) on card contents to prevent overlap across viewports.
+
+### 2026-10-12 — Event Detail Heading Rolling Reveal & Event Card Clean Text Update
+
+**Done**
+- **Individual Event Detail Rolling Heading (`components/events/EventDetailTitleRolling.tsx`, `components/events/EventDetailsView.tsx`)**:
+  - Implemented the 2-cycle GSAP rolling letter reveal on individual event page headings (`/events/[eventSlug]`), matching the typography and motion characteristics of `EventsTitleRolling` and `ContactTitleRolling`.
+  - Added perspective-based 3D X-axis flip roll-in, upward rollout, reset, and lock-in, with full support for `prefers-reduced-motion`.
+- **Event Card Text-Only Corner Badges (`components/events/EventCard.tsx`)**:
+  - Removed pill/capsule background and border from top-right Category and bottom-right Participation indicators, rendering clean, typography-led text per user request.
+
+### 2026-10-12 — Event Card Layout Update: Top-Right Category & Bottom-Right Team Badges
+
+**Done**
+- **Event Card Corner Anchoring (`components/events/EventCard.tsx`)**:
+  - Re-anchored the Category badge (`Talk`, `Competition`, `Hackathon`, `Entertainment`, `Workshop`) to the top-right corner of each event card (`absolute top-3.5 sm:top-5 md:top-6 right-3.5 sm:right-5 md:right-6`) with brand orange-red pill styling (`bg-[#FF6A00]/10 border border-[#FF6A00]/25 text-[#FF6A00] font-mono text-xs`).
+  - Re-anchored the Team / Individual participation badge to the bottom-right corner of each card (`absolute bottom-3.5 sm:bottom-5 md:bottom-6 right-3.5 sm:right-5 md:right-6`) with clean white/zinc badge styling.
+  - Added right padding (`pr-20 sm:pr-24`) to title and description containers to prevent text collisions.
+- **Filter and Catalog Synchrony (`components/events/EventsExplorer.tsx`, `lib/data/eventsCatalog.ts`)**:
+  - Expanded category filter to support `Competition`, `Hackathon`, `Talk`, `Entertainment`, and `Workshop`.
+  - Updated catalog items to properly categorize coding sprints as `Hackathon` and DJ sessions as `Entertainment`.
+
+### 2026-10-11 — Event Details Dynamic Page Implementation (`/events/[eventSlug]`)
+
+**Done**
+- **Unified Site Shell & Framed Container (`app/events/[eventSlug]/page.tsx`, `components/events/EventDetailsView.tsx`)**:
+  - Built the dynamic Event Details page following the exact outer frame and design system of the Events and Contact pages (reusing `<Navbar alwaysVisible />`, the rounded thin-bordered dark container, and `<FooterSection />`).
+  - Implemented the desktop two-column layout: Left column featuring event image slot, entry fee, and outlined orange-red `GRAB YOUR SEAT` CTA; Right column featuring `ABOUT THIS EVENT` and `REQUIREMENTS` cards.
+  - Added 5-column compact metadata bar (`PARTICIPATION`, `VENUE`, `DATE`, `TIME`, `CATEGORY`) and truthful status notes.
+  - Built on-brand 404 state at `app/events/[eventSlug]/not-found.tsx`.
+- **Centralized Event Store Extension (`lib/data/eventsCatalog.ts`)**:
+  - Enriched catalog data with full multi-paragraph descriptions, requirement lists, fee amounts, and slug lookup helpers (`getEventBySlug`, `getAllEventSlugs`).
+
 ### 2026-10-11 — Master Mobile Responsiveness Audit & Multi-Device Bug Fix
 
 **Done**

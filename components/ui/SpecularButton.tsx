@@ -154,6 +154,14 @@ export default function SpecularButton({
     const fx = fxRef.current;
     if (!btn || !fx) return;
 
+    // Verify WebGL support before instantiating ogl Renderer
+    const testCanvas = document.createElement('canvas');
+    const hasWebGL = Boolean(
+      window.WebGLRenderingContext &&
+      (testCanvas.getContext('webgl2') || testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl'))
+    );
+    if (!hasWebGL) return;
+
     const dpr = window.devicePixelRatio || 1;
     let renderer: Renderer | null = null;
     let gl: any = null;

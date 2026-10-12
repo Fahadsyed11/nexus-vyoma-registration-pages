@@ -11,10 +11,12 @@ const DATES: ('10 November' | '11 November' | '12 November')[] = [
   '12 November',
 ];
 
-const CATEGORIES: ('Workshop' | 'Competition' | 'Talk')[] = [
-  'Workshop',
+const CATEGORIES: ('Competition' | 'Hackathon' | 'Talk' | 'Entertainment' | 'Workshop')[] = [
   'Competition',
+  'Hackathon',
   'Talk',
+  'Entertainment',
+  'Workshop',
 ];
 
 export default function EventsExplorer() {
