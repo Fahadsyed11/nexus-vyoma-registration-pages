@@ -130,6 +130,21 @@ export async function POST(request: NextRequest) {
             }))
         );
 
+        await enrolledIndividualEventModel.updateMany(
+            {
+                register_user_id: user._id,
+                event_id: { $in: eventDataList.map(event => event!._id) },
+                isPaid: false,
+                isExtended: false,
+                reservation_time: { $gt: new Date() }
+            },
+            {
+                $set: {
+                    reservation_time: new Date(Date.now() + 5 * 60 * 1000),
+                    isExtended: true
+                }
+            }
+        );
         return NextResponse.json({
             message: "Enrolled in individual events successfully",
             data: null,
