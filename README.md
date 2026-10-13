@@ -43,6 +43,80 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-13 — Under Construction: Feathered Radial Vignette Blur (Zero Box Edges)
+
+**Done**
+- **Eliminated Hard-Edged Box Container (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Replaced the uniform rectangular `rgba(0,0,0,0.22)` and `rounded-2xl` blur with a feathered ambient radial layer.
+  - Implemented `mask-image: radial-gradient(ellipse at center, black 35%, rgba(0, 0, 0, 0.45) 55%, transparent 75%)` (with `-webkit-mask-image`) on the `backdrop-filter: blur(8px)` layer.
+  - Layered with a feathered ambient radial tint `radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 45%, transparent 75%)`, completely dissolving all rectangular edges, corners, and card borders.
+  - Positioned the SVG vector linework on top (`relative z-10`) so the crane and browser lines remain razor-sharp while the blur dissipates smoothly into the canvas.
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors.
+  - Headless Chrome screenshot verified: zero visible box boundaries, smooth organic vignette blur.
+
+### 2026-10-13 — Under Construction: Backdrop Blur & Component Scale Refinement
+
+**Done**
+- **Applied Backdrop Blur (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Added subtle `backdrop-filter: blur(8px)` and `-webkit-backdrop-filter: blur(8px)` on the outer container `div`.
+  - Added a soft translucent background `rgba(0, 0, 0, 0.22)` with smooth rounded corners (`rounded-2xl`) so the `PatternWaves` silk canvas in the background remains softly blurred and diffused directly behind the crane animation.
+- **Enlarged Component Scale (`components/construction/GrayscaleCraneAnimation.tsx`, `app/under-construction/page.tsx`)**:
+  - Increased animation container max-width from `max-w-[340px] sm:max-w-[380px]` up to `max-w-[480px] sm:max-w-[560px]`.
+  - Kept all SVG geometries, GSAP animations, typography, and page structure intact without adding any extra container cards or boxes.
+- **Verification**:
+  - TypeScript (`npx tsc --noEmit`) and ESLint pass with 0 errors and 0 warnings.
+  - Headless Chrome visual rendering verified via screenshot: animation is prominently rendered, smoothly blurred over the silk canvas, and cleanly centered.
+
+### 2026-10-13 — Master Fix: Under Construction Animation Layout, Positioning & Geometry
+
+**Done**
+- **Diagnosed & Fixed SVG Kinematic Architecture (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Root cause resolved: Fixed transform collisions where GSAP's `x` animation was previously wiping out the base `y: 58` translate on the trolley. Established a fixed static parent rail group (`#crane-boom-rail` at `y: 58`), and animated only the inner trolley group strictly along X (`x: 163` to `x: 263`).
+  - Perfected geometric alignment: Calibrated exact pickup coordinates (`x = 163, y = 82`), transit height (`y = 40`), and slot placement (`x = 263, y = 138`), seating the panel with 100% pixel-perfect alignment into the target slot `(222, 214)`.
+  - Tightened SVG `viewBox="0 0 500 320"` with `preserveAspectRatio="xMidYMid meet"`, eliminating ~68px of bottom dead whitespace and centering the visual mass.
+- **Unified Page Layout Hierarchy (`app/under-construction/page.tsx`)**:
+  - Bound the animation and tiny labels into a single tight flex group (`w-full max-w-[340px] sm:max-w-[380px] mx-auto`) inside `<main>`.
+  - Positioned the scene directly on the black `PatternWaves` silk background with zero container cards or layout shifts.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. All endpoints verified intact.
+
+### 2026-10-13 — Minimal White-Outline Under Construction Refactor & Synchronization Fix
+
+**Done**
+- **Debugged & Synchronized Animation Sequence (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Identified and fixed animation root causes: resolved disconnected SVG lines by replacing invalid CSS `height` changes on `<line>` with coordinate updates, and replaced competing nested CSS transforms with a unified GSAP master timeline (`useGSAP`).
+  - Coordinated cable extension, vertical hook hoist, horizontal trolley traversal, panel placement, and hook retract into a synchronized 6-phase sequence where the panel and cable remain locked.
+- **Redesigned into Minimal White-Outline Aesthetic**:
+  - Replaced solid charcoal fills with thin white and light-gray outlines (`stroke="rgba(255, 255, 255, 0.75)"`) and transparent interiors.
+  - Maintained compact sizing (~280px–320px max-width) centered with generous negative space.
+- **Removed Box Container & Minimized Typography (`app/under-construction/page.tsx`)**:
+  - Removed the surrounding card/box container entirely; content now sits directly on the black `PatternWaves` silk canvas.
+  - Replaced oversized headings, subtitle, and large button with a single tiny uppercase label: **`UNDER CONSTRUCTION`** (`font-mono text-[10px] sm:text-xs tracking-[0.3em] text-zinc-400`) and subtle text link `BACK TO HOME →`.
+  - Preserved shared `<Navbar alwaysVisible />` and `<FooterSection />`.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. Verified HTTP 200 on `/under-construction` and confirmed all existing pages remain intact.
+
+### 2026-10-13 — Grayscale Under Construction Page Implementation
+
+**Done**
+- **Created Animated Grayscale Construction Vector Scene (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Implemented an animated SVG construction scene based on provided reference stills: lattice tower crane with trolley and hoist cable, a browser window structure under assembly, suspended UI panels, striped construction barriers, traffic cones, and minimal building silhouettes.
+  - Strict monochrome palette: charcoal, steel gray, silver, and soft white; zero color accents.
+  - CSS keyframe animation loop: crane lowers cable, lifts panel, glides across the jib, seats panel into browser frame, and loops seamlessly. Honored `prefers-reduced-motion`.
+  - Compact size constraint: max-width ~320px–350px, centered with generous padding.
+- **Implemented Route (`app/under-construction/page.tsx`)**:
+  - Reused the shared React Bits `PatternWaves` silk background (`StatusBackground.tsx`) with pure black base and subtle white waves.
+  - Reused site navbar (`<Navbar alwaysVisible />`) and footer (`<FooterSection />`).
+  - Wrapped content in a thin-bordered glassmorphic container (`rounded-3xl border border-white/[0.08] bg-[#07080c]/85 backdrop-blur-xl`) matching Events and Contact pages.
+  - Displayed heading **`UNDER CONSTRUCTION`**, subtitle **`“We're building something worth the wait.”`**, and functional **`BACK TO HOME`** button.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. Verified HTTP 200 on `/under-construction` and confirmed all existing pages remain intact.
+
+### 2026-10-13 — 404 Error Screen: Navigation Actions Update
+
+**Done**
+- **Removed Return to Previous Page Button (`components/404/NotFoundView.tsx`)**: Removed the `RETURN TO PREVIOUS PAGE` secondary button and the unused `useRouter` / `handleReturn` logic.
+- **Added Events Page Link (`components/404/NotFoundView.tsx`)**: Added an uppercase `EXPLORE EVENTS` button linking directly to `/events` alongside `BACK TO HOME`.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. Verified 404 page response in server tests.
+
 ### 2026-10-13 — Minimalist Unboxed Status Pages (Strict Per-State Content)
 
 **Done**
@@ -57,6 +131,7 @@ Newest first.
     - Pure text note: *"NOTE: The QR code will be sent to your email soon"*
     - Button to explore events.
 - **Centered Status Display in Viewport (`components/payment/StatusLayout.tsx`)**: Configured the status container to take `min-h-screen` with `flex flex-col items-center justify-center`, placing the status element precisely at the vertical and horizontal center of the viewport on initial load.
+- **Removed Star Element from Status Icons (`components/payment/StatusCard.tsx`)**: Removed the decorative 4-point Spark star accent from all status icons (Success, Pending, Failed, Cancelled) for a clean, distraction-free circular sign icon presentation.
 - **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. All endpoints verified via server fetch tests.
   - `app/payment/success/page.tsx`
   - `app/payment/pending/page.tsx`

@@ -11,7 +11,6 @@ import {
   Check,
   ArrowRight,
 } from 'lucide-react';
-import Spark from '@/components/brand/Spark';
 
 export type TransactionStatusType = 'success' | 'pending' | 'failed' | 'cancelled';
 
@@ -55,9 +54,6 @@ export default function StatusCard({
             />
             <div className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full border border-red-500/40 bg-black/40 backdrop-blur-md">
               <XCircle className="w-12 h-12 sm:w-14 sm:h-14 stroke-[2.25] text-red-400" />
-              <div className="absolute -top-1.5 -right-1.5">
-                <Spark size={22} color="#D8182B" />
-              </div>
             </div>
           </div>
 
@@ -97,9 +93,6 @@ export default function StatusCard({
             />
             <div className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full border border-amber-500/40 bg-black/40 backdrop-blur-md">
               <AlertTriangle className="w-12 h-12 sm:w-14 sm:h-14 stroke-[2.25] text-amber-400 animate-pulse" />
-              <div className="absolute -top-1.5 -right-1.5">
-                <Spark size={22} color="#FF6A00" />
-              </div>
             </div>
           </div>
 
@@ -133,9 +126,6 @@ export default function StatusCard({
             />
             <div className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full border border-emerald-500/40 bg-black/40 backdrop-blur-md">
               <CheckCircle2 className="w-12 h-12 sm:w-14 sm:h-14 stroke-[2.25] text-emerald-400" />
-              <div className="absolute -top-1.5 -right-1.5">
-                <Spark size={22} color="#FBB03B" />
-              </div>
             </div>
           </div>
 
@@ -227,9 +217,6 @@ export default function StatusCard({
             />
             <div className="relative flex items-center justify-center w-24 h-24 sm:w-28 sm:h-28 rounded-full border border-white/20 bg-black/40 backdrop-blur-md">
               <X className="w-12 h-12 sm:w-14 sm:h-14 stroke-[2.5] text-zinc-200" />
-              <div className="absolute -top-1.5 -right-1.5">
-                <Spark size={22} color="#FF6A00" />
-              </div>
             </div>
           </div>
 
