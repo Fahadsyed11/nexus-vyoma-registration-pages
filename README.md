@@ -43,6 +43,27 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-13 — Minimalist Unboxed Status Pages (Strict Per-State Content)
+
+**Done**
+- **Removed All Capsules & Containers Around Text (`components/payment/StatusCard.tsx`)**: Replaced all pill capsules, border chips, and container boxes with pure, clean typography sitting directly on the PatternWaves silk canvas.
+- **Strict Per-Status Presentation**:
+  - **Payment Failed (`/payment/failed`)**: Shows exclusively the glowing Failed sign icon with atmospheric backdrop, the `PAYMENT FAILED` heading, a "Try again" link, and a direct link to the Contact Us page (`/contact`).
+  - **Payment Pending (`/payment/pending`)**: Shows exclusively the glowing Alert sign icon with atmospheric backdrop, the `PAYMENT PENDING` heading, and a direct text link to the Contact Us page (`/contact`), nothing else.
+  - **Payment Successful (`/payment/success`)**: Shows the glowing Success sign icon, `PAYMENT SUCCESSFUL` heading, followed strictly by:
+    - Transaction ID (with copy trigger)
+    - Order ID (with copy trigger)
+    - Team details (if `team_name` or `team_members` provided)
+    - Pure text note: *"NOTE: The QR code will be sent to your email soon"*
+    - Button to explore events.
+- **Centered Status Display in Viewport (`components/payment/StatusLayout.tsx`)**: Configured the status container to take `min-h-screen` with `flex flex-col items-center justify-center`, placing the status element precisely at the vertical and horizontal center of the viewport on initial load.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. All endpoints verified via server fetch tests.
+  - `app/payment/success/page.tsx`
+  - `app/payment/pending/page.tsx`
+  - `app/payment/failed/page.tsx`
+  - `app/payment/cancelled/page.tsx`
+- **Verification**: `npx tsc --noEmit` and `npx eslint app/payment components/payment` passed with 0 errors. All 4 routes tested and confirmed returning HTTP 200 with complete markup.
+
 ### 2026-10-13 — Removed Opening Intro Animation & Fixed Layout Crash
 
 **Done**
