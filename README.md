@@ -43,6 +43,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-13 — Removed Opening Intro Animation & Fixed Layout Crash
+
+**Done**
+- **Fixed 500 error (`app/layout.tsx`)**: `<NexusIntro />` was rendered in the root layout, but its component (`components/intro/NexusIntro`) and import no longer existed. This caused `Module not found` and then `ReferenceError: NexusIntro is not defined`.
+- **Removed the opening animation**: Deleted the `<NexusIntro />` element. The layout now renders `HorizontalStageTransition`, `DualBackground` and page content only.
+- **Verification**: `npx tsc --noEmit` passed with 0 errors. `GET /` returns 200.
+
 ### 2026-10-12 — 404 Error Screen: Black Colors Configuration & High-Contrast Visuals (Option A)
 
 **Done**
