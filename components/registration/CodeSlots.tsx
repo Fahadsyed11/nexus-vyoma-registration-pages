@@ -54,6 +54,7 @@ export interface CodeSlotsProps {
   settle?: number;
   rise?: number;
   cascade?: number;
+  outcome?: string;
   ariaLabel?: string;
   className?: string;
 }
@@ -534,7 +535,7 @@ function Slot({ mv, drop, char, active, rise, sink }: SlotProps) {
 
   return (
     <span
-      className="relative h-[var(--cs-height)] w-[var(--cs-size)] overflow-hidden rounded-[var(--cs-radius)] border border-white/20 bg-[var(--cs-slot)] select-none [transition:border-color_200ms_ease,background-color_200ms_ease] data-[active]:border-white/80 data-[active]:shadow-[0_0_12px_rgba(255,255,255,0.15)] in-data-[status=error]:border-[var(--cs-danger)] in-data-[status=error]:[background-color:color-mix(in_srgb,var(--cs-danger)_20%,var(--cs-slot))]"
+      className="relative h-[var(--cs-height)] w-[var(--cs-size)] overflow-hidden rounded-[var(--cs-radius)] bg-[var(--cs-slot)] select-none border border-white/[0.14] transition-all duration-200 data-[active]:border-[#FF6A00] data-[active]:ring-2 data-[active]:ring-[#FF6A00]/50 data-[active]:shadow-[0_0_16px_rgba(255,106,0,0.4)] in-data-[status=error]:border-red-500 in-data-[status=error]:data-[active]:border-red-500 data-[active]:[background-color:color-mix(in_srgb,var(--cs-ink)_8%,var(--cs-slot))] in-data-[status=error]:[background-color:color-mix(in_srgb,var(--cs-danger)_20%,var(--cs-slot))] in-data-[status=error]:data-[active]:[background-color:color-mix(in_srgb,var(--cs-danger)_20%,var(--cs-slot))] [@media(hover:hover)_and_(pointer:fine)]:group-hover/row:in-data-[status=idle]:not-in-data-[disabled]:not-data-[active]:[background-color:color-mix(in_srgb,var(--cs-ink)_4%,var(--cs-slot))]"
       data-active={active ? '' : undefined}
       data-filled={char ? '' : undefined}
       aria-hidden="true"
@@ -545,7 +546,7 @@ function Slot({ mv, drop, char, active, rise, sink }: SlotProps) {
       />
       {shown ? (
         <motion.span
-          className="absolute inset-0 z-[2] grid place-items-center text-[length:var(--cs-font)] leading-none font-bold tabular-nums font-mono [color:var(--cs-digit)] motion-reduce:transform-none! motion-reduce:[transition:opacity_150ms_ease]"
+          className="absolute inset-0 z-[2] grid place-items-center text-[length:var(--cs-font)] leading-none font-semibold tabular-nums [font-family:inherit] [color:var(--cs-digit)] motion-reduce:transform-none! motion-reduce:[transition:opacity_150ms_ease]"
           style={{ transform: lift, opacity: ink }}
         >
           {shown}

@@ -43,11 +43,47 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
-### 2026-10-13 — OTP Code Slots: Requested Props
+### 2026-10-13 — Brand Styling & UX Upgrades: Fiery Theme, Orange Focus, Glow & 5-Min Cooldown
 
 **Done**
-- `OtpStepForm.tsx`: applied the supplied CodeSlots props (`accentColor/inkColor="#f5f5f5"`, `slotColor="#27272a"`, `digitColor="#18181b"`, `dangerColor="#ff3b30"`, `slotSize 44`, `gap 8`, `radius 12`, bounce/settle/rise/cascade as given). Mobile keeps smaller slots (38px / 6px gap) to avoid overflow.
-- `CodeSlots.tsx`: digit colour now uses `--cs-digit` so the `digitColor` prop takes effect (was hardcoded black).
+- **Brand Themed Action Buttons (`EmailStepForm.tsx`, `OtpStepForm.tsx`)**:
+  - Re-themed `SEND OTP` and `VERIFY` action buttons to brand deep orange (`#FF6A00`): border `border-[#FF6A00]/60`, background tint `bg-[#FF6A00]/10`, orange ambient glow `shadow-[0_0_22px_rgba(255,106,0,0.22)]`, and fiery gradient fill (`#FF6A00` → `#FF3B2E` → `#D8182B`) sliding up smoothly on hover/focus.
+- **Deep Orange Input Focus Outlines (`EmailStepForm.tsx`, `CodeSlots.tsx`)**:
+  - Check Email input: `focus:border-[#FF6A00] focus:ring-2 focus:ring-[#FF6A00]/50 focus:shadow-[0_0_20px_rgba(255,106,0,0.35)]`.
+  - Verify Email `CodeSlots`: active slot highlighted with deep orange border `data-[active]:border-[#FF6A00]`, orange ring `data-[active]:ring-2 data-[active]:ring-[#FF6A00]/50`, orange glow `data-[active]:shadow-[0_0_16px_rgba(255,106,0,0.4)]`, and deep orange blinking caret (`inkColor="#FF6A00"`).
+- **Ambient Glowing Cards (`EmailStepForm.tsx`, `OtpStepForm.tsx`)**:
+  - Added subtle fiery ambient glow to the glass container on both pages: `shadow-[0_0_50px_rgba(255,106,0,0.14),inset_0_1px_0_rgba(255,255,255,0.12)]`, `hover:border-[#FF6A00]/30`, with a top radial warm highlight (`bg-[#FF6A00]/12 blur-3xl`).
+- **5-Minute Resend OTP Cooldown Timer (`OtpStepForm.tsx`, `EmailStepForm.tsx`)**:
+  - Implemented 300-second (5 min) cooldown timer synced with the backend 429 rate limit.
+  - Persisted sent timestamp in `localStorage` (`nv_otp_sent_time`) across page reloads.
+  - Displays `RESEND IN MM:SS` with a pulsing orange status indicator when cooling down, and active clickable `RESEND OTP` link when timer hits 0.
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+  - Visual verification with headless Chrome confirming glowing cards, orange focus, and fiery buttons on both pages.
+
+### 2026-10-13 — Verify Button: Parity Hover Fill Animation
+
+**Done**
+- **Enabled Instant Hover Interaction (`components/registration/OtpStepForm.tsx`)**:
+  - Removed premature `otp.length < 6` disabled condition that was locking out pointer events (`disabled:pointer-events-none`) before 6 digits were entered.
+  - Matches the `NEXT` button on the Check Email page: interactive hover fill animation (white background slides up from bottom, text turns black, 2px lift) is active at all times, with validation feedback triggering on submit if incomplete.
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+
+### 2026-10-13 — OTP Code Slots: Smooth React Bits Animation & Props Integration
+
+**Done**
+- **Exact CodeSlots Props & Callbacks (`OtpStepForm.tsx`)**:
+  - Implemented exact CodeSlots configuration: `length={6}`, `status={status}`, `accentColor="#f5f5f5"`, `inkColor="#f5f5f5"`, `slotColor="#27272a"`, `digitColor="#18181b"`, `dangerColor="#ff3b30"`, `slotSize={44}`, `gap={8}`, `radius={12}`, `bounce={0.2}`, `settle={0.3}`, `rise={8}`, `cascade={20}`, `mask={false}`, `caret`, `outcome="accept"`, and `disabled={loading}`.
+  - Linked `onChange` to reset status to `idle`.
+  - Configured `onComplete` with async verification handler setting status to `success` or `error`.
+- **Restored Authentic Smooth React Bits Slot Physics (`CodeSlots.tsx`)**:
+  - Eliminated hard CSS borders from slots, restoring React Bits' native `[transition:background-color_200ms_ease]` and subtle `color-mix` state highlights (`8%` active tint, `4%` hover tint).
+  - Cleaned digit typography to use smooth `font-semibold` tabular numbers with `color: var(--cs-digit)`.
+  - Added support for `outcome?: string` prop.
+- **Verification**:
+  - TypeScript (`npx tsc --noEmit`) and ESLint pass with 0 errors and 0 warnings.
+  - Headless Chrome screenshot verified at `/register/verify-email`.
 
 ### 2026-10-13 — Registration Forms: Translucent Rounded Glass + Fill Hover Buttons
 
