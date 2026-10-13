@@ -16,6 +16,14 @@ const enrolledIndividualEventSchema = new mongoose.Schema({
     isPaid: {
         type: Boolean,
         default: false
+    },
+    reservation_time: {
+        type: Date,
+        required: true,
+    },
+    isExtended: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true, overwriteModels: true });
 

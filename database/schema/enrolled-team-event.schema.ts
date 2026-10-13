@@ -29,6 +29,14 @@ const enrolledTeamEventSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    reservation_time: {
+        type: Date,
+        required: true,
+    },
+    isExtended: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true, overwriteModels: true });
 
 const enrolledTeamEventModel = mongoose.models.EnrolledTeamEvent || mongoose.model("EnrolledTeamEvent", enrolledTeamEventSchema);
