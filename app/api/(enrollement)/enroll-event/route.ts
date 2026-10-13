@@ -15,6 +15,7 @@ export interface TokenData {
     };
 }
 
+// When /enroll-event page is loaded, after verification of the user token, we will fetch the user data and enrolled events data and also fetch the events excluding the ones the user is already enrolled in. We will also extend the reservation time for the events that are not paid yet and are not extended yet. The reservation time will be extended by 5 minutes from the current time.
 export async function GET(request: NextRequest) {
     try {
         const cookieStore = await cookies();
@@ -113,7 +114,7 @@ export async function GET(request: NextRequest) {
                 }
             ]
         }).select("-transaction_id -__v")
-            .populate("event_id", "title short_description long_description date_time venue image_url");
+            .populate("event_id", "title date_time venue image_url entry_fee prize");
 
         const enrolledTeamEvents = await enrolledTeamEventModel.find({
             $and: [
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
                 }
             ]
         }).select("-transaction_id -__v")
-            .populate("event_id", "title short_description long_description date_time venue image_url");
+            .populate("event_id", "title date_time venue image_url team_size entry_fee prize min_team_size max_team_size");
 
         // Now we are fetching events excluding the ones the user is already enrolled in
         let events = await Event.find({
