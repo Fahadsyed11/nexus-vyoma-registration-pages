@@ -2,7 +2,7 @@ import { connectToDatabase } from "@/database/db";
 import { sendEmailWithSES } from "../aws/helper.aws";
 import EmailSchema from "@/database/schema/email.schema"
 
-export async function sendOTPEmail(user_id: string, to: string, user_name: string, otp: string) {
+export async function sendOTPEmail(user_id: string | null | undefined, to: string, user_name: string, otp: string) {
 
     await connectToDatabase();
     // Generate the HTML content for the email otp make sure to includes otp, name and email
@@ -28,13 +28,17 @@ export async function sendOTPEmail(user_id: string, to: string, user_name: strin
     console.log("Email sent successfully to:", to, "with messageId:", messageId, "for user_id:", user_id, "subject:", subject)
 
     // Save the email details to the database
-    await EmailSchema.create({
+    const emailDoc: Record<string, unknown> = {
         email: to,
         type: "otp_verification",
         message_id: messageId,
-        user_id,
         subject,
-    })
+    };
+    if (user_id) {
+        emailDoc.user_id = user_id;
+    }
+
+    await EmailSchema.create(emailDoc);
 
     return {
         success: true,

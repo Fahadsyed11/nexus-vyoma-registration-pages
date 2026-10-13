@@ -54,55 +54,65 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        const user = await RegisterUser.findOne({ email });
-
-        console.log("User found:", user, "for email:", email, "with otpRecord:", otpRecord)
-
-        if (!user) {
-            return NextResponse.json({
-                message: "User not found",
-                data: null,
-                error: null,
-                redirect: true,
-                redirect_url: "/register"
-            }, { status: 404 });
-        }
-
         otpRecord.is_verified = true;
         await otpRecord.save();
 
-        // If user verifies for first time, send him the welcome email
-        if (user && user.is_verified === false) {
+        const user = await RegisterUser.findOne({ email });
+
+        // Check whether user has already completed registration
+        const isRegistered = Boolean(user && user.full_name && user.institution);
+
+        // If user verifies for first time and is registered, send welcome email
+        if (user && user.is_verified === false && isRegistered) {
             user.is_verified = true;
             await user.save();
-
             await sendWelcomeEmail(user._id, user.email, user.full_name);
         }
 
-
         // set the cookie for the user session for 2 hours
         const cookieStore = await cookies();
-        const token = signJWT({ user: { id: user._id, name: user.full_name, email: user.email } }, { expiresIn: "2h" });
-        const tempToken = signJWT({ user: { id: user._id, name: user.full_name, email: user.email } }, { expiresIn: "690000000Ms" });
+        const sessionPayload = user
+            ? { user: { id: user._id, name: user.full_name, email: user.email }, email: user.email }
+            : { email, verified: true };
 
-        cookieStore.set("nv-session", token, { httpOnly: true, path: "/", sameSite: "strict", secure: process.env.NODE_ENV === "production", expires: 2 * 60 * 60 * 1000 })
+        const token = signJWT(sessionPayload, { expiresIn: "2h" });
+        const tempToken = signJWT(sessionPayload, { expiresIn: "115m" });
 
-        // set temporary cookie for 1 hour 55 mins so if this expires then user will be redirected to check-email page to verify his email again
-        cookieStore.set("nv-session-temp", tempToken, { httpOnly: true, path: "/", sameSite: "strict", secure: process.env.NODE_ENV === "production", expires: 1 * 60 * 60 * 1000 + 55 * 60 * 1000 })
+        cookieStore.set("nv-session", token, {
+            httpOnly: true,
+            path: "/",
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 2 * 60 * 60,
+        });
+
+        cookieStore.set("nv-session-temp", tempToken, {
+            httpOnly: true,
+            path: "/",
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 1 * 60 * 60 + 55 * 60,
+        });
+
+        // Determine destination: existing completed registrants go to confirmation/success, new registrants go to /register
+        const destination = isRegistered ? "/payment/success" : "/register";
 
         return NextResponse.json({
             message: "OTP verified successfully",
-
             data: {
-                user: {
-                    id: user._id,
-                    name: user.full_name,
-                    email: user.email,
-                },
+                email,
+                isRegistered,
+                user: user
+                    ? {
+                          id: user._id,
+                          name: user.full_name,
+                          email: user.email,
+                      }
+                    : null,
             },
             error: null,
             redirect: true,
-            redirect_url: "/checkout"
+            redirect_url: destination,
         }, { status: 200 });
 
     } catch (error) {

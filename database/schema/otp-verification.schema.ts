@@ -15,7 +15,7 @@ const otpSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "RegisterUser",
-        required: true,
+        required: false,
     },
     email: {
         type: String,

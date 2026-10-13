@@ -17,7 +17,7 @@ const emailSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "RegisterUser",
-        required: true,
+        required: false,
     },
     subject: {
         type: String,

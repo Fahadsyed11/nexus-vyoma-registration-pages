@@ -43,6 +43,35 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-14 — Registration Form Page: 3-Section Form, Valibot Validation & Verified Email Lock
+
+**Done**
+- **Created Registration Form Step (`components/registration/RegistrationFormStep.tsx`)**:
+  - Implemented the complete 3-section registration form:
+    - `01 — PERSONAL DETAILS`: Full Name (`full_name`), Phone Number (`phone_number`), Email Address (`email` - read-only, prefilled from trusted session, label "Email Address", placeholder "Email Address").
+    - `02 — ACADEMIC DETAILS`: Institution (`institution`), Year of Study (`year_of_study` - custom text-only select dropdown with options 1–6, no default selection), Degree (`degree`).
+    - `03 — LOCATION DETAILS`: State (`state`), City (`city`).
+  - Strict text-only styling with zero icons on section headings, text inputs, dropdown selectors, or buttons.
+  - Client-side validation using the official Valibot schema `registerUserFormDto`, typing with `RegisterUserFormInput` and `RegisterUserFormOutput` (`@/dto/(register)/register-user.dto`).
+  - Preserved phone number string value with leading zeroes, styled with `type="tel"`, `inputMode="numeric"`, `maxLength={10}`, and 10-character validation.
+  - Maintained exact string submission values (`"1"` through `"6"`) for `year_of_study`.
+  - Field-level validation error messages mapped directly to form controls without disruptive layout jumps.
+  - Aligned action button with brand fiery gradient hover slide-up fill (`COMPLETE REGISTRATION` / `SUBMITTING...`) and `motion-reduce` support.
+- **Polymorphic Rolling Headings (`components/registration/RegistrationTitleRolling.tsx`)**:
+  - Extended `RegistrationTitleRolling` with `as?: 'h1' | 'h2' | 'h3' | 'h4' | 'div'` prop to reuse the exact 2-cycle GSAP 3D vertical rolling text reveal on section headings (`<h2>`) while maintaining a single semantic `<h1>` on the page.
+- **Session-Guarded Registration Page (`app/register/page.tsx` & `app/register/form/page.tsx`)**:
+  - Verified `nv-session` cookie server-side using `verifyJWT`.
+  - Redirects unauthenticated or unverified users back to `/register/check-email`.
+  - Prefills the verified email into the form and locks it against tampering.
+  - Reused `<RegistrationGridBackground />` and `<Navbar alwaysVisible />`.
+- **API Integration (`app/api/register/submit-registration/route.ts`, `app/api/(registrations)/submit-registration/route.ts`)**:
+  - Created `/api/register/submit-registration` API alias route.
+  - Supported JSON and FormData payloads for all 8 schema fields, validating server-side with `registerUserFormDto`.
+  - Sets HTTP-only `nv-session` cookie upon successful registration.
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+  - Server endpoints verified via curl: unauthenticated 307 redirect to `/register/check-email`, authenticated 200 render with prefilled email, 400 validation error responses with field-level issues on invalid data, and 201 Created with session cookie issuance on valid submission.
+
 ### 2026-10-13 — Brand Styling & UX Upgrades: Fiery Theme, Orange Focus, Glow & 5-Min Cooldown
 
 **Done**

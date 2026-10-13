@@ -49,7 +49,7 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
       if (res.ok) {
         setStatus('success');
         setMessage(data?.message || 'OTP verified successfully!');
-        const redirectUrl = data?.redirect_url || '/checkout';
+        const redirectUrl = data?.redirect_url || '/register';
         setTimeout(() => {
           router.push(redirectUrl);
         }, 800);

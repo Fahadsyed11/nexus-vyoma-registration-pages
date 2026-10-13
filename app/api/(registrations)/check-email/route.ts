@@ -31,18 +31,8 @@ export async function POST(request: NextRequest) {
             email
         });
 
-        if (!user) {
-            return NextResponse.json({
-                message: "Email not found",
-                data: null,
-                error: null,
-                redirect: true,
-                redirect_url: "/register"
-            }, { status: 404 });
-        }
-
         const checkOtp = await OtpVerification.findOne({
-            user_id: user._id
+            email
         }).sort({ time: -1 });
 
         const currentTime = new Date();
@@ -59,9 +49,15 @@ export async function POST(request: NextRequest) {
         }
 
         const otp = generateOtp();
+        const recipientName = user?.full_name || "Nexus Attendee";
 
-        console.log("Generated OTP:", otp, "for user:", user.email, "at time:", currentTime);
-        const { success: emailSuccess, error } = await sendOTPEmail(user._id, user.email, user.full_name, otp);
+        console.log("Generated OTP:", otp, "for email:", email, "at time:", currentTime);
+        const { success: emailSuccess, error } = await sendOTPEmail(
+            user?._id ? user._id.toString() : null,
+            email,
+            recipientName,
+            otp
+        );
 
         if (!emailSuccess) {
             return NextResponse.json({
@@ -74,8 +70,8 @@ export async function POST(request: NextRequest) {
         }
 
         await OtpVerification.create({
-            user_id: user._id,
-            email: user.email,
+            user_id: user?._id || undefined,
+            email: email,
             code: String(otp),
             time: currentTime.getTime(),
         });

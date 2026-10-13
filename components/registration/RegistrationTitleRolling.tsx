@@ -11,6 +11,7 @@ if (typeof window !== 'undefined') {
 interface RegistrationTitleRollingProps {
   title: string;
   className?: string;
+  as?: 'h1' | 'h2' | 'h3' | 'h4' | 'div';
 }
 
 /**
@@ -21,8 +22,9 @@ interface RegistrationTitleRollingProps {
 export default function RegistrationTitleRolling({
   title,
   className = '',
+  as: Component = 'h1',
 }: RegistrationTitleRollingProps) {
-  const containerRef = useRef<HTMLHeadingElement>(null);
+  const containerRef = useRef<HTMLHeadingElement | HTMLDivElement>(null);
 
   const words = title.split(' ');
 
@@ -99,8 +101,8 @@ export default function RegistrationTitleRolling({
   );
 
   return (
-    <h1
-      ref={containerRef}
+    <Component
+      ref={containerRef as React.RefObject<HTMLHeadingElement & HTMLDivElement>}
       className={`font-[family-name:var(--font-display)] text-2xl xs:text-3xl sm:text-4xl tracking-wide text-white uppercase select-none leading-tight flex flex-wrap items-baseline gap-x-2 sm:gap-x-2.5 ${className}`}
       style={{ perspective: '800px' }}
       aria-label={title}
@@ -120,6 +122,6 @@ export default function RegistrationTitleRolling({
           ))}
         </span>
       ))}
-    </h1>
+    </Component>
   );
 }
