@@ -1,36 +1,27 @@
 import React from 'react';
+import ShapeGrid from '@/components/ui/ShapeGrid';
 
 /**
  * RegistrationGridBackground
- * Renders the wireframe's signature subtle gray grid background ("BG - grid")
- * over a pure black canvas with a soft radial falloff.
+ * Full-bleed React Bits <ShapeGrid /> over pure black, shared by the
+ * Check Email and Verify Email pages. The wrapper ignores pointer events so
+ * forms stay interactive; ShapeGrid listens on `window` for cursor light + click cascade.
  */
 export default function RegistrationGridBackground() {
   return (
-    <div
-      className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden bg-black"
-      aria-hidden="true"
-    >
-      {/* Subtle Gray Square Grid */}
-      <div
-        className="absolute inset-0 opacity-70"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255, 255, 255, 0.06) 1px, transparent 1px)
-          `,
-          backgroundSize: '32px 32px',
-          maskImage: 'radial-gradient(ellipse at 50% 50%, black 50%, rgba(0, 0, 0, 0.4) 80%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(ellipse at 50% 50%, black 50%, rgba(0, 0, 0, 0.4) 80%, transparent 100%)',
-        }}
-      />
-
-      {/* Gentle center atmospheric lift */}
-      <div
-        className="absolute inset-0 opacity-30"
-        style={{
-          background: 'radial-gradient(circle at 50% 45%, rgba(255, 106, 0, 0.04) 0%, transparent 65%)',
-        }}
+    <div className="fixed inset-0 pointer-events-none select-none z-0 overflow-hidden bg-black" aria-hidden="true">
+      <ShapeGrid
+        shape="square"
+        direction="none"
+        lineColor="#2a2734"
+        hoverColor="#ffffff"
+        hoverFillColor="#ffffff"
+        fillOpacity={0.15}
+        cellSize={40}
+        speed={0.5}
+        tiltX={0}
+        tiltY={0}
+        rainbow={false}
       />
     </div>
   );

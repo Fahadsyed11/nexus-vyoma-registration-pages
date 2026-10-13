@@ -545,7 +545,7 @@ function Slot({ mv, drop, char, active, rise, sink }: SlotProps) {
       />
       {shown ? (
         <motion.span
-          className="absolute inset-0 z-[2] grid place-items-center text-[length:var(--cs-font)] leading-none font-bold tabular-nums font-mono [color:#000000] motion-reduce:transform-none! motion-reduce:[transition:opacity_150ms_ease]"
+          className="absolute inset-0 z-[2] grid place-items-center text-[length:var(--cs-font)] leading-none font-bold tabular-nums font-mono [color:var(--cs-digit)] motion-reduce:transform-none! motion-reduce:[transition:opacity_150ms_ease]"
           style={{ transform: lift, opacity: ink }}
         >
           {shown}

@@ -43,6 +43,66 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-13 — OTP Code Slots: Requested Props
+
+**Done**
+- `OtpStepForm.tsx`: applied the supplied CodeSlots props (`accentColor/inkColor="#f5f5f5"`, `slotColor="#27272a"`, `digitColor="#18181b"`, `dangerColor="#ff3b30"`, `slotSize 44`, `gap 8`, `radius 12`, bounce/settle/rise/cascade as given). Mobile keeps smaller slots (38px / 6px gap) to avoid overflow.
+- `CodeSlots.tsx`: digit colour now uses `--cs-digit` so the `digitColor` prop takes effect (was hardcoded black).
+
+### 2026-10-13 — Registration Forms: Translucent Rounded Glass + Fill Hover Buttons
+
+**Done**
+- Replaced the dark feathered backdrop with a translucent rounded (`rounded-3xl`) glass layer (`bg-white/[0.035]`, hairline border, `blur(10px)`) in `EmailStepForm.tsx` and `OtpStepForm.tsx`.
+- NEXT / Verify buttons now fill white from the bottom on hover/focus (text flips to black, ~300ms, 2px lift kept); `motion-reduce` disables the transitions.
+
+### 2026-10-13 — Registration Forms: Feathered Backdrop
+
+**Done**
+- Added a soft, feathered backdrop layer (radial dark tint + `blur(6px)`, radial `mask-image`, no border/edges) behind the text and inputs in `components/registration/EmailStepForm.tsx` and `OtpStepForm.tsx`. Content is readable over the ShapeGrid while the backdrop dissolves into the grid with no visible box.
+
+### 2026-10-13 — Registration Cards Blend Into ShapeGrid
+
+**Done**
+- Removed the visible card chrome (border, rounded corners, `bg`, `backdrop-blur`, shadow) from the card wrapper in `components/registration/EmailStepForm.tsx` and `OtpStepForm.tsx`. Layout, padding, heading, input/OTP slots and buttons are unchanged, so content now sits directly on the ShapeGrid background.
+
+### 2026-10-13 — ShapeGrid Background + `/register/*` Routes
+
+**Done**
+- **ShapeGrid background** (`components/ui/ShapeGrid.tsx`, `ShapeGrid.css`): TypeScript port of the React Bits ShapeGrid (JS+CSS). Used via `components/registration/RegistrationGridBackground.tsx` with `shape="square"`, `direction="none"`, `lineColor="#2a2734"`, `hoverColor/hoverFillColor="#ffffff"`, `fillOpacity={0.15}`, `cellSize={40}`. Wrapper is `pointer-events-none`; the grid listens on `window`, so forms stay usable.
+- **Canonical pages**: `app/register/check-email/page.tsx`, `app/register/verify-email/page.tsx`.
+- **Legacy redirects (307, `?email=` preserved)**: `/check-email`, `/verify-email`, `/email`, `/email-verify`; `/register` → `/register/check-email`.
+- **API aliases**: `app/api/register/check-email/route.ts` and `app/api/register/verify-email/route.ts` re-export the existing `(registrations)` handlers (no logic duplicated, `/api/check-email`-style paths in the `(registrations)` group remain as-is).
+- **Forms** (`EmailStepForm.tsx`, `OtpStepForm.tsx`) now call `/api/register/*` and navigate to `/register/*`; navigation no longer depends on the API's `redirect_url`.
+- **Verification**: `tsc --noEmit` and `eslint` clean; route/redirect check via curl; screenshot confirms ShapeGrid renders.
+- **Follow-up**: backend still returns `redirect_url: "/verify-email"` / `"/check-email"` (legacy paths redirect correctly); `submit-registration` returns `/register/check-email?...` which now resolves.
+
+### 2026-10-13 — Email & OTP Verification Flow (Exact Wireframe Parity)
+
+**Done**
+- **Wireframe Page 1: Enter Email (`/check-email` & `/email`)**:
+  - Implemented exact wireframe layout with central card container, subtle 32px dark grid mesh (`components/registration/RegistrationGridBackground.tsx`), and full black backdrop.
+  - Added rolling text heading `ENTER EMAIL` reusing the site's official 2-cycle GSAP 3D rolling text reveal (`components/registration/RegistrationTitleRolling.tsx`).
+  - Added email input with placeholder `Enter email: (example@islec.edu.in)`.
+  - Added bottom-right aligned outlined `NEXT` button with 2px upward hover transition.
+  - Integrated with `POST /api/check-email` for real validation and OTP dispatch.
+- **Wireframe Page 2: Enter OTP (`/verify-email` & `/email-verify`)**:
+  - Implemented exact wireframe layout with rolling text heading `ENTER OTP`.
+  - Integrated the official React Bits **Code Slots** component (`motion/react`) with 6 individual digit slots, spring animations, cascading entry, backspace/arrow navigation, clipboard paste, and auto-submit.
+  - Refactored Code Slots for React 19 / ESLint compiler standards (zero render ref mutations, clean state syncing).
+  - Added responsive scaling (`slotSize` 38px on mobile, 46px on tablet/desktop) to ensure zero horizontal scroll on small viewports.
+  - Added wireframe sub-row with `Code sent to <email>`, `EDIT EMAIL`, and `RESEND OTP` actions.
+  - Added bottom-right aligned outlined `Verify` button with 2px upward hover transition.
+  - Integrated with `POST /api/verify-email` for real authentication and session cookie issuance.
+- **Routing & Navigation**:
+  - Created `/check-email` and `/email` aliases.
+  - Created `/verify-email` and `/email-verify` aliases.
+  - Redirected `/register` to `/check-email`.
+  - Reused the shared mirror-glass `<Navbar alwaysVisible />`.
+- **Verification**:
+  - Strict Rule 6 asset audit: 0 unapproved assets, 0 stock images.
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+  - Responsive visual verification completed across mobile (375px), tablet (768px), and desktop (1440px).
+
 ### 2026-10-13 — Under Construction: Feathered Radial Vignette Blur (Zero Box Edges)
 
 **Done**

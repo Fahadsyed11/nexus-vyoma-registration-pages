@@ -1,4 +1,3 @@
-import CheckEmailPage, { metadata } from '../check-email/page';
+import CheckEmailRedirect from '../check-email/page';
 
-export { metadata };
-export default CheckEmailPage;
+export default CheckEmailRedirect;
