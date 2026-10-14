@@ -3,13 +3,13 @@ import { s3Client, sesClient, SendEmailCommand, PutObjectCommand } from "./clien
 
 
 export async function uploadImageToS3(file: Buffer, extension: string, contentType: string, cloud_folder = "profile") {
-    const allowedTypes: Record<string, string> = {
-        "image/jpeg": "jpg",
-        "image/png": "png",
-        "image/webp": "webp",
+    const allowedTypes: Record<string, string[]> = {
+        "image/jpeg": ["jpg", "jpeg"],
+        "image/png": ["png"],
+        "image/webp": ["webp"],
     };
 
-    if (allowedTypes[contentType] !== extension.toLowerCase()) {
+    if (allowedTypes[contentType]?.includes(extension.toLowerCase())) {
         // return "Unsupported image type or extension";
         return {
             success: false,
