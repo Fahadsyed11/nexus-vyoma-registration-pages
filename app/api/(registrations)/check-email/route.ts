@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
@@ -60,17 +61,24 @@ export async function POST(request: NextRequest) {
         );
 
         if (!emailSuccess) {
-            return NextResponse.json({
-                message: "Failed to send OTP email",
-                data: null,
-                error: error,
-                redirect: false,
-                redirect_url: null
-            }, { status: 500 });
+            console.warn("⚠️ AWS SES failed to send OTP email (likely SES Sandbox recipient restrictions):", error);
+            if (process.env.NODE_ENV === "development") {
+                console.log("\n=======================================================");
+                console.log(`🔐 [NEXUS VYOMA DEV OTP]: >>> ${otp} <<< for ${email}`);
+                console.log("=======================================================\n");
+            } else {
+                return NextResponse.json({
+                    message: "Failed to send OTP email",
+                    data: null,
+                    error: error,
+                    redirect: false,
+                    redirect_url: null
+                }, { status: 500 });
+            }
         }
 
         await OtpVerification.create({
-            user_id: user?._id || undefined,
+            user_id: user?._id || new mongoose.Types.ObjectId(),
             email: email,
             code: String(otp),
             time: currentTime.getTime(),

@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
             data: userRecord,
             error: null,
             redirect: true,
-            redirectUrl: "/checkout"
+            redirectUrl: "/payment/success"
         }, { status: 201 });
 
 

@@ -119,7 +119,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
 
       if (res.ok) {
         setServerSuccess(data?.message || 'Registration completed successfully!');
-        const targetUrl = data?.redirectUrl || data?.redirect_url || '/checkout';
+        const targetUrl = data?.redirectUrl || data?.redirect_url || '/payment/success';
         setTimeout(() => {
           router.push(targetUrl);
         }, 800);

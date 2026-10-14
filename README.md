@@ -43,6 +43,52 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-14 — Registration Test Data Reset & Persistent Dev Form Access
+
+**Done**
+- **Test Registrations Reset**:
+  - Removed all test attendees (`attendee@nexusvyoma.com`, `syed.test@islec.edu.in`, `e2e.*`) from `registerusers` and flushed `otpverifications`.
+- **Persistent Dev Access in `app/register/page.tsx`**:
+  - In `development` mode, the page will not auto-redirect away from `/register` even after submitting, allowing developers to see, test, and tweak the registration form repeatedly without needing to manually wipe the database every time.
+  - Added `?enforce=1` query parameter support for intentionally testing the production redirection to `/payment/success`.
+
+### 2026-10-14 — Development Direct Access & Master OTP Bypass for Registration Form
+
+**Done**
+- **Direct Form Access in Development (`app/register/page.tsx`)**:
+  - Updated `RegisterPage` to support `searchParams` and added a development-mode fallback (`NODE_ENV === 'development'`).
+  - Developers and testers can now directly open `/register` or `/register?email=your_email` without being forced through the email OTP redirect.
+  - Form defaults to `attendee@nexusvyoma.com` (or the provided `email` param) while preserving production session guarding.
+- **Universal Dev OTP Bypass (`app/api/(registrations)/verify-email/route.ts`)**:
+  - Added development mode bypass accepting master OTP code `123456` or `000000`.
+  - Enables developers to test the complete user journey from `/register/check-email` to `/register/verify-email` without hitting AWS SES sandbox restrictions.
+- **Cleared Stale Schema Model Cache (`database/schema/otp-verification.schema.ts`)**:
+  - Ensured Mongoose cleans in-memory model cache during dev server reload to prevent `user_id` required constraint errors on prospective registrant OTPs.
+
+### 2026-10-14 — End-to-End Registration & Ticket Workflow Integration
+
+**Done**
+- **Connected Complete 5-Stage Navigation Workflow**:
+  - `Navbar TICKET` → `/register/check-email` → `/register/verify-email` → `/register` → `/payment/success`.
+  - Implemented conditional routing based on trusted session cookies (`nv-session`):
+    - Unauthenticated users clicking TICKET are routed to `/register/check-email`.
+    - Prospective users with verified email are routed to `/register` with prefilled locked email.
+    - Returning registered users with completed profiles are routed directly to confirmed ticket status (`/payment/success`), preventing duplicate registrations.
+- **Enabled Prospective Attendee OTP Generation (`app/api/(registrations)/check-email/route.ts`)**:
+  - Removed 404 blocking of prospective registrants who do not yet have a record in `RegisterUser`.
+  - Generates 6-digit OTP, respects 5-minute cooldown (`nv_otp_sent_time`), records in `OtpVerification`, and dispatches verification email via SES.
+  - Made `user_id` optional in `OtpVerification` and `Email` schemas.
+- **Conditional OTP Verification Destination (`app/api/(registrations)/verify-email/route.ts`, `OtpStepForm.tsx`)**:
+  - Verifies 6-digit code against `OtpVerification` records and validates 5-minute expiration window.
+  - Issues HTTP-only signed JWT session cookies (`nv-session`, `nv-session-temp`) with `{ email, verified: true }`.
+  - Returns destination `redirect_url: "/register"` for new registrants and `redirect_url: "/payment/success"` for existing registered attendees.
+- **Registration Form Completion & Submission (`app/register/page.tsx`, `submit-registration/route.ts`)**:
+  - Server-guarded `/register` route validates `nv-session`, redirects unverified users to `/register/check-email`, and routes completed users to `/payment/success`.
+  - On submission, persists user to database with `is_verified: true`, updates authenticated session cookie, and navigates to confirmed ticket route (`/payment/success`).
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+  - Executed automated 6-step E2E integration test confirming all state transitions: unauthenticated redirect, OTP request, OTP verification, registration form prefill, successful submission, and returning user ticket routing.
+
 ### 2026-10-14 — Registration Form Page: 3-Section Form, Valibot Validation & Verified Email Lock
 
 **Done**

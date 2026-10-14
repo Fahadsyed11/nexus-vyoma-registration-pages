@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/database/db";
+import mongoose from "mongoose";
 import { sendEmailWithSES } from "../aws/helper.aws";
 import EmailSchema from "@/database/schema/email.schema"
 
@@ -32,11 +33,9 @@ export async function sendOTPEmail(user_id: string | null | undefined, to: strin
         email: to,
         type: "otp_verification",
         message_id: messageId,
+        user_id: user_id || new mongoose.Types.ObjectId(),
         subject,
     };
-    if (user_id) {
-        emailDoc.user_id = user_id;
-    }
 
     await EmailSchema.create(emailDoc);
 

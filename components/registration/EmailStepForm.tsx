@@ -101,7 +101,7 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
                 setEmail(e.target.value);
                 if (error) setError(null);
               }}
-              placeholder="Enter email: (example@islec.edu.in)"
+              placeholder="example@islec.edu.in"
               disabled={loading}
               autoComplete="email"
               autoFocus

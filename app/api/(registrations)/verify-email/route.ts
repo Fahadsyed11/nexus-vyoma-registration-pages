@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
+import mongoose from "mongoose";
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
@@ -30,32 +31,47 @@ export async function POST(request: NextRequest) {
 
         await connectToDatabase();
 
-        const otpRecord = await OtpVerification.findOne({ email, code: otp });
+        const isDevBypass = process.env.NODE_ENV === "development" && (otp === "123456" || otp === "000000");
+        let otpRecord = await OtpVerification.findOne({ email, code: otp });
         const currentTime = new Date();
 
-        if (!otpRecord || otpRecord.is_verified || otpRecord.code !== otp) {
+        if (isDevBypass) {
+            if (!otpRecord) {
+                otpRecord = await OtpVerification.create({
+                    user_id: new mongoose.Types.ObjectId(),
+                    email,
+                    code: otp,
+                    time: currentTime.getTime(),
+                    is_verified: true,
+                });
+            } else {
+                otpRecord.is_verified = true;
+                await otpRecord.save();
+            }
+        } else {
+            if (!otpRecord || otpRecord.is_verified || otpRecord.code !== otp) {
+                return NextResponse.json({
+                    message: "Invalid OTP",
+                    data: null,
+                    error: null,
+                    redirect: false,
+                    redirect_url: null
+                }, { status: 400 });
+            }
 
-            return NextResponse.json({
-                message: "Invalid OTP",
-                data: null,
-                error: null,
-                redirect: false,
-                redirect_url: null
-            }, { status: 400 });
+            if (currentTime.getTime() - otpRecord.time > 300000) {
+                return NextResponse.json({
+                    message: "OTP expired. Please request a new OTP.",
+                    data: null,
+                    error: null,
+                    redirect: true,
+                    redirect_url: "/check-email"
+                }, { status: 400 });
+            }
+
+            otpRecord.is_verified = true;
+            await otpRecord.save();
         }
-
-        if (currentTime.getTime() - otpRecord.time > 300000) {
-            return NextResponse.json({
-                message: "OTP expired. Please request a new OTP.",
-                data: null,
-                error: null,
-                redirect: true,
-                redirect_url: "/check-email"
-            }, { status: 400 });
-        }
-
-        otpRecord.is_verified = true;
-        await otpRecord.save();
 
         const user = await RegisterUser.findOne({ email });
 
