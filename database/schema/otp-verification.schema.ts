@@ -15,7 +15,7 @@ const otpSchema = new mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "RegisterUser",
-        required: true,
+        required: false,
     },
     email: {
         type: String,
@@ -23,6 +23,10 @@ const otpSchema = new mongoose.Schema({
     }
 }, { timestamps: true, overwriteModels: true });
 
-const OtpVerification = mongoose.models.OtpVerification || mongoose.model("OtpVerification", otpSchema);
+if (mongoose.models.OtpVerification) {
+    delete mongoose.models.OtpVerification;
+}
+
+const OtpVerification = mongoose.model("OtpVerification", otpSchema);
 
 export default OtpVerification;

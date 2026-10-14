@@ -7,13 +7,29 @@ import RegisterUser from "@/database/schema/register-user.schema"
 import { uploadImageToS3 } from "@/utilities/aws/helper.aws";
 import { destructureSumbitBody } from "./destructure-body";
 
+import { cookies } from "next/headers";
+import { signJWT } from "@/utilities/jwt";
+
 export async function POST(request: NextRequest) {
     try {
-        await connectToDatabase()
-        // Add DTO validation Here
-        const body = await request.formData();
+        await connectToDatabase();
 
-        const { data, issues, success: isValid } = destructureSumbitBody(body);
+        const contentType = request.headers.get("content-type") || "";
+        let bodyPayload: FormData | Record<string, unknown>;
+        let imageFile: File | null = null;
+
+        if (contentType.includes("application/json")) {
+            bodyPayload = (await request.json().catch(() => ({}))) as Record<string, unknown>;
+        } else {
+            const formData = await request.formData();
+            bodyPayload = formData;
+            const img = formData.get("image");
+            if (img instanceof File && img.size > 0) {
+                imageFile = img;
+            }
+        }
+
+        const { data, issues, success: isValid } = destructureSumbitBody(bodyPayload);
 
         if (!isValid) {
             return NextResponse.json({
@@ -22,7 +38,7 @@ export async function POST(request: NextRequest) {
                 error: issues,
                 redirect: false,
                 redirectUrl: null
-            }, { status: 400 })
+            }, { status: 400 });
         } else if (!data) {
             return NextResponse.json({
                 message: "No data provided",
@@ -30,85 +46,99 @@ export async function POST(request: NextRequest) {
                 error: "No data provided",
                 redirect: false,
                 redirectUrl: null
-            }, { status: 400 })
+            }, { status: 400 });
         }
 
         const { city, state, full_name, email, phone_number, institution, degree, year_of_study } = data;
 
-        // Check if the image is present and is a File
-        const image = body.get("image");
-        if (!(image instanceof File) || image.size === 0) {
-            return NextResponse.json(
-                { message: "A valid image is required" },
-                { status: 400 }
-            );
+        let profileImageUrl = "default";
+
+        if (imageFile) {
+            const maxSize = 20 * 1024 * 1024; // 20 MB
+            if (imageFile.size > maxSize) {
+                return NextResponse.json(
+                    { message: "Image must be 20 MB or smaller" },
+                    { status: 400 }
+                );
+            }
+
+            const extension = path.extname(imageFile.name).toLowerCase().replace(".", "");
+            const buffer = Buffer.from(await imageFile.arrayBuffer());
+            const { success, url, error } = await uploadImageToS3(buffer, extension, imageFile.type);
+
+            if (!success) {
+                return NextResponse.json({
+                    message: "Error uploading image",
+                    data: null,
+                    error,
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 500 });
+            }
+            profileImageUrl = url || "";
         }
 
-        const maxSize = 20 * 1024 * 1024; // 20 MB
-        if (image.size > maxSize) {
-            return NextResponse.json(
-                { message: "Image must be 20 MB or smaller" },
-                { status: 400 }
-            );
-        }
+        const checkRegisterUser = await RegisterUser.findOne({ email });
 
-        const extension = path.extname(image.name).toLowerCase().replace(".", "");
-
-        const buffer = Buffer.from(await image.arrayBuffer());
-
-        const checkRegisterUser = await RegisterUser.findOne({
-            email
-        });
+        let userRecord = checkRegisterUser;
 
         if (checkRegisterUser) {
-            return NextResponse.json({
-                message: "User already registered",
-                data: null,
-                error: null,
-                redirect: true,
-                redirectUrl: `/register/check-email?email=${email}`
-            }, { status: 400 })
+            checkRegisterUser.full_name = full_name;
+            checkRegisterUser.phone_number = phone_number;
+            checkRegisterUser.city = city;
+            checkRegisterUser.state = state;
+            checkRegisterUser.institution = institution;
+            checkRegisterUser.degree = degree;
+            checkRegisterUser.year_of_study = year_of_study;
+            if (profileImageUrl) {
+                checkRegisterUser.profile_image = profileImageUrl;
+            }
+            checkRegisterUser.is_verified = true;
+            await checkRegisterUser.save();
+        } else {
+            userRecord = await RegisterUser.create({
+                full_name,
+                email,
+                phone_number,
+                city,
+                state,
+                institution,
+                degree,
+                year_of_study,
+                profile_image: profileImageUrl,
+                is_verified: true,
+            });
         }
 
-        const { success, url, error } = await uploadImageToS3(buffer, extension, image.type)
-
-        if (!success) {
-            return NextResponse.json({
-                message: "Error uploading image",
-                data: null,
-                error,
-                redirect: false,
-                redirectUrl: null
-            }, { status: 500 })
-        }
-
-        const createUser = await RegisterUser.create({
-            full_name,
-            email,
-            phone_number,
-            city,
-            state,
-            institution,
-            degree,
-            year_of_study,
-            profile_image: url
-        });
-        if (!createUser) {
+        if (!userRecord) {
             return NextResponse.json({
                 message: "Error creating user",
                 data: null,
                 error: "Error creating user",
                 redirect: false,
                 redirectUrl: null
-            }, { status: 500 })
+            }, { status: 500 });
         }
 
+        const cookieStore = await cookies();
+        const token = signJWT(
+            { user: { id: userRecord._id, name: userRecord.full_name, email: userRecord.email } },
+            { expiresIn: "2h" }
+        );
+        cookieStore.set("nv-session", token, {
+            httpOnly: true,
+            path: "/",
+            sameSite: "strict",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 2 * 60 * 60,
+        });
+
         return NextResponse.json({
-            message: "User created successfully",
-            data: createUser,
+            message: "User registered successfully",
+            data: userRecord,
             error: null,
             redirect: true,
-            redirectUrl: `/register/check-email?email=${email}`
+            redirectUrl: "/payment/success"
         }, { status: 201 });
 
 

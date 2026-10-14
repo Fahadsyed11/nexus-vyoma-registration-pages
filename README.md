@@ -43,6 +43,308 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-14 — Registration Test Data Reset & Persistent Dev Form Access
+
+**Done**
+- **Test Registrations Reset**:
+  - Removed all test attendees (`attendee@nexusvyoma.com`, `syed.test@islec.edu.in`, `e2e.*`) from `registerusers` and flushed `otpverifications`.
+- **Persistent Dev Access in `app/register/page.tsx`**:
+  - In `development` mode, the page will not auto-redirect away from `/register` even after submitting, allowing developers to see, test, and tweak the registration form repeatedly without needing to manually wipe the database every time.
+  - Added `?enforce=1` query parameter support for intentionally testing the production redirection to `/payment/success`.
+
+### 2026-10-14 — Development Direct Access & Master OTP Bypass for Registration Form
+
+**Done**
+- **Direct Form Access in Development (`app/register/page.tsx`)**:
+  - Updated `RegisterPage` to support `searchParams` and added a development-mode fallback (`NODE_ENV === 'development'`).
+  - Developers and testers can now directly open `/register` or `/register?email=your_email` without being forced through the email OTP redirect.
+  - Form defaults to `attendee@nexusvyoma.com` (or the provided `email` param) while preserving production session guarding.
+- **Universal Dev OTP Bypass (`app/api/(registrations)/verify-email/route.ts`)**:
+  - Added development mode bypass accepting master OTP code `123456` or `000000`.
+  - Enables developers to test the complete user journey from `/register/check-email` to `/register/verify-email` without hitting AWS SES sandbox restrictions.
+- **Cleared Stale Schema Model Cache (`database/schema/otp-verification.schema.ts`)**:
+  - Ensured Mongoose cleans in-memory model cache during dev server reload to prevent `user_id` required constraint errors on prospective registrant OTPs.
+
+### 2026-10-14 — End-to-End Registration & Ticket Workflow Integration
+
+**Done**
+- **Connected Complete 5-Stage Navigation Workflow**:
+  - `Navbar TICKET` → `/register/check-email` → `/register/verify-email` → `/register` → `/payment/success`.
+  - Implemented conditional routing based on trusted session cookies (`nv-session`):
+    - Unauthenticated users clicking TICKET are routed to `/register/check-email`.
+    - Prospective users with verified email are routed to `/register` with prefilled locked email.
+    - Returning registered users with completed profiles are routed directly to confirmed ticket status (`/payment/success`), preventing duplicate registrations.
+- **Enabled Prospective Attendee OTP Generation (`app/api/(registrations)/check-email/route.ts`)**:
+  - Removed 404 blocking of prospective registrants who do not yet have a record in `RegisterUser`.
+  - Generates 6-digit OTP, respects 5-minute cooldown (`nv_otp_sent_time`), records in `OtpVerification`, and dispatches verification email via SES.
+  - Made `user_id` optional in `OtpVerification` and `Email` schemas.
+- **Conditional OTP Verification Destination (`app/api/(registrations)/verify-email/route.ts`, `OtpStepForm.tsx`)**:
+  - Verifies 6-digit code against `OtpVerification` records and validates 5-minute expiration window.
+  - Issues HTTP-only signed JWT session cookies (`nv-session`, `nv-session-temp`) with `{ email, verified: true }`.
+  - Returns destination `redirect_url: "/register"` for new registrants and `redirect_url: "/payment/success"` for existing registered attendees.
+- **Registration Form Completion & Submission (`app/register/page.tsx`, `submit-registration/route.ts`)**:
+  - Server-guarded `/register` route validates `nv-session`, redirects unverified users to `/register/check-email`, and routes completed users to `/payment/success`.
+  - On submission, persists user to database with `is_verified: true`, updates authenticated session cookie, and navigates to confirmed ticket route (`/payment/success`).
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+  - Executed automated 6-step E2E integration test confirming all state transitions: unauthenticated redirect, OTP request, OTP verification, registration form prefill, successful submission, and returning user ticket routing.
+
+### 2026-10-14 — Registration Form Page: 3-Section Form, Valibot Validation & Verified Email Lock
+
+**Done**
+- **Created Registration Form Step (`components/registration/RegistrationFormStep.tsx`)**:
+  - Implemented the complete 3-section registration form:
+    - `01 — PERSONAL DETAILS`: Full Name (`full_name`), Phone Number (`phone_number`), Email Address (`email` - read-only, prefilled from trusted session, label "Email Address", placeholder "Email Address").
+    - `02 — ACADEMIC DETAILS`: Institution (`institution`), Year of Study (`year_of_study` - custom text-only select dropdown with options 1–6, no default selection), Degree (`degree`).
+    - `03 — LOCATION DETAILS`: State (`state`), City (`city`).
+  - Strict text-only styling with zero icons on section headings, text inputs, dropdown selectors, or buttons.
+  - Client-side validation using the official Valibot schema `registerUserFormDto`, typing with `RegisterUserFormInput` and `RegisterUserFormOutput` (`@/dto/(register)/register-user.dto`).
+  - Preserved phone number string value with leading zeroes, styled with `type="tel"`, `inputMode="numeric"`, `maxLength={10}`, and 10-character validation.
+  - Maintained exact string submission values (`"1"` through `"6"`) for `year_of_study`.
+  - Field-level validation error messages mapped directly to form controls without disruptive layout jumps.
+  - Aligned action button with brand fiery gradient hover slide-up fill (`COMPLETE REGISTRATION` / `SUBMITTING...`) and `motion-reduce` support.
+- **Polymorphic Rolling Headings (`components/registration/RegistrationTitleRolling.tsx`)**:
+  - Extended `RegistrationTitleRolling` with `as?: 'h1' | 'h2' | 'h3' | 'h4' | 'div'` prop to reuse the exact 2-cycle GSAP 3D vertical rolling text reveal on section headings (`<h2>`) while maintaining a single semantic `<h1>` on the page.
+- **Session-Guarded Registration Page (`app/register/page.tsx` & `app/register/form/page.tsx`)**:
+  - Verified `nv-session` cookie server-side using `verifyJWT`.
+  - Redirects unauthenticated or unverified users back to `/register/check-email`.
+  - Prefills the verified email into the form and locks it against tampering.
+  - Reused `<RegistrationGridBackground />` and `<Navbar alwaysVisible />`.
+- **API Integration (`app/api/register/submit-registration/route.ts`, `app/api/(registrations)/submit-registration/route.ts`)**:
+  - Created `/api/register/submit-registration` API alias route.
+  - Supported JSON and FormData payloads for all 8 schema fields, validating server-side with `registerUserFormDto`.
+  - Sets HTTP-only `nv-session` cookie upon successful registration.
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+  - Server endpoints verified via curl: unauthenticated 307 redirect to `/register/check-email`, authenticated 200 render with prefilled email, 400 validation error responses with field-level issues on invalid data, and 201 Created with session cookie issuance on valid submission.
+
+### 2026-10-13 — Brand Styling & UX Upgrades: Fiery Theme, Orange Focus, Glow & 5-Min Cooldown
+
+**Done**
+- **Brand Themed Action Buttons (`EmailStepForm.tsx`, `OtpStepForm.tsx`)**:
+  - Re-themed `SEND OTP` and `VERIFY` action buttons to brand deep orange (`#FF6A00`): border `border-[#FF6A00]/60`, background tint `bg-[#FF6A00]/10`, orange ambient glow `shadow-[0_0_22px_rgba(255,106,0,0.22)]`, and fiery gradient fill (`#FF6A00` → `#FF3B2E` → `#D8182B`) sliding up smoothly on hover/focus.
+- **Deep Orange Input Focus Outlines (`EmailStepForm.tsx`, `CodeSlots.tsx`)**:
+  - Check Email input: `focus:border-[#FF6A00] focus:ring-2 focus:ring-[#FF6A00]/50 focus:shadow-[0_0_20px_rgba(255,106,0,0.35)]`.
+  - Verify Email `CodeSlots`: active slot highlighted with deep orange border `data-[active]:border-[#FF6A00]`, orange ring `data-[active]:ring-2 data-[active]:ring-[#FF6A00]/50`, orange glow `data-[active]:shadow-[0_0_16px_rgba(255,106,0,0.4)]`, and deep orange blinking caret (`inkColor="#FF6A00"`).
+- **Ambient Glowing Cards (`EmailStepForm.tsx`, `OtpStepForm.tsx`)**:
+  - Added subtle fiery ambient glow to the glass container on both pages: `shadow-[0_0_50px_rgba(255,106,0,0.14),inset_0_1px_0_rgba(255,255,255,0.12)]`, `hover:border-[#FF6A00]/30`, with a top radial warm highlight (`bg-[#FF6A00]/12 blur-3xl`).
+- **5-Minute Resend OTP Cooldown Timer (`OtpStepForm.tsx`, `EmailStepForm.tsx`)**:
+  - Implemented 300-second (5 min) cooldown timer synced with the backend 429 rate limit.
+  - Persisted sent timestamp in `localStorage` (`nv_otp_sent_time`) across page reloads.
+  - Displays `RESEND IN MM:SS` with a pulsing orange status indicator when cooling down, and active clickable `RESEND OTP` link when timer hits 0.
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+  - Visual verification with headless Chrome confirming glowing cards, orange focus, and fiery buttons on both pages.
+
+### 2026-10-13 — Verify Button: Parity Hover Fill Animation
+
+**Done**
+- **Enabled Instant Hover Interaction (`components/registration/OtpStepForm.tsx`)**:
+  - Removed premature `otp.length < 6` disabled condition that was locking out pointer events (`disabled:pointer-events-none`) before 6 digits were entered.
+  - Matches the `NEXT` button on the Check Email page: interactive hover fill animation (white background slides up from bottom, text turns black, 2px lift) is active at all times, with validation feedback triggering on submit if incomplete.
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+
+### 2026-10-13 — OTP Code Slots: Smooth React Bits Animation & Props Integration
+
+**Done**
+- **Exact CodeSlots Props & Callbacks (`OtpStepForm.tsx`)**:
+  - Implemented exact CodeSlots configuration: `length={6}`, `status={status}`, `accentColor="#f5f5f5"`, `inkColor="#f5f5f5"`, `slotColor="#27272a"`, `digitColor="#18181b"`, `dangerColor="#ff3b30"`, `slotSize={44}`, `gap={8}`, `radius={12}`, `bounce={0.2}`, `settle={0.3}`, `rise={8}`, `cascade={20}`, `mask={false}`, `caret`, `outcome="accept"`, and `disabled={loading}`.
+  - Linked `onChange` to reset status to `idle`.
+  - Configured `onComplete` with async verification handler setting status to `success` or `error`.
+- **Restored Authentic Smooth React Bits Slot Physics (`CodeSlots.tsx`)**:
+  - Eliminated hard CSS borders from slots, restoring React Bits' native `[transition:background-color_200ms_ease]` and subtle `color-mix` state highlights (`8%` active tint, `4%` hover tint).
+  - Cleaned digit typography to use smooth `font-semibold` tabular numbers with `color: var(--cs-digit)`.
+  - Added support for `outcome?: string` prop.
+- **Verification**:
+  - TypeScript (`npx tsc --noEmit`) and ESLint pass with 0 errors and 0 warnings.
+  - Headless Chrome screenshot verified at `/register/verify-email`.
+
+### 2026-10-13 — Registration Forms: Translucent Rounded Glass + Fill Hover Buttons
+
+**Done**
+- Replaced the dark feathered backdrop with a translucent rounded (`rounded-3xl`) glass layer (`bg-white/[0.035]`, hairline border, `blur(10px)`) in `EmailStepForm.tsx` and `OtpStepForm.tsx`.
+- NEXT / Verify buttons now fill white from the bottom on hover/focus (text flips to black, ~300ms, 2px lift kept); `motion-reduce` disables the transitions.
+
+### 2026-10-13 — Registration Forms: Feathered Backdrop
+
+**Done**
+- Added a soft, feathered backdrop layer (radial dark tint + `blur(6px)`, radial `mask-image`, no border/edges) behind the text and inputs in `components/registration/EmailStepForm.tsx` and `OtpStepForm.tsx`. Content is readable over the ShapeGrid while the backdrop dissolves into the grid with no visible box.
+
+### 2026-10-13 — Registration Cards Blend Into ShapeGrid
+
+**Done**
+- Removed the visible card chrome (border, rounded corners, `bg`, `backdrop-blur`, shadow) from the card wrapper in `components/registration/EmailStepForm.tsx` and `OtpStepForm.tsx`. Layout, padding, heading, input/OTP slots and buttons are unchanged, so content now sits directly on the ShapeGrid background.
+
+### 2026-10-13 — ShapeGrid Background + `/register/*` Routes
+
+**Done**
+- **ShapeGrid background** (`components/ui/ShapeGrid.tsx`, `ShapeGrid.css`): TypeScript port of the React Bits ShapeGrid (JS+CSS). Used via `components/registration/RegistrationGridBackground.tsx` with `shape="square"`, `direction="none"`, `lineColor="#2a2734"`, `hoverColor/hoverFillColor="#ffffff"`, `fillOpacity={0.15}`, `cellSize={40}`. Wrapper is `pointer-events-none`; the grid listens on `window`, so forms stay usable.
+- **Canonical pages**: `app/register/check-email/page.tsx`, `app/register/verify-email/page.tsx`.
+- **Legacy redirects (307, `?email=` preserved)**: `/check-email`, `/verify-email`, `/email`, `/email-verify`; `/register` → `/register/check-email`.
+- **API aliases**: `app/api/register/check-email/route.ts` and `app/api/register/verify-email/route.ts` re-export the existing `(registrations)` handlers (no logic duplicated, `/api/check-email`-style paths in the `(registrations)` group remain as-is).
+- **Forms** (`EmailStepForm.tsx`, `OtpStepForm.tsx`) now call `/api/register/*` and navigate to `/register/*`; navigation no longer depends on the API's `redirect_url`.
+- **Verification**: `tsc --noEmit` and `eslint` clean; route/redirect check via curl; screenshot confirms ShapeGrid renders.
+- **Follow-up**: backend still returns `redirect_url: "/verify-email"` / `"/check-email"` (legacy paths redirect correctly); `submit-registration` returns `/register/check-email?...` which now resolves.
+
+### 2026-10-13 — Email & OTP Verification Flow (Exact Wireframe Parity)
+
+**Done**
+- **Wireframe Page 1: Enter Email (`/check-email` & `/email`)**:
+  - Implemented exact wireframe layout with central card container, subtle 32px dark grid mesh (`components/registration/RegistrationGridBackground.tsx`), and full black backdrop.
+  - Added rolling text heading `ENTER EMAIL` reusing the site's official 2-cycle GSAP 3D rolling text reveal (`components/registration/RegistrationTitleRolling.tsx`).
+  - Added email input with placeholder `Enter email: (example@islec.edu.in)`.
+  - Added bottom-right aligned outlined `NEXT` button with 2px upward hover transition.
+  - Integrated with `POST /api/check-email` for real validation and OTP dispatch.
+- **Wireframe Page 2: Enter OTP (`/verify-email` & `/email-verify`)**:
+  - Implemented exact wireframe layout with rolling text heading `ENTER OTP`.
+  - Integrated the official React Bits **Code Slots** component (`motion/react`) with 6 individual digit slots, spring animations, cascading entry, backspace/arrow navigation, clipboard paste, and auto-submit.
+  - Refactored Code Slots for React 19 / ESLint compiler standards (zero render ref mutations, clean state syncing).
+  - Added responsive scaling (`slotSize` 38px on mobile, 46px on tablet/desktop) to ensure zero horizontal scroll on small viewports.
+  - Added wireframe sub-row with `Code sent to <email>`, `EDIT EMAIL`, and `RESEND OTP` actions.
+  - Added bottom-right aligned outlined `Verify` button with 2px upward hover transition.
+  - Integrated with `POST /api/verify-email` for real authentication and session cookie issuance.
+- **Routing & Navigation**:
+  - Created `/check-email` and `/email` aliases.
+  - Created `/verify-email` and `/email-verify` aliases.
+  - Redirected `/register` to `/check-email`.
+  - Reused the shared mirror-glass `<Navbar alwaysVisible />`.
+- **Verification**:
+  - Strict Rule 6 asset audit: 0 unapproved assets, 0 stock images.
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors and 0 warnings.
+  - Responsive visual verification completed across mobile (375px), tablet (768px), and desktop (1440px).
+
+### 2026-10-13 — Under Construction: Feathered Radial Vignette Blur (Zero Box Edges)
+
+**Done**
+- **Eliminated Hard-Edged Box Container (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Replaced the uniform rectangular `rgba(0,0,0,0.22)` and `rounded-2xl` blur with a feathered ambient radial layer.
+  - Implemented `mask-image: radial-gradient(ellipse at center, black 35%, rgba(0, 0, 0, 0.45) 55%, transparent 75%)` (with `-webkit-mask-image`) on the `backdrop-filter: blur(8px)` layer.
+  - Layered with a feathered ambient radial tint `radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.2) 45%, transparent 75%)`, completely dissolving all rectangular edges, corners, and card borders.
+  - Positioned the SVG vector linework on top (`relative z-10`) so the crane and browser lines remain razor-sharp while the blur dissipates smoothly into the canvas.
+- **Verification**:
+  - `npx tsc --noEmit` and `npx eslint` passing with 0 errors.
+  - Headless Chrome screenshot verified: zero visible box boundaries, smooth organic vignette blur.
+
+### 2026-10-13 — Under Construction: Backdrop Blur & Component Scale Refinement
+
+**Done**
+- **Applied Backdrop Blur (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Added subtle `backdrop-filter: blur(8px)` and `-webkit-backdrop-filter: blur(8px)` on the outer container `div`.
+  - Added a soft translucent background `rgba(0, 0, 0, 0.22)` with smooth rounded corners (`rounded-2xl`) so the `PatternWaves` silk canvas in the background remains softly blurred and diffused directly behind the crane animation.
+- **Enlarged Component Scale (`components/construction/GrayscaleCraneAnimation.tsx`, `app/under-construction/page.tsx`)**:
+  - Increased animation container max-width from `max-w-[340px] sm:max-w-[380px]` up to `max-w-[480px] sm:max-w-[560px]`.
+  - Kept all SVG geometries, GSAP animations, typography, and page structure intact without adding any extra container cards or boxes.
+- **Verification**:
+  - TypeScript (`npx tsc --noEmit`) and ESLint pass with 0 errors and 0 warnings.
+  - Headless Chrome visual rendering verified via screenshot: animation is prominently rendered, smoothly blurred over the silk canvas, and cleanly centered.
+
+### 2026-10-13 — Master Fix: Under Construction Animation Layout, Positioning & Geometry
+
+**Done**
+- **Diagnosed & Fixed SVG Kinematic Architecture (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Root cause resolved: Fixed transform collisions where GSAP's `x` animation was previously wiping out the base `y: 58` translate on the trolley. Established a fixed static parent rail group (`#crane-boom-rail` at `y: 58`), and animated only the inner trolley group strictly along X (`x: 163` to `x: 263`).
+  - Perfected geometric alignment: Calibrated exact pickup coordinates (`x = 163, y = 82`), transit height (`y = 40`), and slot placement (`x = 263, y = 138`), seating the panel with 100% pixel-perfect alignment into the target slot `(222, 214)`.
+  - Tightened SVG `viewBox="0 0 500 320"` with `preserveAspectRatio="xMidYMid meet"`, eliminating ~68px of bottom dead whitespace and centering the visual mass.
+- **Unified Page Layout Hierarchy (`app/under-construction/page.tsx`)**:
+  - Bound the animation and tiny labels into a single tight flex group (`w-full max-w-[340px] sm:max-w-[380px] mx-auto`) inside `<main>`.
+  - Positioned the scene directly on the black `PatternWaves` silk background with zero container cards or layout shifts.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. All endpoints verified intact.
+
+### 2026-10-13 — Minimal White-Outline Under Construction Refactor & Synchronization Fix
+
+**Done**
+- **Debugged & Synchronized Animation Sequence (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Identified and fixed animation root causes: resolved disconnected SVG lines by replacing invalid CSS `height` changes on `<line>` with coordinate updates, and replaced competing nested CSS transforms with a unified GSAP master timeline (`useGSAP`).
+  - Coordinated cable extension, vertical hook hoist, horizontal trolley traversal, panel placement, and hook retract into a synchronized 6-phase sequence where the panel and cable remain locked.
+- **Redesigned into Minimal White-Outline Aesthetic**:
+  - Replaced solid charcoal fills with thin white and light-gray outlines (`stroke="rgba(255, 255, 255, 0.75)"`) and transparent interiors.
+  - Maintained compact sizing (~280px–320px max-width) centered with generous negative space.
+- **Removed Box Container & Minimized Typography (`app/under-construction/page.tsx`)**:
+  - Removed the surrounding card/box container entirely; content now sits directly on the black `PatternWaves` silk canvas.
+  - Replaced oversized headings, subtitle, and large button with a single tiny uppercase label: **`UNDER CONSTRUCTION`** (`font-mono text-[10px] sm:text-xs tracking-[0.3em] text-zinc-400`) and subtle text link `BACK TO HOME →`.
+  - Preserved shared `<Navbar alwaysVisible />` and `<FooterSection />`.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. Verified HTTP 200 on `/under-construction` and confirmed all existing pages remain intact.
+
+### 2026-10-13 — Grayscale Under Construction Page Implementation
+
+**Done**
+- **Created Animated Grayscale Construction Vector Scene (`components/construction/GrayscaleCraneAnimation.tsx`)**:
+  - Implemented an animated SVG construction scene based on provided reference stills: lattice tower crane with trolley and hoist cable, a browser window structure under assembly, suspended UI panels, striped construction barriers, traffic cones, and minimal building silhouettes.
+  - Strict monochrome palette: charcoal, steel gray, silver, and soft white; zero color accents.
+  - CSS keyframe animation loop: crane lowers cable, lifts panel, glides across the jib, seats panel into browser frame, and loops seamlessly. Honored `prefers-reduced-motion`.
+  - Compact size constraint: max-width ~320px–350px, centered with generous padding.
+- **Implemented Route (`app/under-construction/page.tsx`)**:
+  - Reused the shared React Bits `PatternWaves` silk background (`StatusBackground.tsx`) with pure black base and subtle white waves.
+  - Reused site navbar (`<Navbar alwaysVisible />`) and footer (`<FooterSection />`).
+  - Wrapped content in a thin-bordered glassmorphic container (`rounded-3xl border border-white/[0.08] bg-[#07080c]/85 backdrop-blur-xl`) matching Events and Contact pages.
+  - Displayed heading **`UNDER CONSTRUCTION`**, subtitle **`“We're building something worth the wait.”`**, and functional **`BACK TO HOME`** button.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. Verified HTTP 200 on `/under-construction` and confirmed all existing pages remain intact.
+
+### 2026-10-13 — 404 Error Screen: Navigation Actions Update
+
+**Done**
+- **Removed Return to Previous Page Button (`components/404/NotFoundView.tsx`)**: Removed the `RETURN TO PREVIOUS PAGE` secondary button and the unused `useRouter` / `handleReturn` logic.
+- **Added Events Page Link (`components/404/NotFoundView.tsx`)**: Added an uppercase `EXPLORE EVENTS` button linking directly to `/events` alongside `BACK TO HOME`.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. Verified 404 page response in server tests.
+
+### 2026-10-13 — Minimalist Unboxed Status Pages (Strict Per-State Content)
+
+**Done**
+- **Removed All Capsules & Containers Around Text (`components/payment/StatusCard.tsx`)**: Replaced all pill capsules, border chips, and container boxes with pure, clean typography sitting directly on the PatternWaves silk canvas.
+- **Strict Per-Status Presentation**:
+  - **Payment Failed (`/payment/failed`)**: Shows exclusively the glowing Failed sign icon with atmospheric backdrop, the `PAYMENT FAILED` heading, a "Try again" link, and a direct link to the Contact Us page (`/contact`).
+  - **Payment Pending (`/payment/pending`)**: Shows exclusively the glowing Alert sign icon with atmospheric backdrop, the `PAYMENT PENDING` heading, and a direct text link to the Contact Us page (`/contact`), nothing else.
+  - **Payment Successful (`/payment/success`)**: Shows the glowing Success sign icon, `PAYMENT SUCCESSFUL` heading, followed strictly by:
+    - Transaction ID (with copy trigger)
+    - Order ID (with copy trigger)
+    - Team details (if `team_name` or `team_members` provided)
+    - Pure text note: *"NOTE: The QR code will be sent to your email soon"*
+    - Button to explore events.
+- **Centered Status Display in Viewport (`components/payment/StatusLayout.tsx`)**: Configured the status container to take `min-h-screen` with `flex flex-col items-center justify-center`, placing the status element precisely at the vertical and horizontal center of the viewport on initial load.
+- **Removed Star Element from Status Icons (`components/payment/StatusCard.tsx`)**: Removed the decorative 4-point Spark star accent from all status icons (Success, Pending, Failed, Cancelled) for a clean, distraction-free circular sign icon presentation.
+- **Verification**: `npx tsc --noEmit` and `npx eslint` passed with 0 errors. All endpoints verified via server fetch tests.
+  - `app/payment/success/page.tsx`
+  - `app/payment/pending/page.tsx`
+  - `app/payment/failed/page.tsx`
+  - `app/payment/cancelled/page.tsx`
+- **Verification**: `npx tsc --noEmit` and `npx eslint app/payment components/payment` passed with 0 errors. All 4 routes tested and confirmed returning HTTP 200 with complete markup.
+
+### 2026-10-13 — Removed Opening Intro Animation & Fixed Layout Crash
+
+**Done**
+- **Fixed 500 error (`app/layout.tsx`)**: `<NexusIntro />` was rendered in the root layout, but its component (`components/intro/NexusIntro`) and import no longer existed. This caused `Module not found` and then `ReferenceError: NexusIntro is not defined`.
+- **Removed the opening animation**: Deleted the `<NexusIntro />` element. The layout now renders `HorizontalStageTransition`, `DualBackground` and page content only.
+- **Verification**: `npx tsc --noEmit` passed with 0 errors. `GET /` returns 200.
+
+### 2026-10-12 — 404 Error Screen: Black Colors Configuration & High-Contrast Visuals (Option A)
+
+**Done**
+- **Changed FluxLines to Black Ink Mode (`components/404/NotFoundView.tsx`, `components/404/FluxLines.tsx`)**:
+  - Configured `colors={["#000000", "#000000", "#000000"]}` and `lightMode={true}` to activate the WebGL ink pipeline (`outColor = vec4(ink * cover, cover)`), rendering visible black fluid lines with interactive mouse swirls.
+  - Added WebGL shader compile and link error logging in `FluxLines.tsx`.
+- **Configured Black TechText & High-Contrast Typography (`components/404/NotFoundView.tsx`)**:
+  - Set `color="#000000"` and `accentColor="#000000"` on `TechText` for high-contrast `404` dashed letters and particle drift.
+  - Updated headings (`LOST IN SPACE`, `NEXUS VYOMA`), description, badges, and action buttons to crisp high-contrast black/dark styling.
+- **Verification**:
+  - `npx eslint components/404/NotFoundView.tsx components/404/FluxLines.tsx` passed with 0 errors.
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Tested 404 route returning HTTP status 404.
+
+### 2026-10-12 — 404 Error Screen: FluxLines TypeScript Migration & Second Layer TechText Props
+
+**Done**
+- **Resolved `<FluxLines />` Type & React 19 Linting (`components/404/FluxLines.tsx`, `components/ui/FluxLines.tsx`)**:
+  - Migrated `FluxLines` in `components/404/` to a first-class TypeScript component (`FluxLines.tsx`) with strict `FluxLinesProps` typing, removing `.jsx` and `.d.ts` shadowing issues.
+  - Moved `settingsRef.current = settings;` into `useEffect` across `components/404/FluxLines.tsx` and `components/ui/FluxLines.tsx` to comply with React 19 rules and eliminate `react-hooks/refs` errors.
+- **Configured Second Layer `TechText` Properties (`components/404/NotFoundView.tsx`)**:
+  - Implemented the full suite of user-specified props on `<TechText />`: `fontSize={150}`, `reveal="letter"`, `fontFamily=""`, `color="#ffffff"`, `accentColor="#ffffff"`, `letterSpacing={-0.05}`, `reach={200}`, `softness={0.7}`, `strokeWidth={1.5}`, `speed={1}`, `lineStyle="dashed"`, `selection`, `labels`, `draggable`, `sweep`.
+  - Removed synchronous `setState` inside `useEffect` in `NotFoundView.tsx` to eliminate `react-hooks/set-state-in-effect` lint warning.
+- **Verification**:
+  - `npx eslint components/404/NotFoundView.tsx components/404/FluxLines.tsx components/ui/FluxLines.tsx` exited with **0 errors**.
+  - `npx tsc --noEmit` exited with **0 errors**.
+  - HTTP 404 route returns code `404` and renders all layers seamlessly.
+
 ### 2026-10-12 — Organizers Page: 9 Incoming Board Member Placeholders
 
 **Done**
