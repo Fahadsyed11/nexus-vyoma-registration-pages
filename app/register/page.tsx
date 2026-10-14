@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -27,7 +28,7 @@ interface RegisterPageProps {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function RegisterPage({ searchParams }: RegisterPageProps) {
+async function RegisterContent({ searchParams }: RegisterPageProps) {
   const params = searchParams ? await searchParams : {};
   const queryEmail = typeof params.email === 'string' ? params.email.trim() : undefined;
   const isPreview = params.preview === '1' || params.preview === 'true';
@@ -61,6 +62,10 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
     redirect('/payment/success');
   }
 
+  return <RegistrationFormStep verifiedEmail={verifiedEmail} />;
+}
+
+export default function RegisterPage(props: RegisterPageProps) {
   return (
     <div className="relative min-h-screen flex flex-col bg-black text-white selection:bg-[#FF6A00] selection:text-white overflow-x-hidden">
       {/* 01 — ShapeGrid background */}
@@ -71,7 +76,9 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
 
       {/* 03 — Center Form Stage */}
       <main className="flex-1 min-h-screen flex flex-col items-center justify-center w-full px-4 sm:px-6 pt-24 sm:pt-28 pb-12 z-10">
-        <RegistrationFormStep verifiedEmail={verifiedEmail} />
+        <Suspense fallback={null}>
+          <RegisterContent {...props} />
+        </Suspense>
       </main>
     </div>
   );

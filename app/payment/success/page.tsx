@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import StatusLayout from '@/components/payment/StatusLayout';
 import StatusCard from '@/components/payment/StatusCard';
@@ -12,7 +13,7 @@ interface SuccessPageProps {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function SuccessPage({ searchParams }: SuccessPageProps) {
+async function SuccessContent({ searchParams }: SuccessPageProps) {
   const params = searchParams ? await searchParams : {};
 
   const transactionId =
@@ -46,14 +47,22 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
       : undefined;
 
   return (
+    <StatusCard
+      status="success"
+      transactionId={transactionId}
+      orderId={orderId}
+      teamName={teamName}
+      teamMembers={teamMembers}
+    />
+  );
+}
+
+export default function SuccessPage(props: SuccessPageProps) {
+  return (
     <StatusLayout>
-      <StatusCard
-        status="success"
-        transactionId={transactionId}
-        orderId={orderId}
-        teamName={teamName}
-        teamMembers={teamMembers}
-      />
+      <Suspense fallback={<StatusCard status="success" />}>
+        <SuccessContent {...props} />
+      </Suspense>
     </StatusLayout>
   );
 }

@@ -43,6 +43,17 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-14 — Fixed Next.js 16 PPR Suspense Boundaries for Vercel Production Build
+
+**Done**
+- **Wrapped Dynamic Runtime Request Access in `<Suspense>` Boundaries**:
+  - `app/check-email/page.tsx` & `app/email/page.tsx`: Wrapped legacy redirect and `searchParams` parsing inside `<Suspense fallback={null}>`.
+  - `app/verify-email/page.tsx` & `app/email-verify/page.tsx`: Wrapped legacy redirect and `searchParams` parsing inside `<Suspense fallback={null}>`.
+  - `app/payment/success/page.tsx`: Extracted `SuccessContent` reading `searchParams` and wrapped in `<Suspense fallback={<StatusCard status="success" />}>`.
+  - `app/register/page.tsx`: Extracted `RegisterContent` containing `cookies()`, `searchParams`, and DB verification and wrapped in `<Suspense fallback={null}>` inside the layout shell.
+- **Production Build Verification**:
+  - Verified `npm run build` locally: all 39 static and partially prerendered (`◐`) pages generated cleanly in 2.4s with 0 errors.
+
 ### 2026-10-14 — Registration Test Data Reset & Persistent Dev Form Access
 
 **Done**
