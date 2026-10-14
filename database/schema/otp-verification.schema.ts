@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const otpSchema = new mongoose.Schema({
     time: {
         type: Number,
+        required: true,
     },
     code: {
         type: String,
