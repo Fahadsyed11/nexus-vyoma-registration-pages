@@ -39,6 +39,6 @@ const enrolledTeamEventSchema = new mongoose.Schema({
     }
 }, { timestamps: true, overwriteModels: true });
 
-const enrolledTeamEventModel = mongoose.models.EnrolledTeamEvent || mongoose.model("EnrolledTeamEvent", enrolledTeamEventSchema);
+const EnrolledTeamEvent = mongoose.models.EnrolledTeamEvent || mongoose.model("EnrolledTeamEvent", enrolledTeamEventSchema);
 
-export default enrolledTeamEventModel;
+export default EnrolledTeamEvent;

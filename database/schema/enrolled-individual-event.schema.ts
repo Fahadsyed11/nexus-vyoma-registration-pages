@@ -27,6 +27,6 @@ const enrolledIndividualEventSchema = new mongoose.Schema({
     }
 }, { timestamps: true, overwriteModels: true });
 
-const enrolledIndividualEventModel = mongoose.models.EnrolledIndividualEvent || mongoose.model("EnrolledIndividualEvent", enrolledIndividualEventSchema);
+const EnrolledIndividualEvent = mongoose.models.EnrolledIndividualEvent || mongoose.model("EnrolledIndividualEvent", enrolledIndividualEventSchema);
 
-export default enrolledIndividualEventModel;
+export default EnrolledIndividualEvent;
