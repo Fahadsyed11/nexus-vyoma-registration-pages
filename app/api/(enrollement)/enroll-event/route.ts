@@ -1,6 +1,6 @@
 import { connectToDatabase } from "@/database/db";
-import enrolledIndividualEventModel from "@/database/schema/enrolled-individual-event.schema";
-import enrolledTeamEventModel from "@/database/schema/enrolled-team-event.schema";
+import EnrolledIndividualEvent from "@/database/schema/enrolled-individual-event.schema";
+import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
 import Event from "@/database/schema/event.schema";
 import RegisterUser from "@/database/schema/register-user.schema";
 import { verifyJWT } from "@/utilities/jwt";
@@ -53,6 +53,7 @@ export async function GET(request: NextRequest) {
 
         await connectToDatabase();
 
+        // Fetch User Details
         const user = await RegisterUser.findById(userData.user.id);
 
         if (!user) {
@@ -67,16 +68,99 @@ export async function GET(request: NextRequest) {
                 { status: 404 });
         }
 
-        const reservationExpiry = new Date(Date.now() - 5 * 60 * 1000);
+        // Fetch All events.
+        const events = await Event.find();
 
+        const allIndividualEvents = events.filter(event => event.participants_type === "individual");
+        const allTeamEvents = events.filter(event => event.participants_type === "team");
+
+        // Fetch All Enrolled Events (conditions are isPaid: false and reservation_time > currentTime)
+        const currentTime = new Date();
+
+        const enrolledIndividualEvents = await EnrolledIndividualEvent.find({
+            $or: [
+                { isPaid: true },
+                {
+                    isPaid: false,
+                    reservation_time: { $gt: currentTime }
+                }
+            ]
+        });
+
+        const enrolledTeamEvents = await EnrolledTeamEvent.find({
+            $or: [
+                { isPaid: true },
+                {
+                    isPaid: false,
+                    reservation_time: { $gt: currentTime }
+                }
+            ]
+        })
+
+        // Now we will filter the events to get the available individual events based on the participant limit and the number of enrolled events for that event.
+        let availableIndividualEvents: any[] = [];
+        for (let i = 0; i < allIndividualEvents.length; i++) {
+            const event = allIndividualEvents[i];
+
+            // Here we get all the enrollment docs for the current iterated event.
+            const temp = enrolledIndividualEvents.filter(enrolledEvent => enrolledEvent.event_id.toString() === event._id.toString())
+
+            // Here we are checking the iterate event's participant limit with the number of enrolled events for that event. If the participant limit is greater than or equal to the number of enrolled events, we will add that event to the availableIndividualEvents array.
+            if (temp.length < event.participant_limit) {
+                const alreadyEnrolled = temp.some(
+                    enrolledEvent =>
+                        enrolledEvent.register_user_id.toString() ===
+                        user._id.toString()
+                );
+
+                if (!alreadyEnrolled) {
+                    availableIndividualEvents.push(event);
+                }
+            }
+        }
+
+        // Now we will filter the events to get the available team events based on the participant limit and the number of enrolled events for that event.
+        let availableTeamEvents: any[] = [];
+
+        for (let i = 0; i < allTeamEvents.length; i++) {
+            const event = allTeamEvents[i];
+
+            // Get all enrollments for this event
+            const temp = enrolledTeamEvents.filter(
+                enrolledEvent =>
+                    enrolledEvent.event_id.toString() === event._id.toString()
+            );
+
+            // Check whether capacity remains
+            if (event.participant_limit > temp.length) {
+
+                // Check whether the user is already a leader or team member
+                const alreadyEnrolled = temp.some(enrolledEvent =>
+                    enrolledEvent.team_leader_register_user_id.toString() === user._id.toString() ||
+                    enrolledEvent.team_emails.includes(user.email)
+                );
+
+                // Add the event only if the user is not already enrolled
+                if (!alreadyEnrolled) {
+                    availableTeamEvents.push(event);
+                }
+            }
+        }
+
+        const availableEvents = {
+            individualEvents: availableIndividualEvents || [],
+            teamEvents: availableTeamEvents || []
+        }
+
+        // Here we have to show the user's enrolled events and also updates the reservation time for all the enrolled events that are not paid yet. And the reservation time will be extended by 5 minutes from the current time.
         const extendedReservationTime = new Date(Date.now() + 5 * 60 * 1000);
 
-        await enrolledIndividualEventModel.updateMany(
+        await EnrolledIndividualEvent.updateMany(
             {
                 register_user_id: user._id,
                 isPaid: false,
-                isExtended: false,
-                reservation_time: { $gt: reservationExpiry }
+                reservation_time: { $gt: currentTime },
+                isExtended: false
             },
             {
                 $set: {
@@ -84,17 +168,30 @@ export async function GET(request: NextRequest) {
                     isExtended: true
                 }
             }
-        );
+        )
 
-        await enrolledTeamEventModel.updateMany(
+        const enrolledUserIndividualEvents = await EnrolledIndividualEvent.find({
+            $and: [
+                {
+                    register_user_id: user._id
+                },
+                {
+                    isPaid: false,
+                    reservation_time: { $gt: currentTime }
+                }
+            ]
+        }).select("-transaction_id -__v")
+
+
+        await EnrolledTeamEvent.updateMany(
             {
                 $or: [
                     { team_leader_register_user_id: user._id },
                     { team_emails: user.email }
                 ],
                 isPaid: false,
-                isExtended: false,
-                reservation_time: { $gt: reservationExpiry }
+                reservation_time: { $gt: currentTime },
+                isExtended: false
             },
             {
                 $set: {
@@ -102,21 +199,9 @@ export async function GET(request: NextRequest) {
                     isExtended: true
                 }
             }
-        );
+        )
 
-        const enrolledIndividualEvents = await enrolledIndividualEventModel.find({
-            register_user_id: user._id,
-            $or: [
-                { isPaid: true },
-                {
-                    isPaid: false,
-                    reservation_time: { $gt: reservationExpiry }
-                }
-            ]
-        }).select("-transaction_id -__v")
-            .populate("event_id", "title date_time venue image_url entry_fee prize");
-
-        const enrolledTeamEvents = await enrolledTeamEventModel.find({
+        const enrolledUserTeamEvents = await EnrolledTeamEvent.find({
             $and: [
                 {
                     $or: [
@@ -125,87 +210,16 @@ export async function GET(request: NextRequest) {
                     ]
                 },
                 {
-                    $or: [
-                        { isPaid: true },
-                        {
-                            isPaid: false,
-                            reservation_time: { $gt: reservationExpiry }
-                        }
-                    ]
+                    isPaid: false,
+                    reservation_time: { $gt: currentTime }
                 }
             ]
-        }).select("-transaction_id -__v")
-            .populate("event_id", "title date_time venue image_url team_size entry_fee prize min_team_size max_team_size");
+        })
 
-        // Now we are fetching events excluding the ones the user is already enrolled in
-        let events = await Event.find({
-            $nor: [
-                {
-                    _id: {
-                        $in: enrolledIndividualEvents.map(event => event.event_id?._id)
-                    }
-                },
-                {
-                    _id: {
-                        $in: enrolledTeamEvents.map(event => event.event_id?._id)
-                    }
-                }
-            ]
-        });
-
-        if (events.length === 0) {
-            return NextResponse.json(
-                {
-                    message: "No events found",
-                    data: [],
-                    error: "No events available for enrollment",
-                    redirect: false,
-                    redirectUrl: null,
-                },
-                { status: 200 }
-            );
+        const enrollUserEvents = {
+            individualEvents: enrolledUserIndividualEvents || [],
+            teamEvents: enrolledUserTeamEvents || []
         }
-
-        let eventsData = await Promise.all(
-            events.map(async (event) => {
-                if (event.participants_type === "individual") {
-                    const enrolledIndividualCount = await enrolledIndividualEventModel.countDocuments({
-                        event_id: event._id,
-                        $or: [
-                            { isPaid: true },
-                            {
-                                isPaid: false,
-                                reservation_time: { $gt: new Date() }
-                            }
-                        ]
-
-                    });
-                    if (enrolledIndividualCount >= event.participant_limit) {
-                        return null; // Exclude this event from the list
-                    }
-                    return event; // Include this event in the list
-                } else if (event.participants_type === "team") {
-                    // if(event.re)
-                    const enrolledTeamCount = await enrolledTeamEventModel.countDocuments({
-                        event_id: event._id,
-                        $or: [
-                            { isPaid: true },
-                            {
-                                isPaid: false,
-                                reservation_time: { $gt: new Date() }
-                            }
-                        ]
-
-                    });
-                    if (enrolledTeamCount >= event.participant_limit) {
-                        return null; // Exclude this event from the list
-                    }
-                    return event; // Include this event in the list
-                }
-            })
-        )
-
-        eventsData = eventsData.filter(event => event !== null); // Remove null values
 
         return NextResponse.json({
             message: "User and enrolled events fetched successfully",
@@ -215,11 +229,8 @@ export async function GET(request: NextRequest) {
                     name: user.full_name,
                     email: user.email,
                 },
-                enrolledEvents: {
-                    individual: enrolledIndividualEvents,
-                    team: enrolledTeamEvents
-                },
-                events: eventsData,
+                availableEvents,
+                enrollUserEvents
             },
             error: null,
             redirect: false,
