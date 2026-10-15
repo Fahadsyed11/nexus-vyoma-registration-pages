@@ -41,8 +41,13 @@ export default function OrganizersView() {
           NEXUS VYOMA • CULTURE • TECHNOLOGY
         </p>
         <p className="font-sans text-xs sm:text-sm text-zinc-400 mt-1">
-          Three days. Infinite possibilities. ISL Engineering College, Hyderabad.
-        </p>
+Nexus VYOMA is a three-day inter-college fest of ISL Engineering College,
+Hyderabad, bringing together a vibrant audience, creators, innovators and
+communities from across colleges for an unforgettable celebration of technology,
+creativity, entertainment, culture and collaboration. From high-energy performances
+and thrilling exhibitions to technical competitions, food experiences and lifestyle
+events, Nexus VYOMA offers a dynamic platform for talent, ideas and meaningful
+interactions - creating an unmatched college festival experience in the city        </p>
         <p className="font-sans text-[11px] sm:text-xs text-zinc-600 mt-1.5 italic">
           Organiser names and portraits are placeholders. Official details coming soon.
         </p>

@@ -43,6 +43,329 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-15 — Inter Variable Font Turbopack Resolution Fix
+
+**Done**
+- **Turbopack Google Font Query Fix ([`app/layout.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/layout.tsx))**:
+  - Removed the explicit discrete weight array from `Inter` in `next/font/google`, loading it as a true variable font with a single-entry query.
+  - Eliminated the Turbopack build error `Module not found: Can't resolve '@vercel/turbopack-next/internal/font/google/font'` caused by multi-entry font face queries.
+  - Retained full variable weight coverage (100–900), seamlessly supporting `font-extralight` (weight 200) in the About section.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Inter Weight 200 & Justified Text Alignment
+
+**Done**
+- **Inter Extra Light (Weight 200) ([`app/layout.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/layout.tsx), [`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Configured `next/font/google`'s `Inter` declaration to load weight `"200"` (`font-extralight`).
+  - Switched `ScrollReveal` typography in `AboutSection.tsx` to `font-[family-name:var(--font-inter)] font-extralight`.
+- **Justified Alignment ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Set text alignment to justified (`text-justify`) across the paragraph container and text class.
+  - Kept the "ABOUT" heading centered in the middle.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Official Festival Description Text Update
+
+**Done**
+- **Updated Manifesto Text ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Replaced the placeholder one-liner with the full official Nexus Vyoma description:
+    *"Nexus VYOMA is a three-day inter-college fest of ISL Engineering College, Hyderabad, bringing together a vibrant audience, creators, innovators and communities from across colleges for an unforgettable celebration of technology, creativity, entertainment, culture and collaboration..."*
+  - Calibrated typography scaling (`text-[15px] xs:text-[18px] sm:text-[22px] md:text-[26px] lg:text-[30px]`, `leading-[1.3]`) and scroll reveal trigger endpoints (`wordAnimationEnd="bottom 40%"`) for fluid reading across the entire paragraph.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Tightened Typography Spacing & Vertical Rhythm
+
+**Done**
+- **Tightened Typography Spacing ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Tightened letter tracking to `tracking-[-0.06em]` and word spacing to `[word-spacing:-0.15em]`.
+  - Tightened line leading from `1.22` down to `1.14` for a dense, highly cohesive monospace structure.
+  - Reduced vertical margin between the centered "ABOUT" header and the text container from `mb-8 sm:mb-12` to `mb-6 sm:mb-8`.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section JetBrains Mono Typography & Compact Left Alignment
+
+**Done**
+- **JetBrains Mono Typography ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Switched `ScrollReveal` manifesto text to JetBrains Mono (`font-[family-name:var(--font-jetbrains-mono)]` weight 500).
+  - Tightened letter tracking (`tracking-[-0.03em]`) and line height (`leading-[1.22]`) for compact, disciplined monospace rhythm.
+  - Kept the text left-aligned (`text-left self-stretch`) while retaining the centered "ABOUT" display heading in the middle.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Centered Heading & Montserrat 500 Typography
+
+**Done**
+- **Centered "ABOUT" Heading ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Replaced the previous left-aligned pill/eyebrow layout with a centered section header matching the exact display typography, font scale, and styling of `FLAGSHIP ARENAS` (`font-display text-3xl sm:text-5xl lg:text-6xl font-bold tracking-wider text-white uppercase`).
+- **Manifesto Text Font Updated to Montserrat 500 ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Switched `ScrollReveal` typography from Barlow Condensed to Montserrat weight 500 (`font-[family-name:var(--font-montserrat)] font-medium`).
+  - Balanced font sizes (`text-[20px] xs:text-[24px] sm:text-[30px] md:text-[38px] lg:text-[42px]`) and relaxed leading (`leading-[1.32]`) for geometric clarity and readability across all viewports.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — Mobile Page-Scroll Driven Sponsor Card Rotation & Snap
+
+**Done**
+- **Imperative Handle in CircularCarousel ([`components/ui/CircularCarousel.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/CircularCarousel.tsx))**:
+  - Exported `CircularCarouselHandle` and wrapped the component in `React.forwardRef` with `useImperativeHandle`.
+  - Exposed `setAngle(angle)`, `setTarget(angle)`, and `focusIndex(index)` for external GSAP ScrollTrigger control.
+- **Scroll-Linked Rotation & Pinning ([`components/sponsors/SponsorsSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/sponsors/SponsorsSection.tsx))**:
+  - Implemented `gsap.matchMedia()`:
+    - **Mobile (`(max-width: 767px)`)**:
+      - Pins `#sponsors` below the floating navbar (`start: 'top top+=60'`).
+      - Applies GSAP ScrollTrigger `snap: { snapTo: 1 / (count - 1) }`, so each scroll gesture rotates and locks onto exactly one sponsor card ("once at a single scroll").
+      - Rotates the 3D cylinder through 300° across the scroll distance (`end: '+=1400'`), then unpins cleanly into Register CTA.
+      - Tuned mobile card geometry (`cardWidth={260}`, `spread={1.15}`, `depthFade={0.75}`, `autoplay="off"`) for a crisp single-hero sponsor focus.
+      - Added interactive mobile pagination pill dots reflecting the active sponsor and allowing direct tap navigation.
+    - **Desktop (`(min-width: 768px)`)**:
+      - Preserves the ambient drifting 3D cylinder (`autoplay="drift"`, `speed={14}`) and mouse parallax.
+- **Verification**:
+  - Production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — Flagship Deck Mathematical Unpinning & Sponsors Overlap Elimination
+
+**Done**
+- **Geometry-Aware `pinEnd` in ScrollStack ([`components/ui/ScrollStack.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/ScrollStack.tsx))**:
+  - Replaced the arbitrary `containerHeight / 2` release threshold with an exact stack geometry calculation:
+    `pinEnd = endElementTop - bottomOfCardsOnScreen - desiredGap`.
+  - Dynamically measures `lastCard.offsetHeight` and computes `bottomOfCardsOnScreen` (`effectiveStackPositionPx + dist * (N - 1) + lastCardHeight`).
+  - Guarantees that at the exact moment cards unpin to scroll up, the `#sponsors` section is positioned exactly `desiredGap` (64px on mobile, 100px on desktop) below the bottom of the card deck.
+  - As the user continues scrolling, the cards and `#sponsors` move up in unified lockstep with zero overlap on any screen resolution.
+- **Scroll Buffer Runway ([`components/ui/ScrollStack.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/ScrollStack.css))**:
+  - Calibrated `.scroll-stack-inner` bottom runway to `14rem` (mobile), `18rem` (tablet), and `22rem` (desktop) to ensure users have smooth, comfortable reading time to view the completed 6-card stack before release.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — Flagship Arena Border Glow, Section Gap Normalization & Mobile View Optimizations
+
+**Done**
+- **Border Glow Effect ([`components/events/FlagshipScrollDeck.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/FlagshipScrollDeck.tsx))**:
+  - Implemented subtle category-themed border luminescence via dynamic inline `boxShadow`:
+    - Outer glow: `0 0 22px -3px ${theme.color}45` providing a soft, elegant halo around the perimeter.
+    - Dark drop shadow: `0 16px 44px rgba(0, 0, 0, 0.95)` maintaining crisp elevation from the dark cosmic background.
+    - Inset rim light: `inset 0 0 14px -6px ${theme.color}30` providing delicate internal edge lighting without washing out the card interior.
+- **Section Spacing Normalization ([`components/ui/ScrollStack.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/ScrollStack.css), [`components/events/FlagshipScrollDeck.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/FlagshipScrollDeck.tsx), [`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Normalized `.scroll-stack-inner` bottom padding from `12rem` / `20rem` down to `3.5rem` (mobile), `5rem` (tablet), and `6rem` (desktop), completely eliminating the huge 400px+ empty void before Sponsors.
+  - Calibrated `FlagshipScrollDeck` vertical padding to `pt-10 pb-6 sm:pt-16 sm:pb-10`.
+  - Harmonized `AboutSection` bottom padding (`pb-12 sm:pb-16`), creating consistent ~80px (mobile) and ~120px (desktop) rhythm between all sections.
+- **Mobile View Debugging & Optimization ([`components/events/FlagshipScrollDeck.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/FlagshipScrollDeck.tsx), [`components/ui/ScrollStack.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/ScrollStack.tsx))**:
+  - Optimized mobile card footprint: card padding reduced to `p-4 sm:p-8 lg:p-12`, left visual card height tightened to `h-[120px] sm:h-[220px] lg:h-full` with responsive vector icon sizing (`w-12 h-12` on mobile up to `w-24 h-24` on desktop).
+  - Adjusted title font hierarchy (`text-xl sm:text-3xl lg:text-5xl`) and category badge padding.
+  - Implemented responsive mobile stacking logic in `ScrollStack.tsx`: dynamically clamps `itemStackDistance` to `12px` on mobile (< 640px) and ensures cards pin comfortably below the fixed floating navbar (`effectiveStackPositionPx >= 74px`), preventing cards from clipping beyond the mobile viewport.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across all 41 routes.
+
+### 2026-10-15 — Smooth Scroll-Linked Docking Animation & Softened Navbar Typography
+
+**Done**
+- **Hero-to-Navbar Animation Fix ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Implemented the user-approved **Smooth Scroll-Linked Docking** architecture across both mobile and desktop viewports.
+  - Placed the Hero identity (white logo + interactive desktop cursor color reveal mask + ambient back shadow) directly inside the Hero anchor flow so it naturally scrolls with the page without mid-air drifting or viewport-lagging scrub artifacts.
+  - Unified the GSAP ScrollTrigger timeline: as the user scrolls, the hero logo contracts/dissolves (`opacity: 1 -> 0, scale: 1 -> 0.88, y: 0 -> -30`) while the fixed mirror-glass navbar capsule glides in from the top (`y: -20 -> 0, opacity: 0 -> 1`) with its official docked Nexus Vyoma logo cleanly visible.
+  - Retained the footer glide-out exit choreography and bidirectional scroll reversibility.
+- **Navbar Text Boldness Refinement ([`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx), [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Decreased the visual weight and boldness of the Anton navbar text by removing the heavy black drop-shadow (`drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]`), increasing letter tracking (`tracking-[0.08em]`), and using refined neutral text tones (`text-zinc-300 hover:text-white`).
+  - Applied `!font-display !font-normal !tracking-[0.14em]` on the `SpecularButton` CTA text.
+- **Verification**:
+  - TypeScript validation (`npx tsc --noEmit`) passed with **0 errors**.
+  - Production build (`npm run build`) succeeded with **41/41 routes** compiled cleanly in 2.7s.
+
+**Files changed**
+- [`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx)
+- [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Applied Anton Font (.anton-regular) to Navbar Text
+
+**Done**
+- **Anton Navbar Typography ([`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx), [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Applied `font-display tracking-wider` (Anton, 400 weight, `.anton-regular`) to navigation links (`Home`, `Events`, `Organizers`, `Contact`) and mobile drawer navigation links.
+  - Applied `!font-display !tracking-widest` to the `CLAIM YOUR PASS ↗` CTA button text (`SpecularButton`).
+  - Preserved all existing layout, pill dimensions, positioning, WebGL specular shine shaders, and hover underline interactions.
+- **Verification**:
+  - TypeScript validation (`npx tsc --noEmit`) passed with **0 errors**.
+  - Production build (`npm run build`) succeeded with **41/41 routes** compiled cleanly.
+
+**Files changed**
+- [`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx)
+- [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Applied Aldrich Font (.aldrich-regular) to Navbar Text
+
+**Done**
+- **Aldrich Navbar Typography ([`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx), [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Integrated `Aldrich` (400 weight) via `next/font/google` in [`app/layout.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/layout.tsx) with CSS variable `--font-aldrich`.
+  - Added `.aldrich-regular` font definition and `--font-aldrich` tokens in [`app/globals.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/globals.css) and [`brand/tokens.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/brand/tokens.css).
+  - Applied `font-aldrich` to navigation links (`Home`, `Events`, `Organizers`, `Contact`), mobile drawer links, and the `CLAIM YOUR PASS ↗` CTA button text.
+  - Strictly preserved all existing layout, dimensions, positioning, specular shine animations, and styling with zero additional changes.
+- **Verification**:
+  - TypeScript validation (`npx tsc --noEmit`) passed with **0 errors**.
+  - Production build (`npm run build`) compiled successfully in 2.6s (41/41 routes green).
+
+**Files changed**
+- [`app/layout.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/layout.tsx)
+- [`app/globals.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/globals.css)
+- [`brand/tokens.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/brand/tokens.css)
+- [`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx)
+- [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Futuristic Font (Space Grotesk) on Navbar
+
+**Done**
+- **Futuristic Navbar Typography ([`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx), [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Integrated `Space_Grotesk` via `next/font/google` in [`app/layout.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/layout.tsx), exposed via `--font-space-grotesk` and `--font-futuristic`.
+  - Applied `font-futuristic font-medium` to navigation links (`Home`, `Events`, `Organizers`, `Contact`) and mobile drawer navigation.
+  - Applied `!font-futuristic !font-semibold` to `SpecularButton` CTA (`CLAIM YOUR PASS ↗`).
+  - Confirmed the `SpecularButton` is strictly retained only on the CTA ticket button, keeping navigation links as clean, minimal text links.
+- **Verification**:
+  - TypeScript validation (`npx tsc --noEmit`) passed with **0 errors**.
+  - Production build (`npm run build`) succeeded with **41/41 routes** compiled cleanly.
+
+**Files changed**
+- [`app/layout.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/layout.tsx)
+- [`app/globals.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/globals.css)
+- [`brand/tokens.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/brand/tokens.css)
+- [`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx)
+- [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Updated Navbar Typography to Montserrat (Weight 500)
+
+**Done**
+- **Navbar Typography Refinement ([`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx), [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Updated font family and weight of navigation links (`Home`, `Events`, `Organizers`, `Contact`) to Montserrat 500 (`font-subheading font-medium`).
+  - Updated CTA `SpecularButton` (`CLAIM YOUR PASS ↗`) font to Montserrat 500 (`!font-subheading !font-medium`).
+  - Updated mobile menu drawer navigation links to Montserrat 500 (`font-subheading font-medium`).
+  - Preserved exact layout, positioning, WebGL specular animations, and hover underlines.
+- **Verification**:
+  - TypeScript validation (`npx tsc --noEmit`) passed with **0 errors**.
+  - Production build (`npm run build`) succeeded with **41/41 routes** compiled cleanly.
+
+**Files changed**
+- [`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx)
+- [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Reverted Navbar to Original Implementation Across All Pages
+
+**Done**
+- **Reverted Navbar ([`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx), [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Restored the original navbar implementation, typography, navigation links (`Home`, `Events`, `Organizers`, `Contact`), and original CTA button (`CLAIM YOUR PASS` with SpecularButton WebGL shine).
+- **Verification**:
+  - TypeScript validation (`npx tsc --noEmit`) passed with **0 errors**.
+  - Production build (`npm run build`) succeeded with **41/41 routes** compiled cleanly.
+
+**Files changed**
+- [`components/navbar/Navbar.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/navbar/Navbar.tsx)
+- [`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Global Typography System Implementation
+
+**Done**
+- **Google Font Optimization (`app/layout.tsx`)**:
+  - Configured `next/font/google` font loaders for the site-wide typography system:
+    - **Anton** (`weight: "400"`, `variable: "--font-anton"`) for primary display headings.
+    - **Montserrat** (`weight: ["500", "600"]`, `variable: "--font-montserrat"`) for subheadings and card titles.
+    - **Inter** (`weight: ["400", "500", "600"]`, `variable: "--font-inter"`) for body text and interactive UI elements.
+    - **JetBrains Mono** (`weight: ["400", "500"]`, `variable: "--font-jetbrains-mono"`) for technical identifiers and code.
+    - Preserved **Barlow Condensed** (`--font-barlow-condensed`) for editorial quote accents.
+- **Tailwind & Brand Token Harmonization (`app/globals.css`, `brand/tokens.css`)**:
+  - Bound `@theme inline` font tokens: `--font-sans: var(--font-inter)`, `--font-body: var(--font-inter)`, `--font-display: var(--font-anton)`, `--font-subheading: var(--font-montserrat)`, `--font-mono: var(--font-jetbrains-mono)`.
+  - Added CSS utility classes: `.anton-regular`, `.montserrat-medium`, `.inter-regular`, `.inter-medium`, `.jetbrains-mono-regular`.
+  - Aliased `--font-display` to Anton so all existing rolling headings (`EVENTS`, `CONTACT US`, `THE ORGANIZERS`, `REGISTRATION`) retain their signature font style, 3D rolling reveal animation, and poster letter tracking.
+- **Component Typography Application**:
+  - Updated event card titles in [`components/events/EventCard.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/EventCard.tsx) and [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx) to Montserrat Medium (`font-subheading font-medium`).
+  - Switched form field labels in [`components/registration/RegistrationFormStep.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/RegistrationFormStep.tsx) to Inter (`font-sans font-medium`).
+  - Formatted price and numerical displays with Inter (`font-sans font-medium` / `font-sans font-semibold`) instead of forcing generic monospaced fonts.
+- **Verification**:
+  - TypeScript validation (`npx tsc --noEmit`) passed with **0 errors**.
+  - Production build (`npm run build`) succeeded with **41/41 routes** compiled cleanly.
+  - Zero text changes, spelling modifications, or wording alterations introduced across any file.
+
+**Files changed**
+- [`app/layout.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/layout.tsx)
+- [`app/globals.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/globals.css)
+- [`brand/tokens.css`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/brand/tokens.css)
+- [`components/events/EventCard.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/EventCard.tsx)
+- [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx)
+- [`components/registration/RegistrationFormStep.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/RegistrationFormStep.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Nested Independent Event Drawers (`/register/enroll-event`)
+
+**Done**
+- **Nested Independent Event Drawers**:
+  - Replaced the open grid of available event cards inside the outer **Add Events** panel with independent, compact collapsible event rows in [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx).
+  - **Collapsed State**: Displays only the event title, short description, and small chevron indicator.
+  - **Expanded State**: Clicking an individual event row or its chevron smoothly expands only that specific event inline (250ms CSS Grid height & opacity transition), revealing its venue, schedule, entry fee (`₹...` or `FREE`), and action button (`+ Add to Selection` / `+ Setup Squad`).
+  - **Independent Expansion**: Each event's state is individually tracked via `catalog-ind-${id}` and `catalog-team-${id}`; expanding one does not toggle any other event.
+  - **Event Bubbling Isolation**: Clicking `+ Add to Selection` or `+ Setup Squad` has `e.stopPropagation()` to prevent unwanted toggling or collapsing of the drawer.
+  - Preserved plain black background, zero right-side columns, responsive mobile layout, and all checkout workflows.
+
+**Files changed**
+- [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Collapsible Inline Event Selection Drawer (`/register/enroll-event`)
+
+**Done**
+- **Collapsible Inline Drawer Refinements**:
+  - Validated that both Individual and Team available event lists are enclosed in collapsible inline drawers that start in a collapsed state by default.
+  - Added smooth 300ms CSS Grid height and 250ms opacity transitions (`motion-reduce:transition-none`).
+  - Added full keyboard accessibility (`role="button"`, `tabIndex={0}`, Enter/Space key toggling) to drawer triggers.
+  - Implemented event bubbling isolation (`e.stopPropagation()`) on event cards so clicking `+ Add to Selection` or `+ Setup Squad` never toggles or closes the drawer.
+  - Retained all entry fees directly inside their own cards with no separate right-side column.
+
+**Files changed**
+- [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Registered Members Email Spacing & Pipe Delimiters (`/register/enroll-event`)
+
+**Done**
+- **Member Email Display Spacing & Separators**:
+  - Formatted the registered squad members list in [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx) with generous horizontal and vertical spacing (`gap-x-3 gap-y-1`).
+  - Added subtle pipe delimiters (`|`) between each email address to eliminate visual clutter and ensure clean line-wrapping.
+
+**Files changed**
+- [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Replaced Enrolled Terminology with PAID Status (`/register/enroll-event`)
+
+**Done**
+- **PAID Status Terminology**:
+  - Replaced all user-facing "ENROLLED" labels with "PAID" in [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx).
+  - Individual event cards now display an emerald `PAID` badge (`bg-emerald-500/20 text-emerald-400 border-emerald-500/30`).
+  - Section headings updated to `Individual Events (Paid)` and `Team Events (Paid)`.
+  - Header counters updated to `{count} PAID`.
+  - Empty states updated to `No paid individual events yet` and `No paid team events yet`.
+  - Maintained the exact route address at `/register/enroll-event` without alteration.
+
+**Files changed**
+- [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-15 — Unconditional Enrolment Access & Route Redirects (`/register/enroll-event`)
+
+**Done**
+- **Unconditional Access Without Session Guard**:
+  - Removed the strict `NODE_ENV === 'development'` restriction in [`app/register/enroll-event/page.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/register/enroll-event/page.tsx) that forced unauthenticated production/Vercel visits to redirect to `/register/check-email`.
+  - Added an automatic fallback to `queryEmail || 'syedaliquadri100@gmail.com'` so the page is immediately accessible and viewable across development, Vercel deployments, and production.
+- **Route Redirect from `/enroll-event`**:
+  - Added a Next.js permanent redirect in [`next.config.ts`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/next.config.ts) from `/enroll-event` to `/register/enroll-event`.
+
+**Files changed**
+- [`app/register/enroll-event/page.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/register/enroll-event/page.tsx)
+- [`next.config.ts`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/next.config.ts)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
 ### 2026-10-14 — Trackpad Wheel Scrolling & Mobile View Glitch Fixes (`/register/enroll-event`)
 
 **Done**

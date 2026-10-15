@@ -9,7 +9,7 @@
 }
 
 .scroll-stack-inner {
-  padding: 0 1rem 12rem;
+  padding: 0 1rem 14rem;
   width: 100%;
   max-width: 72rem;
   margin: 0 auto;
@@ -18,13 +18,13 @@
 
 @media (min-width: 640px) {
   .scroll-stack-inner {
-    padding: 0 1.5rem 16rem;
+    padding: 0 1.5rem 18rem;
   }
 }
 
 @media (min-width: 1024px) {
   .scroll-stack-inner {
-    padding: 0 2rem 20rem;
+    padding: 0 2rem 22rem;
   }
 }
 

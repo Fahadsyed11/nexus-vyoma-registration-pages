@@ -1,17 +1,31 @@
 import type { Metadata } from "next";
-import { Anton, Space_Grotesk, Barlow_Condensed } from "next/font/google";
+import { Anton, Montserrat, Inter, JetBrains_Mono, Barlow_Condensed, Space_Grotesk, Aldrich } from "next/font/google";
 import "./globals.css";
 import DualBackground from "@/components/ui/DualBackground";
 
 const anton = Anton({
   weight: "400",
-  variable: "--font-display",
+  variable: "--font-anton",
   subsets: ["latin"],
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-body",
+const montserrat = Montserrat({
+  weight: ["500", "600"],
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  weight: ["400", "500"],
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -19,6 +33,20 @@ const spaceGrotesk = Space_Grotesk({
 const barlowCondensed = Barlow_Condensed({
   weight: ["400", "500", "600", "700"],
   variable: "--font-barlow-condensed",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const spaceGrotesk = Space_Grotesk({
+  weight: ["500", "600", "700"],
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const aldrich = Aldrich({
+  weight: "400",
+  variable: "--font-aldrich",
   subsets: ["latin"],
   display: "swap",
 });
@@ -61,7 +89,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${anton.variable} ${spaceGrotesk.variable} ${barlowCondensed.variable} dark h-full antialiased bg-black text-white`}
+      className={`${anton.variable} ${montserrat.variable} ${inter.variable} ${jetbrainsMono.variable} ${barlowCondensed.variable} ${spaceGrotesk.variable} ${aldrich.variable} dark h-full antialiased bg-black text-white`}
       suppressHydrationWarning
     >
       <body

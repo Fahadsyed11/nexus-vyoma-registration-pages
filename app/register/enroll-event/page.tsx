@@ -43,13 +43,9 @@ async function EnrollEventContent({ searchParams }: EnrollEventPageProps) {
     userEmail = payload?.user?.email || payload?.email;
   }
 
-  // Development preview fallback: permit viewing without active session in dev
-  if (!userEmail && (process.env.NODE_ENV === 'development' || queryEmail)) {
-    userEmail = queryEmail || 'syedaliquadri100@gmail.com';
-  }
-
+  // Fallback to demo attendee when no session token is present so the page is always directly accessible
   if (!userEmail) {
-    redirect('/register/check-email');
+    userEmail = queryEmail || 'syedaliquadri100@gmail.com';
   }
 
   await connectToDatabase();

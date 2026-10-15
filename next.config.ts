@@ -16,6 +16,15 @@ const nextConfig: NextConfig = {
       },
     },
   },
+  async redirects() {
+    return [
+      {
+        source: '/enroll-event',
+        destination: '/register/enroll-event',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

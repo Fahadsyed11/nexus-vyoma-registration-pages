@@ -309,12 +309,12 @@ export default function EventEnrollmentView({
       {/* 02 — Individual Enrolled Events Section (Smooth Sideways Scrolling) */}
       <section className="w-full min-w-0 flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base sm:text-lg font-display font-medium uppercase tracking-wider text-zinc-400">
-            Individual Enrolled Events
+          <h2 className="text-base sm:text-lg font-subheading font-medium uppercase tracking-wider text-zinc-400">
+            Individual Events (Paid)
           </h2>
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <span className="text-xs font-mono text-zinc-500">
-              {initialIndividualEnrolled.length} ENROLLED
+            <span className="text-xs font-mono text-emerald-400 font-medium">
+              {initialIndividualEnrolled.length} PAID
             </span>
             {initialIndividualEnrolled.length > 0 && (
               <div className="hidden sm:flex items-center gap-1.5">
@@ -345,7 +345,7 @@ export default function EventEnrollmentView({
 
         {initialIndividualEnrolled.length === 0 ? (
           <div className="w-full p-6 sm:p-8 rounded-2xl border border-white/[0.08] bg-[#07090E] text-zinc-500 font-mono text-xs sm:text-sm text-center">
-            No individually enrolled events yet. Browse and add events below.
+            No paid individual events yet. Browse and add events below.
           </div>
         ) : (
           <div
@@ -380,19 +380,19 @@ export default function EventEnrollmentView({
                         {enrolled.event_title}
                       </div>
                     )}
-                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-mono tracking-wider uppercase bg-[#FF6A00]/20 text-[#FF8833] border border-[#FF6A00]/30 backdrop-blur-sm">
-                      ENROLLED
+                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 backdrop-blur-sm">
+                      PAID
                     </span>
                   </div>
 
                   {/* Title, Metadata & Entry Fee */}
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-display font-semibold text-sm sm:text-base text-white tracking-wide truncate">
+                      <h3 className="font-subheading font-medium text-sm sm:text-base text-white tracking-wide truncate">
                         {enrolled.event_title}
                       </h3>
                       {/* Entry Fee directly inside individual enrolled event */}
-                      <span className="text-xs font-mono font-medium text-emerald-400 shrink-0">
+                      <span className="text-xs font-sans font-medium text-emerald-400 shrink-0">
                         {details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}
                       </span>
                     </div>
@@ -411,17 +411,17 @@ export default function EventEnrollmentView({
       {/* 03 — Team Enrolled Events Section (Expandable Accordion Rows) */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-base sm:text-lg font-display font-medium uppercase tracking-wider text-zinc-400">
-            Team Enrolled Events
+          <h2 className="text-base sm:text-lg font-subheading font-medium uppercase tracking-wider text-zinc-400">
+            Team Events (Paid)
           </h2>
-          <span className="text-xs font-mono text-zinc-500">
-            {initialTeamEnrolled.length} SQUADS
+          <span className="text-xs font-mono text-emerald-400 font-medium">
+            {initialTeamEnrolled.length} PAID
           </span>
         </div>
 
         {initialTeamEnrolled.length === 0 ? (
           <div className="w-full p-6 sm:p-8 rounded-2xl border border-white/[0.08] bg-[#07090E] text-zinc-500 font-mono text-xs sm:text-sm text-center">
-            No team enrolled events yet. Register your team below.
+            No paid team events yet. Register your team below.
           </div>
         ) : (
           <div className="flex flex-col gap-3">
@@ -442,10 +442,10 @@ export default function EventEnrollmentView({
                   >
                     <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-6 pr-2">
                       <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-mono text-[#FF8833] tracking-widest uppercase">
-                          TEAM EVENT
+                        <span className="text-xs font-mono text-emerald-400 tracking-widest uppercase font-semibold">
+                          PAID • TEAM EVENT
                         </span>
-                        <h3 className="font-display font-semibold text-base sm:text-lg text-white">
+                        <h3 className="font-subheading font-medium text-base sm:text-lg text-white">
                           {teamEvent.event_title}
                         </h3>
                         <p className="text-xs text-zinc-400 line-clamp-1">
@@ -459,7 +459,7 @@ export default function EventEnrollmentView({
                         <span>{details?.date_time || 'Schedule TBA'}</span>
                         <span className="hidden sm:inline text-zinc-600">•</span>
                         {/* Entry Fee directly inside team event collapsed row */}
-                        <span className="text-xs font-mono font-medium text-emerald-400">
+                        <span className="text-xs font-sans font-medium text-emerald-400">
                           {details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}
                         </span>
                       </div>
@@ -514,19 +514,26 @@ export default function EventEnrollmentView({
                           </div>
                           <div>
                             <span className="text-zinc-500 uppercase tracking-wider text-[11px]">Fee: </span>
-                            <span className="text-emerald-400 font-medium">{details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}</span>
+                            <span className="text-emerald-400 font-sans font-medium">{details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}</span>
                           </div>
                         </div>
 
-                        {/* Members List - Plain text without small container boxes */}
+                        {/* Members List - Separated with clean distance and '|' delimiter */}
                         {teamEvent.team_members && teamEvent.team_members.length > 0 && (
-                          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1.5 pt-1 text-xs">
+                          <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 pt-1 text-xs">
                             <span className="text-zinc-500 uppercase tracking-wider text-[11px] shrink-0">
                               Registered Members:
                             </span>
-                            <span className="text-zinc-300 font-mono tracking-wide leading-relaxed">
-                              {teamEvent.team_members.join(', ')}
-                            </span>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-zinc-300 font-mono tracking-wide">
+                              {teamEvent.team_members.map((memberEmail, mIdx) => (
+                                <React.Fragment key={mIdx}>
+                                  <span>{memberEmail}</span>
+                                  {mIdx < (teamEvent.team_members?.length ?? 0) - 1 && (
+                                    <span className="text-zinc-600 select-none">|</span>
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -542,7 +549,7 @@ export default function EventEnrollmentView({
       {/* 04 — Add Events Section (Inline Expandable Drawer) */}
       <section className="flex flex-col gap-6 pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-3">
-          <h2 className="text-base sm:text-lg font-display font-medium uppercase tracking-wider text-zinc-400">
+          <h2 className="text-base sm:text-lg font-subheading font-medium uppercase tracking-wider text-zinc-400">
             Add Events
           </h2>
 
@@ -579,12 +586,20 @@ export default function EventEnrollmentView({
             {/* INLINE EXPANDABLE DRAWER ROW (Replaces conventional select menu) */}
             <div className="rounded-2xl border border-white/[0.12] bg-[#07090E] hover:border-[#FF6A00]/40 transition-colors overflow-hidden">
               <div
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsIndividualDrawerOpen((prev) => !prev);
+                  }
+                }}
                 onClick={() => setIsIndividualDrawerOpen((prev) => !prev)}
                 className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none"
               >
                 <div className="flex-1 flex flex-wrap items-center gap-2 sm:gap-3 pr-2 min-w-0">
                   <span className="w-2 h-2 rounded-full bg-[#FF6A00] shrink-0" />
-                  <span className="font-display font-medium text-xs sm:text-base text-white tracking-wide">
+                  <span className="font-subheading font-medium text-xs sm:text-base text-white tracking-wide">
                     Select an Individual Event to Enroll
                   </span>
                   <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 bg-white/[0.05] border border-white/[0.08] px-2 sm:px-2.5 py-0.5 rounded-full shrink-0">
@@ -618,45 +633,125 @@ export default function EventEnrollmentView({
 
               {/* Inline Drawer Content Area (Normal document flow, pushing subsequent content down) */}
               <div
-                className={`grid transition-[grid-template-rows] duration-250 ease-out motion-reduce:transition-none ${
+                className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
                   isIndividualDrawerOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="p-4 sm:p-5 pt-0 border-t border-white/[0.06] flex flex-col gap-3">
+                  <div
+                    className={`p-4 sm:p-5 pt-0 border-t border-white/[0.06] flex flex-col gap-3 transition-opacity duration-250 ease-out motion-reduce:transition-none ${
+                      isIndividualDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
+                  >
                     {eligibleIndividualEvents.length === 0 ? (
                       <div className="py-6 text-center text-xs font-mono text-zinc-500">
-                        All eligible individual events are already enrolled or added to your selection.
+                        All eligible individual events are already paid or added to your selection.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
-                        {eligibleIndividualEvents.map((ev) => (
-                          <div
-                            key={ev._id}
-                            onClick={() => handleSelectIndividualEvent(ev._id)}
-                            className="p-3.5 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:border-[#FF6A00]/50 hover:bg-[#FF6A00]/5 transition-all cursor-pointer flex flex-col justify-between gap-3 group"
-                          >
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-start justify-between gap-2">
-                                <h4 className="font-display font-semibold text-sm text-white group-hover:text-[#FF8833] transition-colors">
-                                  {ev.title}
-                                </h4>
-                                {/* Entry Fee badge placed directly inside event card */}
-                                <span className="text-xs font-mono font-medium text-emerald-400 shrink-0">
-                                  {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
-                                </span>
-                              </div>
-                              <p className="text-xs text-zinc-400 line-clamp-2">
-                                {ev.short_description || ev.long_description || 'Individual competition'}
-                              </p>
-                            </div>
+                      <div className="flex flex-col gap-2.5 pt-3">
+                        {eligibleIndividualEvents.map((ev) => {
+                          const rowId = `catalog-ind-${ev._id}`;
+                          const isExpanded = Boolean(expandedRows[rowId]);
 
-                            <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500 pt-1 border-t border-white/[0.04]">
-                              <span>{ev.venue || 'ISL Campus'}</span>
-                              <span className="text-[#FF6A00] group-hover:underline">+ Add to Selection</span>
+                          return (
+                            <div
+                              key={ev._id}
+                              className="rounded-xl border border-white/[0.08] bg-white/[0.02] hover:border-white/[0.15] transition-colors overflow-hidden"
+                            >
+                              {/* Collapsed Event Row: Title + Short Description + Small Chevron */}
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => toggleRow(rowId)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    toggleRow(rowId);
+                                  }
+                                }}
+                                className="p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer select-none"
+                              >
+                                <div className="flex-1 flex flex-col gap-0.5 min-w-0 pr-2">
+                                  <h4 className="font-subheading font-medium text-sm sm:text-base text-white tracking-wide truncate">
+                                    {ev.title}
+                                  </h4>
+                                  {ev.short_description && (
+                                    <p className="text-xs text-zinc-400 line-clamp-1">
+                                      {ev.short_description}
+                                    </p>
+                                  )}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleRow(rowId);
+                                  }}
+                                  aria-expanded={isExpanded}
+                                  aria-label={isExpanded ? `Collapse ${ev.title} details` : `Expand ${ev.title} details`}
+                                  className="shrink-0 p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
+                                >
+                                  <svg
+                                    className={`w-4 h-4 transition-transform duration-250 ${
+                                      isExpanded ? 'rotate-180 text-[#FF6A00]' : 'text-zinc-400'
+                                    }`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              </div>
+
+                              {/* Expanded Content: Price, Venue, Schedule, Long Description & Action */}
+                              <div
+                                className={`grid transition-[grid-template-rows] duration-250 ease-out motion-reduce:transition-none ${
+                                  isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                                }`}
+                              >
+                                <div className="overflow-hidden">
+                                  <div
+                                    className={`p-3.5 sm:p-4 pt-2 border-t border-white/[0.06] flex flex-col gap-3 transition-opacity duration-200 ${
+                                      isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                                    }`}
+                                  >
+                                    {ev.long_description && ev.long_description !== ev.short_description && (
+                                      <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+                                        {ev.long_description}
+                                      </p>
+                                    )}
+
+                                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono text-zinc-400">
+                                        <span>{ev.venue || 'ISL Campus'}</span>
+                                        <span className="text-zinc-600">•</span>
+                                        <span>{ev.date_time || 'Schedule TBA'}</span>
+                                        <span className="text-zinc-600">•</span>
+                                        <span className="text-emerald-400 font-sans font-semibold">
+                                          {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
+                                        </span>
+                                      </div>
+
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleSelectIndividualEvent(ev._id);
+                                        }}
+                                        className="px-3.5 py-1.5 rounded-lg border border-[#FF6A00]/60 bg-[#FF6A00]/15 hover:bg-[#FF6A00]/25 text-[#FF8833] hover:text-white font-mono text-xs uppercase tracking-wider transition-all cursor-pointer font-medium"
+                                      >
+                                        + Add to Selection
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -691,7 +786,7 @@ export default function EventEnrollmentView({
                       >
                         <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 pr-2">
                           <div className="flex flex-col">
-                            <h4 className="font-display font-semibold text-sm sm:text-base text-white">
+                            <h4 className="font-subheading font-medium text-sm sm:text-base text-white">
                               {ev.title}
                             </h4>
                             <span className="text-xs text-zinc-400 truncate max-w-sm">
@@ -777,12 +872,20 @@ export default function EventEnrollmentView({
             {/* INLINE EXPANDABLE DRAWER ROW FOR TEAM EVENTS */}
             <div className="rounded-2xl border border-white/[0.12] bg-[#07090E] hover:border-[#FF6A00]/40 transition-colors overflow-hidden">
               <div
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setIsTeamDrawerOpen((prev) => !prev);
+                  }
+                }}
                 onClick={() => setIsTeamDrawerOpen((prev) => !prev)}
                 className="p-4 sm:p-5 flex items-center justify-between gap-3 cursor-pointer select-none"
               >
                 <div className="flex-1 flex flex-wrap items-center gap-2 sm:gap-3 pr-2 min-w-0">
                   <span className="w-2 h-2 rounded-full bg-[#FF6A00] shrink-0" />
-                  <span className="font-display font-medium text-xs sm:text-base text-white tracking-wide">
+                  <span className="font-subheading font-medium text-xs sm:text-base text-white tracking-wide">
                     Select a Team Event to Register Squad
                   </span>
                   <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 bg-white/[0.05] border border-white/[0.08] px-2 sm:px-2.5 py-0.5 rounded-full shrink-0">
@@ -816,45 +919,127 @@ export default function EventEnrollmentView({
 
               {/* Inline Drawer Content Area for Team Events */}
               <div
-                className={`grid transition-[grid-template-rows] duration-250 ease-out motion-reduce:transition-none ${
+                className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none ${
                   isTeamDrawerOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="p-4 sm:p-5 pt-0 border-t border-white/[0.06] flex flex-col gap-3">
+                  <div
+                    className={`p-4 sm:p-5 pt-0 border-t border-white/[0.06] flex flex-col gap-3 transition-opacity duration-250 ease-out motion-reduce:transition-none ${
+                      isTeamDrawerOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
+                  >
                     {eligibleTeamEvents.length === 0 ? (
                       <div className="py-6 text-center text-xs font-mono text-zinc-500">
-                        All eligible team events are already enrolled or added to your selection.
+                        All eligible team events are already paid or added to your selection.
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
-                        {eligibleTeamEvents.map((ev) => (
-                          <div
-                            key={ev._id}
-                            onClick={() => handleSelectTeamEvent(ev._id)}
-                            className="p-3.5 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:border-[#FF6A00]/50 hover:bg-[#FF6A00]/5 transition-all cursor-pointer flex flex-col justify-between gap-3 group"
-                          >
-                            <div className="flex flex-col gap-1">
-                              <div className="flex items-start justify-between gap-2">
-                                <h4 className="font-display font-semibold text-sm text-white group-hover:text-[#FF8833] transition-colors">
-                                  {ev.title}
-                                </h4>
-                                {/* Entry Fee badge placed directly inside team event card */}
-                                <span className="text-xs font-mono font-medium text-emerald-400 shrink-0">
-                                  {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
-                                </span>
-                              </div>
-                              <p className="text-xs text-zinc-400 line-clamp-2">
-                                {ev.short_description || ev.long_description || 'Team competition'}
-                              </p>
-                            </div>
+                      <div className="flex flex-col gap-2.5 pt-3">
+                        {eligibleTeamEvents.map((ev) => {
+                          const rowId = `catalog-team-${ev._id}`;
+                          const isExpanded = Boolean(expandedRows[rowId]);
 
-                            <div className="flex items-center justify-between text-[11px] font-mono text-zinc-500 pt-1 border-t border-white/[0.04]">
-                              <span>Squad Size: {ev.team_size || ev.min_team_size || 2}</span>
-                              <span className="text-[#FF6A00] group-hover:underline">+ Setup Squad</span>
+                          return (
+                            <div
+                              key={ev._id}
+                              className="rounded-xl border border-white/[0.08] bg-white/[0.02] hover:border-white/[0.15] transition-colors overflow-hidden"
+                            >
+                              {/* Collapsed Event Row: Title + Short Description + Small Chevron */}
+                              <div
+                                role="button"
+                                tabIndex={0}
+                                onClick={() => toggleRow(rowId)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' || e.key === ' ') {
+                                    e.preventDefault();
+                                    toggleRow(rowId);
+                                  }
+                                }}
+                                className="p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer select-none"
+                              >
+                                <div className="flex-1 flex flex-col gap-0.5 min-w-0 pr-2">
+                                  <h4 className="font-subheading font-medium text-sm sm:text-base text-white tracking-wide truncate">
+                                    {ev.title}
+                                  </h4>
+                                  {ev.short_description && (
+                                    <p className="text-xs text-zinc-400 line-clamp-1">
+                                      {ev.short_description}
+                                    </p>
+                                  )}
+                                </div>
+
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleRow(rowId);
+                                  }}
+                                  aria-expanded={isExpanded}
+                                  aria-label={isExpanded ? `Collapse ${ev.title} details` : `Expand ${ev.title} details`}
+                                  className="shrink-0 p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
+                                >
+                                  <svg
+                                    className={`w-4 h-4 transition-transform duration-250 ${
+                                      isExpanded ? 'rotate-180 text-[#FF6A00]' : 'text-zinc-400'
+                                    }`}
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                  </svg>
+                                </button>
+                              </div>
+
+                              {/* Expanded Content: Price, Squad Size, Venue, Schedule, Details & Action */}
+                              <div
+                                className={`grid transition-[grid-template-rows] duration-250 ease-out motion-reduce:transition-none ${
+                                  isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                                }`}
+                              >
+                                <div className="overflow-hidden">
+                                  <div
+                                    className={`p-3.5 sm:p-4 pt-2 border-t border-white/[0.06] flex flex-col gap-3 transition-opacity duration-200 ${
+                                      isExpanded ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                                    }`}
+                                  >
+                                    {ev.long_description && ev.long_description !== ev.short_description && (
+                                      <p className="text-xs text-zinc-300 leading-relaxed font-sans">
+                                        {ev.long_description}
+                                      </p>
+                                    )}
+
+                                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-mono text-zinc-400">
+                                        <span>Squad: {ev.team_size || ev.min_team_size || 2} Members</span>
+                                        <span className="text-zinc-600">•</span>
+                                        <span>{ev.venue || 'ISL Campus'}</span>
+                                        <span className="text-zinc-600">•</span>
+                                        <span>{ev.date_time || 'Schedule TBA'}</span>
+                                        <span className="text-zinc-600">•</span>
+                                        <span className="text-emerald-400 font-sans font-semibold">
+                                          {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
+                                        </span>
+                                      </div>
+
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleSelectTeamEvent(ev._id);
+                                        }}
+                                        className="px-3.5 py-1.5 rounded-lg border border-[#FF6A00]/60 bg-[#FF6A00]/15 hover:bg-[#FF6A00]/25 text-[#FF8833] hover:text-white font-mono text-xs uppercase tracking-wider transition-all cursor-pointer font-medium"
+                                      >
+                                        + Setup Squad
+                                      </button>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -892,7 +1077,7 @@ export default function EventEnrollmentView({
                         <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 pr-2">
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                              <h4 className="font-display font-semibold text-sm sm:text-base text-white">
+                              <h4 className="font-subheading font-medium text-sm sm:text-base text-white">
                                 {ev.title}
                               </h4>
                               <span className="text-[10px] font-mono bg-[#FF6A00]/20 text-[#FF8833] px-2 py-0.5 rounded-full uppercase">

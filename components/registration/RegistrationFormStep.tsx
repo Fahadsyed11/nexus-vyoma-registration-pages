@@ -191,7 +191,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="full_name"
-                  className="font-mono text-xs text-zinc-400 tracking-wider uppercase"
+                  className="font-sans font-medium text-xs text-zinc-400 tracking-wider uppercase"
                 >
                   Full Name
                 </label>
@@ -219,7 +219,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="phone_number"
-                  className="font-mono text-xs text-zinc-400 tracking-wider uppercase"
+                  className="font-sans font-medium text-xs text-zinc-400 tracking-wider uppercase"
                 >
                   Phone Number
                 </label>
@@ -250,7 +250,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="email"
-                className="font-mono text-xs text-zinc-400 tracking-wider uppercase"
+                className="font-sans font-medium text-xs text-zinc-400 tracking-wider uppercase"
               >
                 Email Address
               </label>
@@ -289,7 +289,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
             <div className="flex flex-col gap-1.5">
               <label
                 htmlFor="institution"
-                className="font-mono text-xs text-zinc-400 tracking-wider uppercase"
+                className="font-sans font-medium text-xs text-zinc-400 tracking-wider uppercase"
               >
                 Institution
               </label>
@@ -317,7 +317,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="year_of_study"
-                  className="font-mono text-xs text-zinc-400 tracking-wider uppercase"
+                  className="font-sans font-medium text-xs text-zinc-400 tracking-wider uppercase"
                 >
                   Year of Study
                 </label>
@@ -353,7 +353,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="degree"
-                  className="font-mono text-xs text-zinc-400 tracking-wider uppercase"
+                  className="font-sans font-medium text-xs text-zinc-400 tracking-wider uppercase"
                 >
                   Degree
                 </label>
@@ -395,7 +395,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="state"
-                  className="font-mono text-xs text-zinc-400 tracking-wider uppercase"
+                  className="font-sans font-medium text-xs text-zinc-400 tracking-wider uppercase"
                 >
                   State
                 </label>
@@ -422,7 +422,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="city"
-                  className="font-mono text-xs text-zinc-400 tracking-wider uppercase"
+                  className="font-sans font-medium text-xs text-zinc-400 tracking-wider uppercase"
                 >
                   City
                 </label>

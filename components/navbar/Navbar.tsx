@@ -193,8 +193,8 @@ export default function Navbar({ alwaysVisible = false }: NavbarProps = {}) {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`text-xs sm:text-sm font-semibold transition-colors duration-200 relative group tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] ${
-                  isActive ? 'text-[#FF6A00]' : 'text-zinc-100 hover:text-white'
+                className={`text-xs sm:text-[13px] font-display font-normal tracking-[0.08em] transition-colors duration-200 relative group ${
+                  isActive ? 'text-[#FF6A00]' : 'text-zinc-300 hover:text-white'
                 }`}
               >
                 <span>{link.label}</span>
@@ -228,7 +228,7 @@ export default function Navbar({ alwaysVisible = false }: NavbarProps = {}) {
               followMouse
               proximity={220}
               autoAnimate={false}
-              className="!font-sans !text-[9px] xs:!text-[11px] sm:!text-xs !font-black !tracking-wider uppercase !py-1.5 xs:!py-2 !px-2.5 xs:!px-3.5 sm:!px-5 !rounded-full select-none cursor-pointer"
+              className="!font-display !font-normal !text-[9px] xs:!text-[11px] sm:!text-xs !tracking-[0.14em] uppercase !py-1.5 xs:!py-2 !px-2.5 xs:!px-3.5 sm:!px-5 !rounded-full select-none cursor-pointer"
             >
               <span>CLAIM YOUR PASS</span>
               <svg
@@ -294,10 +294,10 @@ export default function Navbar({ alwaysVisible = false }: NavbarProps = {}) {
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-2xl transition-all flex items-center justify-between ${
+                  className={`px-4 py-3 rounded-2xl transition-all flex items-center justify-between font-display font-normal tracking-[0.08em] ${
                     isActive
-                      ? 'bg-[#FF6A00]/15 text-[#FF6A00] font-semibold border border-[#FF6A00]/30'
-                      : 'bg-white/[0.03] hover:bg-white/[0.08] text-sm font-medium text-zinc-200 hover:text-white'
+                      ? 'bg-[#FF6A00]/15 text-[#FF6A00] border border-[#FF6A00]/30'
+                      : 'bg-white/[0.03] hover:bg-white/[0.08] text-sm text-zinc-300 hover:text-white'
                   }`}
                 >
                   <span>{link.label}</span>

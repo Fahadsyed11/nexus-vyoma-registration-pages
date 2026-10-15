@@ -128,14 +128,25 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
 
     const endElementTop = endElement ? getElementOffset(endElement) : 0;
 
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+    const effectiveItemStackDistance = isMobile ? Math.min(itemStackDistance, 12) : itemStackDistance;
+    const effectiveStackPositionPx = isMobile ? Math.max(stackPositionPx, 74) : stackPositionPx;
+
+    const lastCardIndex = Math.max(0, cardsRef.current.length - 1);
+    const lastCard = cardsRef.current[lastCardIndex];
+    const lastCardHeight = lastCard ? lastCard.offsetHeight : 360;
+    const desiredGap = isMobile ? 64 : 100;
+    const bottomOfCardsOnScreen =
+      effectiveStackPositionPx + effectiveItemStackDistance * lastCardIndex + lastCardHeight;
+    const pinEnd = endElementTop - bottomOfCardsOnScreen - desiredGap;
+
     cardsRef.current.forEach((card, i) => {
       if (!card) return;
 
       const cardTop = getElementOffset(card, i);
-      const triggerStart = cardTop - stackPositionPx - itemStackDistance * i;
+      const triggerStart = cardTop - effectiveStackPositionPx - effectiveItemStackDistance * i;
       const triggerEnd = cardTop - scaleEndPositionPx;
-      const pinStart = cardTop - stackPositionPx - itemStackDistance * i;
-      const pinEnd = endElementTop - containerHeight / 2;
+      const pinStart = cardTop - effectiveStackPositionPx - effectiveItemStackDistance * i;
 
       const scaleProgress = calculateProgress(scrollTop, triggerStart, triggerEnd);
       const targetScale = baseScale + i * itemScale;
@@ -149,7 +160,7 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
           const currentCard = cardsRef.current[j];
           if (!currentCard) continue;
           const jCardTop = getElementOffset(currentCard, j);
-          const jTriggerStart = jCardTop - stackPositionPx - itemStackDistance * j;
+          const jTriggerStart = jCardTop - effectiveStackPositionPx - effectiveItemStackDistance * j;
           if (scrollTop >= jTriggerStart) {
             topCardIndex = j;
           }
@@ -165,9 +176,9 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
       const isPinned = scrollTop >= pinStart && scrollTop <= pinEnd;
 
       if (isPinned) {
-        translateY = scrollTop - cardTop + stackPositionPx + itemStackDistance * i;
+        translateY = scrollTop - cardTop + effectiveStackPositionPx + effectiveItemStackDistance * i;
       } else if (scrollTop > pinEnd) {
-        translateY = pinEnd - cardTop + stackPositionPx + itemStackDistance * i;
+        translateY = pinEnd - cardTop + effectiveStackPositionPx + effectiveItemStackDistance * i;
       }
 
       const newTransform = {
