@@ -318,6 +318,26 @@ export async function POST(request: NextRequest) {
         const currentTime = new Date();
         let newEvent;
         if (event.participants_type === "individual") {
+
+            const enrolledEvent = await EnrolledIndividualEvent.findOne({
+                register_user_id: user._id,
+                event_id: eventId
+            });
+
+            if (enrolledEvent && enrolledEvent.reservation_time < currentTime) {
+                enrolledEvent.reservation_time = new Date(currentTime.getTime() + 5 * 60 * 1000);
+                enrolledEvent.isExtended = false;
+                await enrolledEvent.save();
+
+                return NextResponse.json({
+                    message: "Reservation time extended for the enrolled event",
+                    data: enrolledEvent,
+                    error: null,
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 200 })
+            }
+
             const count = await EnrolledIndividualEvent.countDocuments({
                 event_id: eventId,
                 $or: [
@@ -338,25 +358,6 @@ export async function POST(request: NextRequest) {
                     redirect: false,
                     redirectUrl: null
                 }, { status: 400 })
-            }
-
-            const enrolledEvent = await EnrolledIndividualEvent.findOne({
-                register_user_id: user._id,
-                event_id: eventId
-            });
-
-            if (enrolledEvent && enrolledEvent.reservation_time < currentTime) {
-                enrolledEvent.reservation_time = new Date(currentTime.getTime() + 5 * 60 * 1000);
-                enrolledEvent.isExtended = false;
-                await enrolledEvent.save();
-
-                return NextResponse.json({
-                    message: "Reservation time extended for the enrolled event",
-                    data: enrolledEvent,
-                    error: null,
-                    redirect: false,
-                    redirectUrl: null
-                }, { status: 200 })
             }
 
             if (!enrolledEvent) {
@@ -384,32 +385,14 @@ export async function POST(request: NextRequest) {
             const { teamName, teamEmails } = body;
             const team_length = teamEmails.length + 1; // +1 for the team leader
 
-            if (event.min_team_size >= team_length || event.max_team_size <= team_length) {
+            if (
+                event.min_team_size >= team_length ||
+                event.max_team_size <= team_length
+            ) {
                 return NextResponse.json({
                     message: "Team size is not valid for this event",
                     data: null,
                     error: "Invalid team size",
-                    redirect: false,
-                    redirectUrl: null
-                }, { status: 400 })
-            }
-
-            const count = await EnrolledTeamEvent.countDocuments({
-                event_id: eventId,
-                $or: [
-                    { isPaid: true },
-                    {
-                        isPaid: false,
-                        reservation_time: { $gt: currentTime }
-                    }
-                ]
-            });
-
-            if (event.participant_limit <= count) {
-                return NextResponse.json({
-                    message: "Participant team limit reached for this event",
-                    data: null,
-                    error: "Participant team limit reached",
                     redirect: false,
                     redirectUrl: null
                 }, { status: 400 })
@@ -435,6 +418,27 @@ export async function POST(request: NextRequest) {
                     redirect: false,
                     redirectUrl: null
                 }, { status: 200 })
+            }
+
+            const count = await EnrolledTeamEvent.countDocuments({
+                event_id: eventId,
+                $or: [
+                    { isPaid: true },
+                    {
+                        isPaid: false,
+                        reservation_time: { $gt: currentTime }
+                    }
+                ]
+            });
+
+            if (event.participant_limit <= count) {
+                return NextResponse.json({
+                    message: "Participant team limit reached for this event",
+                    data: null,
+                    error: "Participant team limit reached",
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 400 })
             }
 
             if (!existingTeamEvent) {
@@ -555,10 +559,10 @@ export async function DELETE(request: NextRequest) {
                     redirectUrl: null
                 }, { status: 404 });
             }
-        } else if (event.participants_type === "team" && event.team_leader_register_user_id.toString() === user._id.toString()) {
-            const deletedEvent = await EnrolledTeamEvent.findOneAndDelete({
+        } else if (event.participants_type === "team") {
+            const deletedEvent = await EnrolledTeamEvent.findOne({
                 _id: enrolledEventId,
-                team_leader_register_user_id: userData.user.id,
+                team_leader_register_user_id: user._id,
                 event_id: eventId
             });
 
@@ -570,6 +574,21 @@ export async function DELETE(request: NextRequest) {
                     redirect: false,
                     redirectUrl: null
                 }, { status: 404 });
+            }
+
+            if (deletedEvent.team_leader_register_user_id.toString() === user._id.toString()) {
+                await EnrolledTeamEvent.findByIdAndDelete(enrolledEventId);
+            } else {
+                return NextResponse.json(
+                    {
+                        message: "Only the team leader can delete the enrolled team event",
+                        data: null,
+                        error: "Unauthorized action",
+                        redirect: false,
+                        redirectUrl: null
+                    },
+                    { status: 403 }
+                );
             }
         }
 
