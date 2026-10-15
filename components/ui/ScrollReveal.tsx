@@ -19,6 +19,8 @@ export interface ScrollRevealProps {
   blurStrength?: number;
   containerClassName?: string;
   textClassName?: string;
+  highlightClassName?: string;
+  renderHighlight?: (term: string, words: React.ReactNode) => React.ReactNode;
   rotationEnd?: string;
   wordAnimationStart?: string;
   wordAnimationEnd?: string;
@@ -34,6 +36,8 @@ export default function ScrollReveal({
   blurStrength = 4,
   containerClassName = '',
   textClassName = '',
+  highlightClassName = 'font-normal text-transparent bg-clip-text bg-gradient-to-r from-[#FF6A00] to-[#FBB03B] drop-shadow-[0_0_16px_rgba(255,106,0,0.35)]',
+  renderHighlight,
   rotationEnd = 'bottom bottom',
   wordAnimationStart = 'top 80%',
   wordAnimationEnd = 'bottom bottom',
@@ -43,15 +47,40 @@ export default function ScrollReveal({
 
   const splitText = useMemo(() => {
     const text = typeof children === 'string' ? children : '';
-    return text.split(/(\s+)/).map((word, index) => {
-      if (word.match(/^\s+$/)) return word;
-      return (
-        <span className="word" key={index}>
-          {word}
-        </span>
-      );
-    });
-  }, [children]);
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    let wordIndex = 0;
+
+    return parts
+      .flatMap((part, partIdx) => {
+        const isHighlight = part.startsWith('**') && part.endsWith('**');
+        const content = isHighlight ? part.slice(2, -2) : part;
+
+        const renderedWords = content.split(/(\s+)/).map((word) => {
+          if (!word) return null;
+          if (word.match(/^\s+$/)) return word;
+          const currentIdx = wordIndex++;
+          return (
+            <span
+              className={`word ${isHighlight ? highlightClassName : ''}`.trim()}
+              key={currentIdx}
+            >
+              {word}
+            </span>
+          );
+        });
+
+        if (isHighlight && renderHighlight) {
+          return (
+            <React.Fragment key={`hl-${partIdx}`}>
+              {renderHighlight(content, renderedWords)}
+            </React.Fragment>
+          );
+        }
+
+        return renderedWords;
+      })
+      .filter(Boolean);
+  }, [children, highlightClassName, renderHighlight]);
 
   useEffect(() => {
     const el = containerRef.current;

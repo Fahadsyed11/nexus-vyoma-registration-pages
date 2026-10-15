@@ -122,13 +122,8 @@ export default function RegisterCTASection() {
 
           {/* Description */}
           <p className="font-sans text-sm sm:text-base lg:text-lg text-zinc-300 leading-relaxed max-w-lg font-normal">
-           Nexus VYOMA is a three-day inter-college fest of ISL Engineering College,
-Hyderabad, bringing together a vibrant audience, creators, innovators and
-communities from across colleges for an unforgettable celebration of technology,
-creativity, entertainment, culture and collaboration. From high-energy performances
-and thrilling exhibitions to technical competitions, food experiences and lifestyle
-events, Nexus VYOMA offers a dynamic platform for talent, ideas and meaningful
-interactions - creating an unmatched college festival experience in the city</p>
+            Be part of Nexus VYOMA 2026. Explore, compete, connect, and create unforgettable memories across three extraordinary days.
+          </p>
 
           {/* Action Buttons: Sleek Black Pills with Circular Arrow Badges */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full sm:w-auto pt-2">

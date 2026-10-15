@@ -6,10 +6,49 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import AboutHoverCard, { HoverCardData } from './AboutHoverCard';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
+
+const ABOUT_HOVER_CARDS: Record<string, HoverCardData> = {
+  'Nexus Vyoma': {
+    badge: '10–12 NOV 2026',
+    title: 'ISL Engineering College',
+    description: 'The premier 3-day inter-college festival uniting tech, culture, and creative minds.',
+    href: '#about',
+    actionText: 'Explore Fest Details',
+  },
+  technology: {
+    badge: 'ARENA I · TECH BATTLES',
+    title: 'Hackathons & Robotics',
+    description: 'High-stakes coding sprints, combat robotics, AI challenges, and developer arenas.',
+    href: '#events',
+    actionText: 'View Tech Events',
+  },
+  creativity: {
+    badge: 'ARENA II · CREATIVE ARTS',
+    title: 'Design & Visual Media',
+    description: 'Automobile expo, digital design showcases, photography, and cinematography.',
+    href: '#events',
+    actionText: 'Explore Creative Tracks',
+  },
+  culture: {
+    badge: 'ARENA III · STAGE & SOUND',
+    title: 'Qawwali, DJ & Dance',
+    description: 'Soulful sufi melodies, competitive choreography, and electrifying concert nights.',
+    href: '#events',
+    actionText: 'Discover Cultural Lineup',
+  },
+  'unforgettable experiences': {
+    badge: 'PASSES NOW OPEN',
+    title: 'All-Access Fest Passes',
+    description: '3 days of unrestricted access to all 6 flagship arenas, concerts, and food fest.',
+    href: '/register',
+    actionText: 'Claim Your Pass',
+  },
+};
 
 export default function AboutSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -35,26 +74,26 @@ export default function AboutSection() {
       });
     },
     { scope: containerRef }
-  );
+  );          
 
   const manifestoText =
-    'Nexus VYOMA is a three-day inter-college fest of ISL Engineering College, Hyderabad, bringing together a vibrant audience, creators, innovators and communities from across colleges for an unforgettable celebration of technology, creativity, entertainment, culture and collaboration. From high-energy performances and thrilling exhibitions to technical competitions, food experiences and lifestyle events, Nexus VYOMA offers a dynamic platform for talent, ideas and meaningful interactions - creating an unmatched college festival experience in the city.';
+    '**Nexus Vyoma** is a three day inter-college fest at ISL Engineering College, Hyderabad, celebrating **technology**, **creativity**, **culture**, and **unforgettable experiences**.';
 
   return (
     <section
       id="about"
       ref={containerRef}
-      className="relative w-full min-h-[75vh] sm:min-h-[80vh] flex flex-col items-center justify-center pt-24 pb-12 sm:pt-36 sm:pb-16 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden select-none"
+      className="relative w-full min-h-[70vh] sm:min-h-[75vh] flex flex-col items-start justify-center pt-24 pb-12 sm:pt-36 sm:pb-16 px-6 sm:px-12 md:px-16 lg:px-24 xl:px-28 bg-transparent overflow-visible select-none"
     >
-      {/* Section Header - Centered like FLAGSHIP ARENAS */}
-      <div className="flex flex-col items-center text-center mb-6 sm:mb-8 px-4 relative z-20">
+      {/* Section Header - Centered in the middle */}
+      <div className="w-full flex flex-col items-center text-center mb-6 sm:mb-8 px-4 relative z-20">
         <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold tracking-wider text-white uppercase">
           ABOUT
         </h2>
       </div>
 
-      {/* Content Container */}
-      <div className="w-full max-w-5xl mx-auto flex flex-col items-start text-left relative z-10 self-stretch">
+      {/* Content Container - Anchored to the left of the screen */}
+      <div className="w-full max-w-5xl mr-auto flex flex-col items-start text-left relative z-10 self-stretch">
         {/* Paragraph container with subtle emblem watermark placed directly behind text */}
         <div className="relative w-full self-stretch">
           {/* Faint, Transparent Cosmic Nexus Emblem Logo Watermark (Behind Text) */}
@@ -73,18 +112,24 @@ export default function AboutSection() {
             />
           </div>
 
-          {/* Official Approved About Paragraph with ScrollReveal (Inter weight 200, justified alignment) */}
-          <div className="relative z-10 w-full text-justify self-stretch">
+          {/* Official Approved About Paragraph with ScrollReveal & ChaiUI/shadcn Hover Cards */}
+          <div className="relative z-10 w-full text-left self-stretch">
             <ScrollReveal
               enableBlur={true}
               blurStrength={5}
               baseOpacity={0.12}
               baseRotation={0}
               wordAnimationStart="top 80%"
-              wordAnimationEnd="bottom 40%"
+              wordAnimationEnd="bottom 35%"
               scrub={1}
               containerClassName="my-0 w-full self-stretch"
-              textClassName="font-[family-name:var(--font-inter)] text-[16px] xs:text-[19px] sm:text-[23px] md:text-[28px] lg:text-[32px] font-extralight leading-[1.38] text-[#FFFFFF] select-none text-justify self-stretch not-italic"
+              textClassName="font-[family-name:var(--font-inter)] text-[20px] xs:text-[24px] sm:text-[30px] md:text-[38px] lg:text-[44px] font-extralight tracking-[-0.06em] [word-spacing:-0.12em] leading-[1.14] text-[#FFFFFF] select-none text-left self-stretch not-italic"
+              highlightClassName="font-light text-transparent bg-clip-text bg-gradient-to-r from-[#FFE0B2] via-[#FFD29D] to-[#FBB03B] drop-shadow-[0_0_8px_rgba(251,176,59,0.18)]"
+              renderHighlight={(term, words) => {
+                const cardData = ABOUT_HOVER_CARDS[term];
+                if (!cardData) return words;
+                return <AboutHoverCard data={cardData}>{words}</AboutHoverCard>;
+              }}
             >
               {manifestoText}
             </ScrollReveal>

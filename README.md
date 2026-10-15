@@ -43,6 +43,88 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-15 — About Section ChaiUI/shadcn Floating Hover Cards
+
+**Done**
+- **Floating Hover Cards Component ([`components/about/AboutHoverCard.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutHoverCard.tsx))**:
+  - Implemented an accessible leaf-level client component inspired by ChaiUI and shadcn HoverCard design patterns.
+  - Features near-black warm glass surface (`bg-[#0B0D17]/95 border border-white/10 backdrop-blur-xl`), 1px gold hairline glint, category micro-badge (`#FBB03B`), title, description, and directional action links (`#events`, `/register`).
+  - Supports desktop hover reveals and mobile/touch toggle with click-outside listener and keyboard accessibility (Enter/Space/Escape).
+- **ScrollReveal Integration ([`components/ui/ScrollReveal.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/ScrollReveal.tsx), [`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Added `renderHighlight` support to `ScrollReveal`, preserving individual `.word` query selection and GSAP scroll scrubbing while wrapping highlighted terms with `AboutHoverCard`.
+  - Configured hover card metadata for `Nexus Vyoma`, `technology`, `creativity`, `culture`, and `unforgettable experiences`.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — Register CTA Section Description Copy Update
+
+**Done**
+- **CTA Section Description ([`components/cta/RegisterCTASection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/cta/RegisterCTASection.tsx))**:
+  - Replaced the verbose paragraph copy with the concise, high-impact invitation statement:
+    *"Be part of Nexus VYOMA 2026. Explore, compete, connect, and create unforgettable memories across three extraordinary days."*
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Subtle Highlighting & Layout Alignment
+
+**Done**
+- **Centered Heading & Left-Screen Text ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Centered the `"ABOUT"` display heading in the middle of the section (`w-full flex flex-col items-center text-center`).
+  - Anchored the manifesto text container strictly to the left of the screen (`mr-auto`, `items-start`, `text-left`) with responsive screen gutters (`px-6 sm:px-12 md:px-16 lg:px-24 xl:px-28`).
+- **Subtle Warm Highlighting Palette ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Softened the highlight styling from neon flame orange to a subtle warm champagne/amber gradient (`#FFE0B2` → `#FFD29D` → `#FBB03B`) with a delicate ambient glow (`drop-shadow-[0_0_8px_rgba(251,176,59,0.18)]`) and lighter weight (`font-light`).
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Nexus Theme Word Highlights
+
+**Done**
+- **Nexus Theme Gradient Highlights ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx), [`components/ui/ScrollReveal.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/ui/ScrollReveal.tsx))**:
+  - Enhanced `ScrollReveal` component to support markdown bold (`**...**`) syntax and customizable `highlightClassName` while maintaining distinct `.word` query selection for GSAP ScrollTrigger word-by-word reveal animations.
+  - Highlighted key thematic words in the About statement (`Nexus Vyoma`, `technology`, `creativity`, `culture`, `unforgettable experiences`) using Nexus flame gradient styling (`text-transparent bg-clip-text bg-gradient-to-r from-[#FF6A00] via-[#FF8A00] to-[#FBB03B]`) and ambient glow drop-shadow (`drop-shadow-[0_0_14px_rgba(255,106,0,0.45)]`).
+  - Preserved Inter Extra Light (weight 200) for standard text, tight squeezed tracking (`tracking-[-0.06em] [word-spacing:-0.12em]`), and left-side alignment.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Letter Spacing Tighter Calibration
+
+**Done**
+- **Slight Letter Spacing Reduction ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Decreased letter tracking from `tracking-[-0.045em]` to `tracking-[-0.06em]` for an even tighter, more unified Inter 200 editorial layout.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Manifesto Text Refinement & Typography Polish
+
+**Done**
+- **18-Word Manifesto Statement ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Replaced the manifesto text with the exact concise 18-word statement:
+    *"Nexus VYOMA is a three-day inter-college fest at ISL Engineering College, Hyderabad, celebrating technology, creativity, culture, and unforgettable experiences."*
+  - Polished responsive typography scaling (`text-[20px] xs:text-[24px] sm:text-[30px] md:text-[38px] lg:text-[44px]`, `leading-[1.14]`) with Inter Extra Light (weight 200), left alignment, and squeezed tracking.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Left Alignment & Squeezed Typography Spacing
+
+**Done**
+- **Left-Side Alignment & Squeezed Spacing ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Switched text alignment from justified to **left-aligned** (`text-left`) on the text container and `ScrollReveal` text.
+  - Squeezed character tracking (`tracking-[-0.045em]`) and word gaps (`[word-spacing:-0.12em]`).
+  - Tightened line leading to `leading-[1.12]` for a dense, high-impact compressed editorial layout without character collision or merging.
+  - Retained the centered "ABOUT" display header in the middle.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — About Section Refined Text Statement & Typography Scaling
+
+**Done**
+- **Refined Manifesto Statement ([`components/about/AboutSection.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/about/AboutSection.tsx))**:
+  - Updated the About section manifesto statement to:
+    *"Nexus VYOMA is a three-day inter-college fest at ISL Engineering College, Hyderabad, celebrating technology, creativity, culture, and entertainment through exciting competitions, performances, exhibitions, and unforgettable experiences."*
+  - Scaled typography for the punchy 27-word statement (`text-[18px] xs:text-[22px] sm:text-[28px] md:text-[34px] lg:text-[40px]`, `leading-[1.32]`) with Inter Extra Light (weight 200) and justified text alignment.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
 ### 2026-10-15 — Inter Variable Font Turbopack Resolution Fix
 
 **Done**
