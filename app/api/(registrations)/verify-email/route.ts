@@ -6,12 +6,28 @@ import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
 import { sendWelcomeEmail } from "@/utilities/emails/welcome-qr";
-import { signJWT } from "@/utilities/jwt";
+import { signJWT, verifyJWT } from "@/utilities/jwt";
 import { validateDto } from "@/dto/validate.dto-helper";
 import { verifyUserEmailDto } from "@/dto/(register)/verify-email.dto";
 
 export async function POST(request: NextRequest) {
     try {
+        const cookieStore = await cookies();
+        const userToken = verifyJWT(cookieStore.get("nv-session")?.value as string);
+        const tempSessionToken = verifyJWT(cookieStore.get("nv-session-temp")?.value as string);
+
+        if (userToken && tempSessionToken) {
+            return NextResponse.json({
+                message: "User already verified",
+                data: null,
+                error: null,
+                redirect: true,
+                redirect_url: "/enrollment-event"
+            }, { status: 400 });
+        } else if (userToken && !tempSessionToken || !userToken && tempSessionToken) {
+            cookieStore.delete("nv-session");
+        }
+
         // Add DTO validation Here
         const body = await request.json();
 
@@ -86,7 +102,6 @@ export async function POST(request: NextRequest) {
         }
 
         // set the cookie for the user session for 2 hours
-        const cookieStore = await cookies();
         const sessionPayload = user
             ? { user: { id: user._id, name: user.full_name, email: user.email }, email: user.email }
             : { email, verified: true };

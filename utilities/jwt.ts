@@ -6,7 +6,7 @@ const secret = process.env.JWT_SECRET || "nexus-vyoma-jwt-secret-2026-production
 
 export function signJWT(payload: object, options?: jwt.SignOptions): string {
     return jwt.sign(payload, secret as string, options || {
-        expiresIn: "2h", // default expiration time of 1 hour
+        expiresIn: "2h", // default expiration time of 2 hour
     });
 }
 
