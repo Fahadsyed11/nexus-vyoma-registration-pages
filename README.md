@@ -43,6 +43,94 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-14 — Trackpad Wheel Scrolling & Mobile View Glitch Fixes (`/register/enroll-event`)
+
+**Done**
+- **Trackpad & Cursor Wheel Scrolling**:
+  - Attached a `{ passive: false }` wheel event listener to the Individual Enrolled Events scroll track to allow scrolling sideways via laptop trackpad gestures and mouse wheel scrolling when hovering over cards.
+  - Included boundary detection (`atStart` / `atEnd`) to seamlessly release vertical page scrolling at the edges.
+  - Replaced `snap-mandatory` with `snap-proximity` and `touch-pan-x` to eliminate snap fighting and jitter during continuous trackpad scrolling.
+- **Mobile View Glitches Resolved**:
+  - **Individual Section Header**: Wrapped counter and hid desktop arrow buttons on small screens (`hidden sm:flex`) to eliminate header squishing on 360px viewports.
+  - **Edge-to-Edge Mobile Scroll**: Applied `-mx-4 px-4 sm:mx-0 sm:px-0` for a native full-bleed carousel experience on mobile devices.
+  - **Attendee Email Wrapping**: Added `break-all sm:break-normal` to the top user email line to prevent long email strings from blowing out narrow viewports.
+  - **Team Event Row Header**: Removed `shrink-0` on collapsed venue/date/fee metadata, applying `flex-wrap` and flexible gap spacing so the accordion chevron is never pushed off-screen.
+  - **Add Events Tab Bar & Drawer Triggers**: Switched tab bar header to `flex-col sm:flex-row gap-3` and drawer titles to `flex-wrap min-w-0` so tabs and category drawers scale down cleanly on all mobile screens.
+
+**Files changed**
+- [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-14 — Individual Enrolled Sideways Scroll & Clean Email Display (`/register/enroll-event`)
+
+**Done**
+- **Sideways Scrolling for Individual Enrolled Events**:
+  - Implemented smooth horizontal scrolling with `snap-x snap-mandatory`, styled thin scrollbars, mouse drag-to-scroll, and left/right navigation arrows for desktop users in [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx).
+- **Removed Artificial Container Boxes & Plain Email Display**:
+  - Removed all nested AI-generated card container boxes from the expanded team accordion panel.
+  - Removed badge/pill container spans around member emails (e.g. `sage.rev@islec.edu.in`), rendering team metadata and member emails directly as clean, unboxed text.
+
+**Files changed**
+- [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-14 — Event Enrolment UI Refinements (`/register/enroll-event`)
+
+**Done**
+- **Personalized Greeting Size**:
+  - Reduced attendee greeting name size to a clean, small `text-base sm:text-lg` with `text-zinc-400` and `text-zinc-200 font-semibold`, matching wireframe proportions.
+- **Heading Opacity & Color**:
+  - Styled section headers ("Individual Enrolled Events", "Team Enrolled Events", "Add Events") with zinc tone (`text-zinc-400 font-medium uppercase tracking-wider`).
+- **Populated Dummy Events Catalog & Fallbacks**:
+  - Populated comprehensive mock events for individual enrolments (Robo Race GP, Code Sprint Battle, Anime Cosplay Showcase), team enrolments (Nexus Web3 Hackathon, Valorant Championship), and available events catalog (Fastest Finger First, Auto CAD Master Challenge, Beatboxing Arena, Robo Wars, Battle of the Bands, Project Expo).
+- **Standalone Checkout Button**:
+  - Removed the total summary box entirely.
+  - Placed the standalone full-width `Proceed To Check Out` button directly at the bottom with glow accents and interactive error feedback.
+
+**Files changed**
+- [`components/registration/EventEnrollmentView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/EventEnrollmentView.tsx)
+- [`app/register/enroll-event/page.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/register/enroll-event/page.tsx)
+- [`README.md`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/README.md)
+
+### 2026-10-14 — Event Enrolment Inline Drawer & Direct Entry Fee Placement (`/register/enroll-event`)
+
+**Done**
+- **Plain Solid Black Background (`app/register/enroll-event/page.tsx`)**:
+  - Removed `RegistrationGridBackground` canvas and animation behavior exclusively on this route.
+  - Page now renders with solid `#000000` black background and no moving background effects.
+- **Inline Expandable Drawer (`components/registration/EventEnrollmentView.tsx`)**:
+  - Replaced native `<select>` menus with inline expandable drawers in both `Individual Events` and `Team Events` tabs.
+  - Compact row with available event count and rotating side chevron arrow ($180^\circ$ transition).
+  - Smooth 250ms CSS Grid height transition (`grid-template-rows: 0fr -> 1fr`, `motion-reduce:transition-none`) expanding naturally inside the panel and pushing subsequent content downward.
+  - Lists eligible events with title, venue, schedule, short description, and entry fee.
+- **Direct Entry Fee Placement (Zero Right-Side Column)**:
+  - Eliminated the separate right-hand entry fee column.
+  - Displayed entry fees directly within each event section: inside enrolled cards, team rows, drawer item cards, and selected rows.
+  - Positioned total summary and `Proceed To Check Out` button cleanly at the bottom of the section in full width.
+
+### 2026-10-14 — Event Enrolment Page with Side Arrow Accordions (`/register/enroll-event`)
+
+**Done**
+- **Created Event Enrolment SSR Page (`app/register/enroll-event/page.tsx`)**:
+  - Implemented authenticated server route reading `nv-session` cookie with development preview fallback.
+  - Fetches the user's registered name (`full_name`) for the personalized greeting (`Hi <Name> :)`).
+  - Queries available competitions from MongoDB `Event` collection (with catalog fallback).
+  - Fetches individual and team enrolled competitions from `EnrolledEvent` schema.
+  - Prerendered with `<Suspense>` boundaries conforming to Next.js 16 Partial Prefetching requirements.
+  - Rendered on a pure black backdrop (`bg-black`) with the official `RegistrationGridBackground`.
+- **Implemented Interactive Client View (`components/registration/EventEnrollmentView.tsx`)**:
+  - Top header with personalized fiery gradient greeting.
+  - Horizontally scrollable row of cards for **Individual Enrolled Events** with fallback banners and schedule info.
+  - Accordion dropdown panels for **Team Enrolled Events** with interactive side arrows rotating 180 degrees and revealing team name, leader email, team size, and member list.
+  - **Add Events** section featuring two reactive tabs (`Individual Events` and `Team Events`):
+    - Individual selector adding eligible competitions with expandable details and independent remove (`×`) control.
+    - Team selector with squad configuration (team name, leader email, dynamic team member addition) and separate remove (`×`) control.
+  - 2-Column responsive layout pairing event selections with a real-time **Entry Fees Summary** table (`Title` | `Entry fees` + authoritative total).
+  - Primary **Proceed To Check Out** specular action button with full client and server validation.
+- **Enrolment API Route (`app/api/register/enroll-event/route.ts`)**:
+  - Handles event validation, team requirements, capacity checks, and server-side fee calculations.
+  - Enrolls user into `EnrolledEvent` collection.
+
 ### 2026-10-14 — Fixed Next.js 16 PPR Suspense Boundaries for Vercel Production Build
 
 **Done**
