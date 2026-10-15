@@ -246,3 +246,125 @@ export async function GET(request: NextRequest) {
         }, { status: 500 })
     }
 }
+
+export async function POST(request: NextRequest) { }
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const { enrolledEventId, eventId } = body;
+        const cookieStore = await cookies();
+        const userToken = cookieStore.get("nv-session")?.value;
+        const tempToken = cookieStore.get("nv-session-temp")?.value;
+
+        if (!userToken || !tempToken) {
+            return NextResponse.json(
+                {
+                    message: "Required tokens are missing",
+                    data: null,
+                    error: "Missing session token",
+                    redirect: true,
+                    redirectUrl: "/register/check-email",
+                },
+                { status: 401 }
+            );
+        }
+
+        const userData = verifyJWT(userToken) as TokenData | null;
+        const tempData = verifyJWT(tempToken) as TokenData | null;
+
+        if (userData === null || tempData === null) {
+            return NextResponse.json(
+                {
+                    message: "Invalid or expired tokens",
+                    data: null,
+                    error: "Invalid session token",
+                    redirect: true,
+                    redirectUrl: "/register/check-email",
+                },
+                { status: 401 }
+            );
+        }
+
+        await connectToDatabase();
+
+        const event = await Event.findById(eventId);
+
+        if (!event) {
+            return NextResponse.json(
+                {
+                    message: "Event not found",
+                    data: null,
+                    error: "Event does not exist",
+                    redirect: false,
+                    redirectUrl: null,
+                },
+                { status: 404 });
+        }
+
+        // Fetch User Details
+        const user = await RegisterUser.findById(userData.user.id);
+
+        if (!user) {
+            return NextResponse.json(
+                {
+                    message: "User not found",
+                    data: null,
+                    error: "User does not exist",
+                    redirect: true,
+                    redirectUrl: "/register/check-email",
+                },
+                { status: 404 });
+        }
+
+        if (event.participants_type === "individual") {
+            const deletedEvent = await EnrolledIndividualEvent.findOneAndDelete({
+                _id: enrolledEventId,
+                register_user_id: userData.user.id,
+                event_id: eventId
+            });
+
+            if (!deletedEvent) {
+                return NextResponse.json({
+                    message: "Enrolled individual event not found or already deleted",
+                    data: null,
+                    error: "Enrolled individual event does not exist",
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 404 });
+            }
+        } else if (event.participants_type === "team" && event.team_leader_register_user_id.toString() === user._id.toString()) {
+            const deletedEvent = await EnrolledTeamEvent.findOneAndDelete({
+                _id: enrolledEventId,
+                team_leader_register_user_id: userData.user.id,
+                event_id: eventId
+            });
+
+            if (!deletedEvent) {
+                return NextResponse.json({
+                    message: "Enrolled team event not found or already deleted",
+                    data: null,
+                    error: "Enrolled team event does not exist",
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 404 });
+            }
+        }
+
+        return NextResponse.json({
+            message: "Enrolled event deleted successfully",
+            data: null,
+            error: null,
+            redirect: false,
+            redirectUrl: null
+        }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({
+            message: "Error deleting enrolled events",
+            data: null,
+            error: error,
+            redirect: false,
+            redirectUrl: null
+        }, { status: 500 })
+    }
+}
