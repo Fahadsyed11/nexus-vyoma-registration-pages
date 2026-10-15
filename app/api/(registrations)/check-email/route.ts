@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
@@ -31,19 +32,19 @@ export async function POST(request: NextRequest) {
             email
         });
 
-        if (!user) {
+        const checkOtp = await OtpVerification.findOne({
+            email
+        }).sort({ time: -1 });
+
+        if (!checkOtp) {
             return NextResponse.json({
-                message: "Email not found",
+                message: "No OTP found for this user. Please request a new OTP.",
                 data: null,
                 error: null,
-                redirect: true,
-                redirect_url: "/register"
+                redirect: false,
+                redirect_url: null
             }, { status: 404 });
         }
-
-        const checkOtp = await OtpVerification.findOne({
-            user_id: user._id
-        }).sort({ time: -1 });
 
         const currentTime = new Date();
 
@@ -59,23 +60,36 @@ export async function POST(request: NextRequest) {
         }
 
         const otp = generateOtp();
+        const recipientName = user?.full_name || "Nexus Attendee";
 
-        console.log("Generated OTP:", otp, "for user:", user.email, "at time:", currentTime);
-        const { success: emailSuccess, error } = await sendOTPEmail(user._id, user.email, user.full_name, otp);
+        console.log("Generated OTP:", otp, "for email:", email, "at time:", currentTime);
+        const { success: emailSuccess, error } = await sendOTPEmail(
+            user?._id ? user._id.toString() : null,
+            email,
+            recipientName,
+            otp
+        );
 
         if (!emailSuccess) {
-            return NextResponse.json({
-                message: "Failed to send OTP email",
-                data: null,
-                error: error,
-                redirect: false,
-                redirect_url: null
-            }, { status: 500 });
+            console.warn("⚠️ AWS SES failed to send OTP email (likely SES Sandbox recipient restrictions):", error);
+            if (process.env.NODE_ENV === "development") {
+                console.log("\n=======================================================");
+                console.log(`🔐 [NEXUS VYOMA DEV OTP]: >>> ${otp} <<< for ${email}`);
+                console.log("=======================================================\n");
+            } else {
+                return NextResponse.json({
+                    message: "Failed to send OTP email",
+                    data: null,
+                    error: error,
+                    redirect: false,
+                    redirect_url: null
+                }, { status: 500 });
+            }
         }
 
         await OtpVerification.create({
-            user_id: user._id,
-            email: user.email,
+            user_id: user?._id || new mongoose.Types.ObjectId(),
+            email: email,
             code: String(otp),
             time: currentTime.getTime(),
         });

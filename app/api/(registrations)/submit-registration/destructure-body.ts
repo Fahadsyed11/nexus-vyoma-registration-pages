@@ -2,23 +2,32 @@ import { RegisterUserFormInput, registerUserFormDto } from "@/dto/(register)/reg
 import { validateDto } from "@/dto/validate.dto-helper";
 
 // use DTO types here
-export function destructureSumbitBody(body: FormData) {
-    const rawData: RegisterUserFormInput = {
-        email: body.get("email") as string,
-        full_name: body.get("full_name") as string,
-        phone_number: body.get("phone_number") as string,
-        city: body.get("city") as string,
-        state: body.get("state") as string,
-        institution: body.get("institution") as string,
-        year_of_study: body.get("year_of_study") as string,
-        degree: body.get("degree") as string,
-    }
+export function destructureSumbitBody(body: FormData | Record<string, unknown>) {
+    const getVal = (key: string): string => {
+        if (typeof FormData !== "undefined" && body instanceof FormData) {
+            const val = body.get(key);
+            return typeof val === "string" ? val : "";
+        }
+        const val = (body as Record<string, unknown>)[key];
+        return typeof val === "string" ? val : val != null ? String(val) : "";
+    };
 
-    const {data, issues, success} = validateDto(registerUserFormDto, rawData);
+    const rawData: RegisterUserFormInput = {
+        email: getVal("email"),
+        full_name: getVal("full_name"),
+        phone_number: getVal("phone_number"),
+        city: getVal("city"),
+        state: getVal("state"),
+        institution: getVal("institution"),
+        year_of_study: getVal("year_of_study"),
+        degree: getVal("degree"),
+    };
+
+    const { data, issues, success } = validateDto(registerUserFormDto, rawData);
 
     return {
         data,
         issues,
         success,
-    }
+    };
 }
