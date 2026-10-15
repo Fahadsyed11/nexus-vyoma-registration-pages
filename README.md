@@ -43,6 +43,21 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-15 — Resolved `issue-18` Merge Conflicts with `main`
+
+**Done**
+- Merged `origin/main` into `issue-18` and resolved conflicts in:
+  - `app/api/(registrations)/verify-email/route.ts`
+  - `package-lock.json`
+- Preserved both branches' verify-email behavior:
+  - retained existing session-cookie verification checks,
+  - kept development OTP bypass logic and updated registration destination routing,
+  - resolved duplicate `tempToken` identifier by renaming the session-check variable.
+- Validation run:
+  - `npm test` (passes; no tests discovered),
+  - `npm run lint -- 'app/api/(registrations)/verify-email/route.ts'` (passes),
+  - `npm run build` (blocked only by network-restricted Google Fonts fetch in this environment).
+
 ### 2026-10-14 — Fixed Next.js 16 PPR Suspense Boundaries for Vercel Production Build
 
 **Done**

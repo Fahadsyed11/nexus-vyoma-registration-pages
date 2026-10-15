@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
     try {
         const cookieStore = await cookies();
         const userToken = verifyJWT(cookieStore.get("nv-session")?.value as string);
-        const tempToken = verifyJWT(cookieStore.get("nv-session-temp")?.value as string);
+        const tempSessionToken = verifyJWT(cookieStore.get("nv-session-temp")?.value as string);
 
-        if (userToken && tempToken) {
+        if (userToken && tempSessionToken) {
             return NextResponse.json({
                 message: "User already verified",
                 data: null,
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
                 redirect: true,
                 redirect_url: "/enrollment-event"
             }, { status: 400 });
-        } else if (userToken && !tempToken || !userToken && tempToken) {
+        } else if (userToken && !tempSessionToken || !userToken && tempSessionToken) {
             cookieStore.delete("nv-session");
         }
 
