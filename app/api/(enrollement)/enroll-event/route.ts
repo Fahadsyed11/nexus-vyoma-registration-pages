@@ -247,7 +247,229 @@ export async function GET(request: NextRequest) {
     }
 }
 
-export async function POST(request: NextRequest) { }
+export async function POST(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const { eventId } = body; // for now only individual events
+        const cookieStore = await cookies();
+        const userToken = cookieStore.get("nv-session")?.value;
+        const tempToken = cookieStore.get("nv-session-temp")?.value;
+
+        if (!userToken || !tempToken) {
+            return NextResponse.json(
+                {
+                    message: "Required tokens are missing",
+                    data: null,
+                    error: "Missing session token",
+                    redirect: true,
+                    redirectUrl: "/register/check-email",
+                },
+                { status: 401 }
+            );
+        }
+
+        const userData = verifyJWT(userToken) as TokenData | null;
+        const tempData = verifyJWT(tempToken) as TokenData | null;
+
+        if (userData === null || tempData === null) {
+            return NextResponse.json(
+                {
+                    message: "Invalid or expired tokens",
+                    data: null,
+                    error: "Invalid session token",
+                    redirect: true,
+                    redirectUrl: "/register/check-email",
+                },
+                { status: 401 }
+            );
+        }
+
+        await connectToDatabase();
+
+        const event = await Event.findById(eventId);
+
+        if (!event) {
+            return NextResponse.json(
+                {
+                    message: "Event not found",
+                    data: null,
+                    error: "Event does not exist",
+                    redirect: false,
+                    redirectUrl: null,
+                },
+                { status: 404 });
+        }
+
+        // Fetch User Details
+        const user = await RegisterUser.findById(userData.user.id);
+
+        if (!user) {
+            return NextResponse.json(
+                {
+                    message: "User not found",
+                    data: null,
+                    error: "User does not exist",
+                    redirect: true,
+                    redirectUrl: "/register/check-email",
+                },
+                { status: 404 });
+        }
+
+        const currentTime = new Date();
+        let newEvent;
+        if (event.participants_type === "individual") {
+            const count = await EnrolledIndividualEvent.countDocuments({
+                event_id: eventId,
+                $or: [
+                    { isPaid: true },
+                    {
+                        isPaid: false,
+                        reservation_time: { $gt: currentTime }
+                    }
+                ]
+            });
+
+
+            if (event.participant_limit <= count) {
+                return NextResponse.json({
+                    message: "Participant limit reached for this event",
+                    data: null,
+                    error: "Participant limit reached",
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 400 })
+            }
+
+            const enrolledEvent = await EnrolledIndividualEvent.findOne({
+                register_user_id: user._id,
+                event_id: eventId
+            });
+
+            if (enrolledEvent && enrolledEvent.reservation_time < currentTime) {
+                enrolledEvent.reservation_time = new Date(currentTime.getTime() + 5 * 60 * 1000);
+                enrolledEvent.isExtended = false;
+                await enrolledEvent.save();
+
+                return NextResponse.json({
+                    message: "Reservation time extended for the enrolled event",
+                    data: enrolledEvent,
+                    error: null,
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 200 })
+            }
+
+            if (!enrolledEvent) {
+                newEvent = await EnrolledIndividualEvent.create({
+                    register_user_id: user._id,
+                    event_id: eventId,
+                    reservation_time: new Date(currentTime.getTime() + 5 * 60 * 1000),
+                    isPaid: false,
+                    isExtended: false,
+                    transaction_id: null
+                });
+
+                if (!newEvent) {
+                    return NextResponse.json({
+                        message: "Error creating enrolled event",
+                        data: null,
+                        error: "Failed to create enrolled event",
+                        redirect: false,
+                        redirectUrl: null
+                    }, { status: 500 })
+                }
+            }
+        } else if (event.participants_type === "team") {
+            const teamLeaderId = user._id;
+            const { teamName, teamEmails } = body;
+            const team_length = teamEmails.length + 1; // +1 for the team leader
+
+            if (event.min_team_size >= team_length || event.max_team_size <= team_length) {
+                return NextResponse.json({
+                    message: "Team size is not valid for this event",
+                    data: null,
+                    error: "Invalid team size",
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 400 })
+            }
+
+            const count = await EnrolledTeamEvent.countDocuments({
+                event_id: eventId,
+                $or: [
+                    { isPaid: true },
+                    {
+                        isPaid: false,
+                        reservation_time: { $gt: currentTime }
+                    }
+                ]
+            });
+
+            if (event.participant_limit <= count) {
+                return NextResponse.json({
+                    message: "Participant team limit reached for this event",
+                    data: null,
+                    error: "Participant team limit reached",
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 400 })
+            }
+
+            const existingTeamEvent = await EnrolledTeamEvent.findOne({
+                event_id: eventId,
+                $or: [
+                    { team_leader_register_user_id: teamLeaderId },
+                    { team_emails: { $in: teamEmails } }
+                ]
+            });
+
+            if (existingTeamEvent && existingTeamEvent.reservation_time < currentTime) {
+                existingTeamEvent.reservation_time = new Date(currentTime.getTime() + 5 * 60 * 1000);
+                existingTeamEvent.isExtended = false;
+                await existingTeamEvent.save();
+
+                return NextResponse.json({
+                    message: "Reservation time extended for the enrolled team event",
+                    data: existingTeamEvent,
+                    error: null,
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 200 })
+            }
+
+            if (!existingTeamEvent) {
+                newEvent = await EnrolledTeamEvent.create({
+                    team_leader_register_user_id: teamLeaderId,
+                    event_id: eventId,
+                    team_length,
+                    team_name: teamName,
+                    team_emails: teamEmails,
+                    reservation_time: new Date(currentTime.getTime() + 5 * 60 * 1000),
+                    isPaid: false,
+                    isExtended: false,
+                    transaction_id: null
+                });
+            }
+        }
+
+        return NextResponse.json({
+            message: "Enrolled event created successfully",
+            data: newEvent,
+            error: null,
+            redirect: false,
+            redirectUrl: null
+        }, { status: 201 });
+    } catch (error) {
+        return NextResponse.json({
+            message: "Error creating enrolled events",
+            data: null,
+            error: error,
+            redirect: false,
+            redirectUrl: null
+        }, { status: 500 })
+    }
+
+}
 
 export async function DELETE(request: NextRequest) {
     try {
