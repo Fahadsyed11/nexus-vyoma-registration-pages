@@ -7,15 +7,13 @@ import {
   ArrowLeft,
   Calendar,
   MapPin,
-  Users,
   User,
-  ShieldCheck,
   AlertCircle,
   Tag,
   Receipt,
-  Sparkles,
 } from 'lucide-react';
 import SlideCommit from '@/components/ui/SlideCommit';
+import RegistrationTitleRolling from '@/components/registration/RegistrationTitleRolling';
 
 export interface UnpaidIndividualEvent {
   _id: string;
@@ -36,6 +34,7 @@ export interface UnpaidTeamEvent {
   venue?: string;
   date_time?: string;
   category?: string;
+  short_description?: string;
   participation_type: 'team';
   team_name: string;
   team_leader_email?: string;
@@ -66,10 +65,18 @@ export default function CheckoutEventView({
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [expandedTeamRows, setExpandedTeamRows] = useState<Record<string, boolean>>({});
 
-  // Compute itemized entry fees
+  const toggleTeamRow = (id: string) => {
+    setExpandedTeamRows((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Compute itemized entry fees (team entry fee is per person: entry_fee * team_size)
   const individualTotal = unpaidIndividualEvents.reduce((acc, ev) => acc + (Number(ev.entry_fee) || 0), 0);
-  const teamTotal = unpaidTeamEvents.reduce((acc, ev) => acc + (Number(ev.entry_fee) || 0), 0);
+  const teamTotal = unpaidTeamEvents.reduce(
+    (acc, ev) => acc + (Number(ev.entry_fee) || 0) * (Number(ev.team_size) || 1),
+    0
+  );
   const subtotal = individualTotal + teamTotal;
   const serviceCharge = 0; // Existing backend defines no service charge
   const total = subtotal + serviceCharge;
@@ -80,21 +87,18 @@ export default function CheckoutEventView({
     setErrorMessage(null);
 
     if (totalEventsCount === 0) {
-      throw new Error('No unpaid events selected for checkout.');
+      setErrorMessage('No unpaid events available for checkout.');
+      throw new Error('No unpaid events available for checkout.');
     }
 
     setIsProcessing(true);
 
     try {
-      // Connect to the existing verified payment flow
-      // Under existing payment behavior, orders navigate to verified completion
-      // Simulate real submission call to maintain contract and handle any network drops
+      // Transition delay while sliding completes and trigger redirect
       await new Promise((resolve) => setTimeout(resolve, 800));
-
-      // Return resolved promise so SlideCommit can transition into the confirmed phase
       return true;
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Payment initiation failed';
+      const msg = err instanceof Error ? err.message : 'Processing failed';
       setErrorMessage(msg);
       throw err;
     } finally {
@@ -103,18 +107,13 @@ export default function CheckoutEventView({
   };
 
   const handlePaymentDone = () => {
-    // Only redirect to success page after SlideCommit confirms successful completion
-    const params = new URLSearchParams({
-      order_id: `ORD_NV26_${Math.floor(10000 + Math.random() * 90000)}`,
-      txnid: `TXN_NV26_${Math.floor(100000 + Math.random() * 900000)}`,
-    });
-    router.push(`/payment/success?${params.toString()}`);
+    router.push('/payment/success');
   };
 
   return (
     <div className="w-full max-w-4xl mx-auto flex flex-col gap-8 text-white pb-20">
-      {/* 01 — Top Navigation & Status Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+      {/* 01 — Top Navigation Bar */}
+      <div className="flex items-center justify-between gap-4 pt-2">
         {/* Back Link */}
         <Link
           href="/register/enroll-event"
@@ -123,23 +122,18 @@ export default function CheckoutEventView({
           <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-1" />
           <span>Back to enrollment</span>
         </Link>
-
-        {/* Payment Status Badge */}
-        <div className="inline-flex items-center gap-2 self-start sm:self-auto px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400 font-mono text-[11px] uppercase tracking-wider">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-          <span>Payment Pending</span>
-        </div>
       </div>
 
-      {/* 02 — Main Page Header */}
+      {/* 02 — Main Page Header with signature rolling animation */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-[#FF6A00] uppercase">
-          <Sparkles className="w-3.5 h-3.5" />
           <span>Step 04 • Final Confirmation</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-medium uppercase tracking-wider text-white">
-          Checkout Event
-        </h1>
+        <RegistrationTitleRolling
+          title="CHECKOUT EVENT"
+          as="h1"
+          className="text-3xl sm:text-4xl md:text-5xl font-display font-medium uppercase tracking-wider text-white"
+        />
         <p className="text-xs sm:text-sm text-zinc-400 max-w-xl">
           Review your enrolled events, verify participant details, and slide to complete your registration checkout.
         </p>
@@ -159,9 +153,9 @@ export default function CheckoutEventView({
               Participant Information
             </h2>
           </div>
-          <span className="inline-flex items-center gap-1 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
-            <ShieldCheck className="w-3 h-3" />
-            Verified
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-0.5 rounded-md">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+            Entry Fees: {total > 0 ? 'Not Paid' : 'Paid'}
           </span>
         </div>
 
@@ -173,6 +167,13 @@ export default function CheckoutEventView({
           <div className="flex flex-col gap-1">
             <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Email Address</span>
             <span className="text-zinc-200 truncate">{userEmail}</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Entry Fees Status</span>
+            <span className="text-amber-400 font-medium text-sm flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
+              {total > 0 ? `Not Paid (₹${total})` : 'Paid'}
+            </span>
           </div>
           {userPhone && (
             <div className="flex flex-col gap-1">
@@ -267,84 +268,157 @@ export default function CheckoutEventView({
               </div>
             ))}
 
-            {/* Team Events */}
-            {unpaidTeamEvents.map((ev) => (
-              <div
-                key={ev._id}
-                className="rounded-2xl border border-white/[0.1] bg-[#0A0D16]/80 p-4 sm:p-5 flex flex-col gap-3 transition-colors hover:border-[#FF6A00]/40"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                  <div className="flex flex-col gap-2 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-purple-500/15 text-purple-300 border border-purple-500/25">
-                        Team
-                      </span>
-                      {ev.category && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-[#FF6A00]/15 text-[#FF8833] border border-[#FF6A00]/25">
-                          {ev.category}
-                        </span>
-                      )}
-                    </div>
-                    <h3 className="font-subheading font-medium text-base sm:text-lg text-white">
-                      {ev.event_title}
-                    </h3>
-                    <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-zinc-400">
-                      {ev.venue && (
-                        <span className="flex items-center gap-1.5">
-                          <MapPin className="w-3.5 h-3.5 text-zinc-500" />
-                          {ev.venue}
-                        </span>
-                      )}
-                      {ev.date_time && (
-                        <span className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-zinc-500" />
-                          {ev.date_time}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+            {/* Team Events (Expandable Drawer Dropdowns matching enroll-event) */}
+            {unpaidTeamEvents.map((ev) => {
+              const isExpanded = Boolean(expandedTeamRows[ev._id]);
 
-                  <div className="sm:text-right shrink-0 font-mono">
-                    <span className="text-[11px] uppercase tracking-wider text-zinc-500 block">Entry Fee</span>
-                    <span className="text-base sm:text-lg font-semibold text-emerald-400">
-                      {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
-                    </span>
-                  </div>
-                </div>
+              return (
+                <div
+                  key={ev._id}
+                  className="rounded-2xl border border-white/[0.1] bg-[#07090E] hover:border-white/[0.2] transition-colors overflow-hidden"
+                >
+                  {/* Collapsed Bar: Clickable Header */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => toggleTeamRow(ev._id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleTeamRow(ev._id);
+                      }
+                    }}
+                    className="p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer select-none"
+                  >
+                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-6 pr-2">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs font-mono text-[#FF6A00] tracking-widest uppercase font-semibold">
+                          TEAM EVENT
+                        </span>
+                        <h3 className="font-subheading font-medium text-base sm:text-lg text-white">
+                          {ev.event_title}
+                        </h3>
+                        <p className="text-xs text-zinc-400 line-clamp-1">
+                          {ev.short_description || 'Team competition'}
+                        </p>
+                      </div>
 
-                {/* Team Details Block */}
-                <div className="mt-2 pt-3 border-t border-white/[0.08] flex flex-col gap-2 text-xs font-mono bg-white/[0.02] p-3 rounded-xl">
-                  <div className="flex items-center justify-between">
-                    <span className="text-zinc-400">Team Name:</span>
-                    <span className="text-white font-medium">{ev.team_name}</span>
-                  </div>
-                  {ev.team_size > 0 && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-zinc-400 flex items-center gap-1.5">
-                        <Users className="w-3.5 h-3.5 text-zinc-500" />
-                        Team Size:
-                      </span>
-                      <span className="text-zinc-200">{ev.team_size} members</span>
-                    </div>
-                  )}
-                  {ev.team_members && ev.team_members.length > 0 && (
-                    <div className="flex flex-col gap-1 pt-1">
-                      <span className="text-zinc-500 text-[11px] uppercase tracking-wider">Members:</span>
-                      <div className="flex flex-wrap gap-1.5">
-                        {ev.team_members.map((m, idx) => (
-                          <span
-                            key={idx}
-                            className="px-2 py-0.5 rounded bg-black/60 border border-white/[0.08] text-[11px] text-zinc-300"
-                          >
-                            {m}
-                          </span>
-                        ))}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono text-zinc-400 min-w-0">
+                        <span>{ev.venue || 'Venue TBA'}</span>
+                        <span className="hidden sm:inline text-zinc-600">•</span>
+                        <span>{ev.date_time || 'Schedule TBA'}</span>
+                        <span className="hidden sm:inline text-zinc-600">•</span>
+                        <span className="text-xs font-sans font-medium text-emerald-400">
+                          {ev.entry_fee ? `₹${ev.entry_fee} / person` : 'FREE'}
+                          {ev.entry_fee && ev.team_size > 1 ? ` (₹${ev.entry_fee * ev.team_size} total)` : ''}
+                        </span>
                       </div>
                     </div>
-                  )}
+
+                    {/* Expand/Collapse Chevron Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTeamRow(ev._id);
+                      }}
+                      aria-expanded={isExpanded}
+                      aria-label={isExpanded ? `Collapse ${ev.event_title} details` : `Expand ${ev.event_title} details`}
+                      className="shrink-0 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00] transition-colors"
+                    >
+                      <svg
+                        className={`w-5 h-5 transition-transform duration-300 ${
+                          isExpanded ? 'rotate-180 text-[#FF6A00]' : 'text-zinc-400'
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  {/* Expanded Dropdown Panel */}
+                  <div
+                    className={`grid transition-[grid-template-rows] duration-250 ease-out motion-reduce:transition-none ${
+                      isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
+                    }`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="p-4 sm:p-5 pt-3 border-t border-white/[0.06] flex flex-col gap-3 font-mono text-xs">
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-zinc-400">
+                          <div>
+                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">TEAM: </span>
+                            <span className="text-white font-medium">{ev.team_name || 'N/A'}</span>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">LEADER: </span>
+                            <span className="text-white font-medium">{ev.team_leader_email || userEmail}</span>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">SQUAD SIZE: </span>
+                            <span className="text-white font-medium">{ev.team_size} members</span>
+                          </div>
+                          <div>
+                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">TOTAL TEAM FEE: </span>
+                            <span className="text-emerald-400 font-sans font-medium">
+                              {ev.entry_fee ? `₹${ev.entry_fee * (ev.team_size || 1)}` : 'FREE'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Members Entry Fees Breakdown */}
+                        <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06] text-xs">
+                          <div className="flex items-center justify-between">
+                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">
+                              MEMBERS ENTRY FEES:
+                            </span>
+                            <span className="text-zinc-400 text-[11px] font-mono">
+                              ₹{ev.entry_fee} per member ({ev.team_size} members = ₹{ev.entry_fee * (ev.team_size || 1)})
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                              <span className="text-[#FF6A00] font-semibold text-[11px]">LEADER:</span>
+                              <span className="text-zinc-200">{ev.team_leader_email || userEmail}</span>
+                              <span className="text-emerald-400 font-mono font-medium">₹{ev.entry_fee}</span>
+                            </div>
+                            {ev.team_members && ev.team_members.map((memberEmail, mIdx) => (
+                              <div key={mIdx} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08]">
+                                <span className="text-zinc-400 font-semibold text-[11px]">MEMBER {mIdx + 1}:</span>
+                                <span className="text-zinc-200">{memberEmail}</span>
+                                <span className="text-emerald-400 font-mono font-medium">₹{ev.entry_fee}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Registered Members List */}
+                        {ev.team_members && ev.team_members.length > 0 && (
+                          <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 pt-1 text-xs">
+                            <span className="text-zinc-500 uppercase tracking-wider text-[11px] shrink-0">
+                              REGISTERED SQUAD:
+                            </span>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-zinc-300 font-mono tracking-wide">
+                              {ev.team_members.map((memberEmail, mIdx) => (
+                                <React.Fragment key={mIdx}>
+                                  <span>{memberEmail}</span>
+                                  {mIdx < ev.team_members.length - 1 && (
+                                    <span className="text-zinc-600 select-none">|</span>
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>
@@ -379,10 +453,38 @@ export default function CheckoutEventView({
             <span className="text-emerald-400">₹0</span>
           </div>
 
-          <div className="flex items-center justify-between text-zinc-400">
-            <span>Entry Fees</span>
-            <span className="text-zinc-200">₹{subtotal}</span>
-          </div>
+          {/* Individual Events Entry Fees */}
+          {unpaidIndividualEvents.length > 0 && (
+            <div className="flex items-center justify-between text-zinc-400">
+              <span>Individual Events Entry Fees ({unpaidIndividualEvents.length})</span>
+              <span className="text-zinc-200">₹{individualTotal}</span>
+            </div>
+          )}
+
+          {/* Team Members Entry Fees */}
+          {unpaidTeamEvents.length > 0 && (
+            <div className="flex flex-col gap-1.5 text-zinc-400">
+              <div className="flex items-center justify-between">
+                <span>
+                  Team Members Entry Fees ({unpaidTeamEvents.reduce((acc, t) => acc + (t.team_size || 1), 0)} members)
+                </span>
+                <span className="text-zinc-200">₹{teamTotal}</span>
+              </div>
+              <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08] text-[11px]">
+                {unpaidTeamEvents.map((t) => (
+                  <div key={t._id} className="flex items-center justify-between">
+                    <span className="text-zinc-300">
+                      {t.event_title}{' '}
+                      <span className="text-zinc-500">
+                        ({t.team_name} • {t.team_size} members × ₹{t.entry_fee})
+                      </span>
+                    </span>
+                    <span className="text-emerald-400 font-medium">₹{t.entry_fee * (t.team_size || 1)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="border-t border-white/[0.1] pt-3 mt-1 flex items-center justify-between text-base sm:text-lg font-bold">
             <span className="text-white uppercase tracking-wider font-display">Total</span>
@@ -400,14 +502,14 @@ export default function CheckoutEventView({
           </div>
         )}
 
-        {/* 06 — Pay Now Interactive Slide Commit Button */}
+        {/* 06 — Interactive Slide Commit Button */}
         <div className="pt-2 flex flex-col items-center justify-center gap-3">
           <SlideCommit
             width={340}
             height={56}
-            label={`Slide to pay ₹${total}`}
-            doneLabel="Payment Confirmed"
-            errorLabel="Payment Failed"
+            label={`Slide to confirm ₹${total}`}
+            doneLabel="Redirecting..."
+            errorLabel="Checkout Failed"
             trackColor="#10131E"
             handleColor="#FF6A00"
             successColor="#22c55e"
@@ -418,7 +520,7 @@ export default function CheckoutEventView({
             className="w-full max-w-[340px]"
           />
           <p className="text-[11px] font-mono text-zinc-500 tracking-wide text-center">
-            Slide the handle to confirm your registration payment. Keyboard: use arrow keys or End.
+            Slide the handle to confirm your registration. Keyboard: use arrow keys or End.
           </p>
         </div>
       </section>

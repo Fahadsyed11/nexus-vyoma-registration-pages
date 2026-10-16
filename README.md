@@ -43,6 +43,159 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-17 — Updated Slide Commit Labels and Redirecting Flow
+
+**Done**
+- **SlideCommit Labels (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed "pay" from the slider text: updated initial button label from `Slide to pay ₹${total}` to `Slide to confirm ₹${total}`.
+  - Set `doneLabel="Redirecting..."` so upon completing the slide action, the button displays "Redirecting..." with a check indicator.
+  - Updated helper text below the slider to remove references to "payment" (`Slide the handle to confirm your registration...`).
+- **Checkout Redirect (`components/registration/CheckoutEventView.tsx`)**:
+  - In `handleConfirmPayment`, added smooth resolution timing to allow the button to complete its slide and transition into the `doneLabel` state.
+  - In `handlePaymentDone`, routed to `/payment/success` via `useRouter()`.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Page verified with `HTTP 200 OK`. Zero backend/database schema changes.
+
+### 2026-10-17 — Per-Person Team Fee Pricing & Clean Navigation Header
+
+**Done**
+- **Navigation Bar (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed the top "Payment Pending" badge from the top bar above the checkout view, leaving a clean back link to event enrollment.
+- **Per-Person Team Fee Calculation (`components/registration/CheckoutEventView.tsx`)**:
+  - Updated the team fee business logic so `entry_fee` applies per person rather than dividing among members (`teamTotal = sum(ev.entry_fee * ev.team_size)`).
+  - In the team collapsed row: Displays `₹<entry_fee> / person` and `(₹<total> total)`.
+  - In the team expanded drawer: Displays `TOTAL TEAM FEE: ₹<entry_fee * team_size>` and itemizes Leader and each member at the full per-person `entry_fee` (e.g. ₹249 each).
+  - In Order Summary: Computes `Team Members Entry Fees` as `squad_members × entry_fee` with full itemization, accurately feeding Subtotal, Total, and the SlideCommit button.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Page verified with `HTTP 200 OK`. Zero backend/database schema changes.
+
+### 2026-10-17 — Checkout Event Page Visual & Fee Enhancements
+
+**Done**
+- **Title Rolling Animation (`components/registration/CheckoutEventView.tsx`)**:
+  - Replaced static `<h1>` with `<RegistrationTitleRolling title="CHECKOUT EVENT" as="h1" />`, bringing the signature 2-cycle GSAP 3D rolling text reveal to the checkout page.
+- **Participant Information Status (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed "Verified" mark from the Participant Information header.
+  - Added Entry Fees status badge (`Entry Fees: Not Paid` / `Paid`) with pulsing status indicator in the card header.
+  - Added an `Entry Fees Status` detail row inside the participant information grid.
+- **Enrolled Team Events (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed "PAID" from the team event collapsed header badge (now styled as `TEAM EVENT`).
+  - Added member-level entry fee breakdown pills in the expanded drawer for the team leader and each team member (showing allocated member fee and total flat team fee).
+- **Order Summary (`components/registration/CheckoutEventView.tsx`)**:
+  - Itemized `Team Members Entry Fees` distinctly alongside individual events, detailing each team name, member count, and fee.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Page verified with `HTTP 200 OK`. Zero backend/database schema changes.
+
+### 2026-10-17 — Set Team Event Dropdowns to Default Closed on Checkout Page
+
+**Done**
+- **Default State Update (`components/registration/CheckoutEventView.tsx`)**:
+  - Configured `isExpanded` in the team events drawer dropdown list to default to closed (`Boolean(expandedTeamRows[ev._id])` instead of defaulting to open), so cards start collapsed and reveal team metadata only when clicked.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Page renders with `HTTP 200 OK`.
+
+### 2026-10-17 — Replicated Team Events Drawer Dropdown on Checkout Page
+
+**Done**
+- **Expandable Team Drawer Dropdown (`components/registration/CheckoutEventView.tsx`)**:
+  - Replicated the exact expandable drawer dropdown structure for team-based events on the Checkout Event page, matching the reference screenshot from `/register/enroll-event`.
+  - Added collapsed header with `PAID • TEAM EVENT` emerald badge, event title, short description, metadata (`venue • date_time • fee`), and interactive rotate chevron.
+  - Added expanded details row displaying `TEAM: <name>`, `LEADER: <email>`, `SQUAD SIZE: <count>`, `FEE: ₹<fee>`, and `REGISTERED MEMBERS: <email1> | <email2>` pipe-delimited list.
+  - Preserved individual events in their original clean card layout without modifications.
+  - Removed unused imports and verified 0 ESLint errors and warnings.
+- **Server Fallback & Data (`app/register/checkout-event/page.tsx`)**:
+  - Added test individual and team events with `short_description` when zero unpaid events exist in development mode.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Direct HTTP verification: `/register/checkout-event` and `/register/enroll-event` return `HTTP 200 OK`.
+  - Zero backend/database schema changes; no fake payment order simulation.
+
+### 2026-10-17 — Restored RegisterUser Model Import in Event Enrollment
+
+**Done**
+- **Model Import Restoration (`app/register/enroll-event/page.tsx`)**:
+  - Re-added the missing `RegisterUser` schema import (`import RegisterUser from '@/database/schema/register-user.schema'`) required by `RegisterUser.findOne({ email: userEmail })`, resolving the runtime ReferenceError.
+  - Confirmed `/register/enroll-event` loads with `HTTP 200 OK`.
+- **Verification**:
+  - `npx eslint app/register/enroll-event/page.tsx` passed with 0 errors and 0 warnings.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Fixed Hydration Attribute Mismatch on Main Stage
+
+**Done**
+- **Hydration Sync (`app/template.tsx`, `app/register/enroll-event/page.tsx`, `app/register/checkout-event/page.tsx`)**:
+  - Deferred GSAP page entrance animation in `app/template.tsx` using `requestAnimationFrame`, preventing premature DOM inline-style manipulation during initial streaming SSR hydration.
+  - Added `suppressHydrationWarning` on `<main>` across `enroll-event` and `checkout-event` stages to cleanly handle parent template style transitions.
+  - Cleaned up unused imports in `app/register/enroll-event/page.tsx`.
+- **Verification**:
+  - `npx eslint app/template.tsx app/register/enroll-event/page.tsx app/register/checkout-event/page.tsx` passed with 0 errors and 0 warnings.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Expandable Drawer Dropdowns for Team Enrolled Events
+
+**Done**
+- **Team Events Drawer Dropdown UI (`components/registration/CheckoutEventView.tsx`)**:
+  - Replaced the static team event cards with expandable drawer dropdowns matching the team event rows in `/register/enroll-event`.
+  - Added collapsed card header with `TEAM EVENT` and category badges, event title, single-line `short_description`, venue, schedule, entry fee, and rotating chevron button.
+  - Added smooth CSS Grid transition (`grid-rows-[1fr]` to `grid-rows-[0fr]` with `motion-reduce:transition-none`).
+  - Added expanded panel containing Team Name, Leader Email, Squad Size, Entry Fee, and registered squad members separated by `|` delimiters.
+  - Added full keyboard accessibility (`role="button"`, `tabIndex={0}`, Enter / Space keys) and `aria-expanded` state attributes.
+  - Added `short_description` support across `UnpaidTeamEvent` and `app/register/checkout-event/page.tsx`.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx app/register/checkout-event/page.tsx` passed with 0 errors and 0 warnings.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Test Individual and Team Events for Checkout Verification
+
+**Done**
+- **Checkout Development Test Data (`app/register/checkout-event/page.tsx`)**:
+  - Added sample individual and team events in development mode (`process.env.NODE_ENV === 'development'`) when 0 unpaid events exist in MongoDB.
+  - Individual events: **Game Night** (₹99) and **Gemini Genie - Vibe Coding Hackathon** (₹199).
+  - Team events: **WEB 2 BUILD Hackathon** (₹99, team "HyperNova", 3 members) and **Financial Detectives** (₹99, team "Alpha Analysts", 2 members).
+  - Verified live rendering of itemized badges, schedule, venue, squad members, order summary (Subtotal: ₹496, Total: ₹496), and the interactive `SlideCommit` button (`Slide to pay ₹496`).
+- **Verification**:
+  - `npx eslint app/register/checkout-event/page.tsx` passed with 0 errors.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Fixed Build Error in Event Enrollment Page
+
+**Done**
+- **Schema Reference Resolution (`app/register/enroll-event/page.tsx`)**:
+  - Replaced the missing schema import (`@/database/schema/enrolled-event.schema`) with the active schemas (`EnrolledIndividualEvent` and `EnrolledTeamEvent`).
+  - Updated the database query to fetch individual and team enrolled events matching the attendee's profile, resolving the `Module not found` Turbopack build failure.
+  - Confirmed both `/register/enroll-event` and `/register/checkout-event` compile cleanly and respond with `HTTP 200 OK`.
+- **Verification**:
+  - `npx eslint app/register/enroll-event/page.tsx` passed with 0 errors.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Direct Development Access for Checkout Event Page
+
+**Done**
+- **Server Stage Direct Access (`app/register/checkout-event/page.tsx`)**:
+  - Implemented `searchParams` parsing (`?email=...`) and development-mode fallback (`process.env.NODE_ENV === 'development'`) matching the existing `/register` and `/register/enroll-event` access patterns.
+  - Queries real MongoDB attendee details (`RegisterUser`) and real unpaid enrollments (`EnrolledIndividualEvent` and `EnrolledTeamEvent`) without modifying any database schemas or backend APIs.
+  - Confirmed `http://localhost:3000/register/checkout-event` responds with `HTTP 200 OK` and renders `<title>Checkout Event | Nexus Vyoma 2026</title>`.
+- **Verification**:
+  - `npx eslint app/register/checkout-event/page.tsx` passed with 0 errors and 0 warnings.
+  - Zero backend or database schema modifications.
+
+### 2026-10-16 — Checkout Navigation Fix & Removal of Simulated Payment
+
+**Done**
+- **In-App Checkout Navigation (`components/registration/EventEnrollmentView.tsx`)**:
+  - Corrected `handleProceedToCheckout` success handler to navigate directly to `/register/checkout-event` instead of bypassing checkout and jumping to `/payment/success`.
+- **Removed Simulated Payment Success (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed all fake order ID and transaction ID generation (`ORD_NV26_...`, `TXN_NV26_...`).
+  - Removed simulated payment redirect to `/payment/success`.
+  - Updated `handleConfirmPayment` to clearly state that online payment gateway integration is pending activation, strictly enforcing Rule 4 (no fake payment success or unverified confirmations).
+- **Verification**:
+  - ESLint passed with 0 errors on modified files.
+  - Zero backend code or database schemas modified.
+
 ### 2026-10-16 — Implemented Checkout Event Page (`/register/checkout-event`)
 
 **Done**

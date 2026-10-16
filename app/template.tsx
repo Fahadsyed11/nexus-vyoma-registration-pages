@@ -12,25 +12,31 @@ export default function Template({ children }: { children: React.ReactNode }) {
     const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (isReduced) return;
 
-    const ctx = gsap.context(() => {
-      // Synchronized horizontal stage arrival for dynamic page content (targets main so fixed viewport navbar stays rock-solid)
-      const target = containerRef.current?.querySelector('main') || containerRef.current;
-      if (!target) return;
+    let ctx: gsap.Context | null = null;
+    const rafId = requestAnimationFrame(() => {
+      ctx = gsap.context(() => {
+        // Synchronized horizontal stage arrival for dynamic page content (targets main so fixed viewport navbar stays rock-solid)
+        const target = containerRef.current?.querySelector('main') || containerRef.current;
+        if (!target) return;
 
-      gsap.fromTo(
-        target,
-        { x: 30, opacity: 0.92 },
-        {
-          x: 0,
-          opacity: 1,
-          duration: 0.45,
-          ease: 'power2.out',
-          clearProps: 'transform,opacity',
-        }
-      );
-    }, containerRef);
+        gsap.fromTo(
+          target,
+          { x: 30, opacity: 0.92 },
+          {
+            x: 0,
+            opacity: 1,
+            duration: 0.45,
+            ease: 'power2.out',
+            clearProps: 'transform,opacity',
+          }
+        );
+      }, containerRef);
+    });
 
-    return () => ctx.revert();
+    return () => {
+      cancelAnimationFrame(rafId);
+      ctx?.revert();
+    };
   }, []);
 
   return (

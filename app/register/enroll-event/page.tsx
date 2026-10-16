@@ -1,6 +1,5 @@
 import { Suspense } from 'react';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Navbar from '@/components/navbar/Navbar';
 import FooterSection from '@/components/footer/FooterSection';
@@ -12,8 +11,8 @@ import { verifyJWT } from '@/utilities/jwt';
 import { connectToDatabase } from '@/database/db';
 import Event from '@/database/schema/event.schema';
 import RegisterUser from '@/database/schema/register-user.schema';
-import enrolledEventModel from '@/database/schema/enrolled-event.schema';
-import { EVENTS_CATALOG } from '@/lib/data/eventsCatalog';
+import EnrolledIndividualEvent from '@/database/schema/enrolled-individual-event.schema';
+import EnrolledTeamEvent from '@/database/schema/enrolled-team-event.schema';
 
 export const metadata: Metadata = {
   title: 'Event Enrolment | Nexus Vyoma 2026',
@@ -148,37 +147,60 @@ async function EnrollEventContent({ searchParams }: EnrollEventPageProps) {
   // Merge database events with dummy catalog
   availableEvents = [...availableEvents, ...DUMMY_AVAILABLE_EVENTS];
 
-  // 3. Fetch user's enrolled events
-  const enrolledDocs = await enrolledEventModel
-    .find({
-      $or: [
-        { user_email: userEmail },
-        ...(user?._id ? [{ register_user_id: user._id }] : []),
-      ],
-    })
-    .lean();
+  // 3. Fetch user's enrolled events from database
+  const enrolledIndDocs = user?._id
+    ? await EnrolledIndividualEvent.find({ register_user_id: user._id }).lean()
+    : [];
+
+  const enrolledTeamDocs = user?._id
+    ? await EnrolledTeamEvent.find({
+        $or: [
+          { team_leader_register_user_id: user._id },
+          ...(user?.email ? [{ team_emails: user.email }] : []),
+        ],
+      }).lean()
+    : [];
 
   const eventMap = new Map(availableEvents.map((ev) => [ev._id, ev]));
 
-  const allEnrolled: SerializedEnrolledEvent[] = enrolledDocs.map((doc) => {
-    const matchedEvent = eventMap.get(String(doc.event_id)) || null;
-    return {
-      _id: String(doc._id),
-      event_title: doc.event_title,
-      event_id: String(doc.event_id),
-      participation_type: (doc.participation_type as 'individual' | 'team') || 'individual',
-      team_name: doc.team_name ?? null,
-      team_leader_email: doc.team_leader_email ?? null,
-      team_size: doc.team_size ?? null,
-      team_members: doc.team_members || [],
-      event_details: matchedEvent,
-    };
-  });
-
-  let individualEnrolled = allEnrolled.filter(
-    (e) => e.participation_type === 'individual'
+  const individualEnrolledFromDb: SerializedEnrolledEvent[] = enrolledIndDocs.map(
+    (doc: { _id: unknown; event_id: unknown }) => {
+      const matchedEvent = eventMap.get(String(doc.event_id)) || null;
+      return {
+        _id: String(doc._id),
+        event_title: matchedEvent?.title || 'Enrolled Event',
+        event_id: String(doc.event_id),
+        participation_type: 'individual',
+        event_details: matchedEvent,
+      };
+    }
   );
-  let teamEnrolled = allEnrolled.filter((e) => e.participation_type === 'team');
+
+  const teamEnrolledFromDb: SerializedEnrolledEvent[] = enrolledTeamDocs.map(
+    (doc: {
+      _id: unknown;
+      event_id: unknown;
+      team_name?: string | null;
+      team_length?: number | null;
+      team_emails?: string[];
+    }) => {
+      const matchedEvent = eventMap.get(String(doc.event_id)) || null;
+      return {
+        _id: String(doc._id),
+        event_title: matchedEvent?.title || 'Enrolled Team Event',
+        event_id: String(doc.event_id),
+        participation_type: 'team',
+        team_name: doc.team_name ?? null,
+        team_leader_email: user?.email ?? null,
+        team_size: doc.team_length ?? (doc.team_emails ? doc.team_emails.length + 1 : 1),
+        team_members: doc.team_emails || [],
+        event_details: matchedEvent,
+      };
+    }
+  );
+
+  let individualEnrolled = individualEnrolledFromDb;
+  let teamEnrolled = teamEnrolledFromDb;
 
   // Place dummy enrolled events if user has none, to match wireframe presentation
   if (individualEnrolled.length === 0) {
@@ -294,7 +316,10 @@ export default function EnrollEventPage(props: EnrollEventPageProps) {
       <Navbar alwaysVisible />
 
       {/* 02 — Main Enrolment Stage */}
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 z-10 bg-[#000000]">
+      <main
+        suppressHydrationWarning
+        className="flex-1 w-full px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-16 z-10 bg-[#000000]"
+      >
         <Suspense
           fallback={
             <div className="w-full max-w-7xl mx-auto py-20 flex items-center justify-center font-mono text-zinc-500 text-sm">
