@@ -237,34 +237,34 @@ export default function HorizontalStageTransition() {
         {/* Ambient Pulsing Glow behind the Logo */}
         <div
           ref={glowRingRef}
-          className="absolute w-44 h-44 rounded-full pointer-events-none blur-3xl opacity-40 will-change-transform"
+          className="absolute w-60 h-60 sm:w-72 sm:h-72 rounded-full pointer-events-none blur-3xl opacity-40 will-change-transform"
           style={{
             background:
               'radial-gradient(circle, rgba(255,106,0,0.6) 0%, rgba(255,32,125,0.25) 50%, transparent 75%)',
           }}
         />
 
-        {/* Small Nexus Vyoma Logo (Favicon / Mark) with crisp styling */}
+        {/* Nexus Vyoma Logo Mark with prominent styling */}
         <div
           ref={logoBoxRef}
-          className="relative flex flex-col items-center justify-center gap-3 z-10 will-change-transform"
+          className="relative flex flex-col items-center justify-center gap-3.5 z-10 will-change-transform"
         >
-          <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center drop-shadow-[0_0_25px_rgba(255,106,0,0.7)]">
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center drop-shadow-[0_0_35px_rgba(255,106,0,0.75)]">
             <Image
               src="/brand/nexus-mark-no-background.png"
               alt="NEXUS VYOMA Logo"
-              width={56}
-              height={56}
+              width={96}
+              height={96}
               priority
               className="w-full h-full object-contain select-none filter contrast-125 brightness-110"
             />
           </div>
 
           <div className="flex flex-col items-center gap-1.5 mt-1">
-            <span className="font-mono text-[9px] sm:text-[10px] tracking-[0.35em] uppercase text-zinc-400 font-medium">
+            <span className="font-mono text-[10px] sm:text-xs tracking-[0.35em] uppercase text-zinc-400 font-medium">
               NEXUS VYOMA
             </span>
-            <div className="w-10 h-[1.5px] bg-gradient-to-r from-transparent via-[#FF6A00] to-transparent rounded-full" />
+            <div className="w-12 h-[1.5px] bg-gradient-to-r from-transparent via-[#FF6A00] to-transparent rounded-full" />
           </div>
         </div>
       </div>

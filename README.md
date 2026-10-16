@@ -142,6 +142,16 @@ Newest first.
 - **Verification**:
   - TypeScript compilation check (`npx tsc --noEmit`) succeeded with 0 errors.
 
+### 2026-10-16 — Page Transition: Nexus Logo Size Enlargement
+
+**Done**
+- **Transition Logo Scale Enhancement ([`components/transitions/HorizontalStageTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/transitions/HorizontalStageTransition.tsx))**:
+  - Increased the Nexus mark brand logo dimension from `w-12 h-12 sm:w-14 sm:h-14` (48px–56px) to `w-20 h-20 sm:w-24 sm:h-24` (80px–96px) with high-density image rendering dimensions (`width={96} height={96}`).
+  - Scaled up the ambient pulsating glow ring from `w-44 h-44` to `w-60 h-60 sm:w-72 sm:h-72` and intensified drop shadow to `[0_0_35px_rgba(255,106,0,0.75)]` to proportionally balance the larger mark.
+  - Balanced the subtitle typography and orange accent gradient line beneath the logo.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 47/47 routes.
+
 ### 2026-10-16 — Barba.js Page Transition with Nexus Mark Loading Screen
 
 **Done**
