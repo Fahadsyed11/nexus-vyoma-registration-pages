@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useImperativeHandle } from 'react';
 import Image from 'next/image';
 
 export interface CircularCarouselItem {
@@ -16,6 +16,12 @@ export interface CircularCarouselItem {
 export type CircularCarouselPreset = 'cylinder' | 'orbit' | 'wheel' | 'panorama';
 export type CircularCarouselIntro = 'assemble' | 'rise' | 'spin' | 'none';
 export type CircularCarouselAutoplay = 'drift' | 'step' | 'off';
+
+export interface CircularCarouselHandle {
+  setAngle: (angle: number) => void;
+  setTarget: (target: number) => void;
+  focusIndex: (index: number) => void;
+}
 
 export interface CircularCarouselProps {
   items?: CircularCarouselItem[];
@@ -218,38 +224,41 @@ const usePrefersReducedMotion = () => {
   return reduced;
 };
 
-export default function CircularCarousel({
-  items = [],
-  preset = 'cylinder',
-  intro = 'rise',
-  cardWidth = 240,
-  aspectRatio = 1.3,
-  gap = 24,
-  curve,
-  tilt,
-  perspective,
-  spread,
-  autoplay = 'drift',
-  speed = 10,
-  interval = 3,
-  direction = 'left',
-  draggable = true,
-  momentum = 0.6,
-  snap = true,
-  pauseOnHover = true,
-  focusOnClick = true,
-  parallax = 0.25,
-  stretch = 0.4,
-  depthFade = 0.6,
-  fadeColor = '#000000',
-  innerShade = 0.6,
-  cornerRadius = 16,
-  captions = false,
-  onChange,
-  onItemClick,
-  className = '',
-  style
-}: CircularCarouselProps) {
+const CircularCarousel = React.forwardRef<CircularCarouselHandle, CircularCarouselProps>(function CircularCarousel(
+  {
+    items = [],
+    preset = 'cylinder',
+    intro = 'rise',
+    cardWidth = 240,
+    aspectRatio = 1.3,
+    gap = 24,
+    curve,
+    tilt,
+    perspective,
+    spread,
+    autoplay = 'drift',
+    speed = 10,
+    interval = 3,
+    direction = 'left',
+    draggable = true,
+    momentum = 0.6,
+    snap = true,
+    pauseOnHover = true,
+    focusOnClick = true,
+    parallax = 0.25,
+    stretch = 0.4,
+    depthFade = 0.6,
+    fadeColor = '#000000',
+    innerShade = 0.6,
+    cornerRadius = 16,
+    captions = false,
+    onChange,
+    onItemClick,
+    className = '',
+    style
+  },
+  ref
+) {
   const list = items.length ? items : [
     { title: 'ISL Engineering College', subtitle: 'Host & Organizing Institution', tag: 'HOST', category: 'Academic' },
     { title: 'Nexus Innovation Labs', subtitle: 'Title Technology Sponsor', tag: 'TITLE', category: 'Tech' },
@@ -621,6 +630,22 @@ export default function CircularCarousel({
     wakeRef.current();
   }, []);
 
+  useImperativeHandle(ref, () => ({
+    setAngle: (targetAngle: number) => {
+      const state = stateRef.current;
+      state.angle = targetAngle;
+      state.velocity = 0;
+      state.target = null;
+      wakeRef.current();
+    },
+    setTarget: (targetAngle: number) => {
+      const state = stateRef.current;
+      state.target = targetAngle;
+      wakeRef.current();
+    },
+    focusIndex,
+  }), [focusIndex]);
+
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     const state = stateRef.current;
     state.suppressClick = false;
@@ -870,4 +895,8 @@ export default function CircularCarousel({
       </div>
     </div>
   );
-}
+});
+
+CircularCarousel.displayName = 'CircularCarousel';
+
+export default CircularCarousel;

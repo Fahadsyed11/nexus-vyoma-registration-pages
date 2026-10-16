@@ -54,8 +54,12 @@
   --nv-glow-star: 0 0 16px rgba(251, 176, 59, 0.8), 0 0 32px rgba(255, 106, 0, 0.4);
 
   /* 8. Typography Tokens */
-  --nv-font-display: var(--font-display), "Anton", Impact, sans-serif;
-  --nv-font-body: var(--font-body), "Space Grotesk", sans-serif;
+  --nv-font-display: var(--font-anton), var(--font-display), "Anton", Impact, sans-serif;
+  --nv-font-subheading: var(--font-montserrat), "Montserrat", sans-serif;
+  --nv-font-aldrich: var(--font-aldrich), "Aldrich", sans-serif;
+  --nv-font-futuristic: var(--font-space-grotesk), "Space Grotesk", sans-serif;
+  --nv-font-body: var(--font-inter), var(--font-body), "Inter", sans-serif;
+  --nv-font-mono: var(--font-jetbrains-mono), "JetBrains Mono", monospace;
   --nv-tracking-wide: 0.35em;
   --nv-tracking-ultra: 0.45em;
 }

@@ -49,7 +49,8 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
       if (res.ok) {
         setStatus('success');
         setMessage(data?.message || 'OTP verified successfully!');
-        const redirectUrl = data?.redirect_url || '/register';
+        const redirectUrl =
+          data?.redirect_url || `/register/form?email=${encodeURIComponent(email)}`;
         setTimeout(() => {
           router.push(redirectUrl);
         }, 800);

@@ -3,7 +3,6 @@
 import React, { useRef, useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import DriftWall from '@/components/ui/DriftWall';
@@ -14,7 +13,6 @@ if (typeof window !== 'undefined') {
 }
 
 export default function HeroNavbarTransition() {
-  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const heroContainerRef = useRef<HTMLElement>(null);
@@ -106,46 +104,39 @@ export default function HeroNavbarTransition() {
           return;
         }
 
-        // Reduced motion fallback
-        if (isReducedMotion) {
-          gsap.set(navCapsuleRef.current, { opacity: 1, y: 0, scale: 1, pointerEvents: 'auto' });
-          gsap.set(floatingLogoRef.current, { opacity: 0, pointerEvents: 'none' });
-          return;
-        }
-
         const mm = gsap.matchMedia();
 
         // -------------------------------------------------------------------------
-        // DESKTOP / TABLET (>= 768px): Continuous Flying Logo & Cursor Color Reveal
+        // DESKTOP / TABLET (>= 768px): Unified Scroll-Docking & Materialization
         // -------------------------------------------------------------------------
         mm.add('(min-width: 768px)', () => {
-          // Reset transforms temporarily to measure exact resting bounding rects
           gsap.set(navCapsuleRef.current, { clearProps: 'all' });
           gsap.set(floatingLogoRef.current, { clearProps: 'all' });
 
-          const currentScrollY = window.scrollY || window.pageYOffset || 0;
-          const currentScrollX = window.scrollX || window.pageXOffset || 0;
+          const heroAnchor = heroLogoAnchorRef.current!;
+          const heroContainer = heroContainerRef.current!;
+          const navSlot = navLogoSlotRef.current!;
 
-          const heroRect = heroLogoAnchorRef.current!.getBoundingClientRect();
-          const navRect = navLogoSlotRef.current!.getBoundingClientRect();
+          const heroAnchorRect = heroAnchor.getBoundingClientRect();
+          const heroContainerRect = heroContainer.getBoundingClientRect();
+          const navRect = navSlot.getBoundingClientRect();
 
-          const startWidth = heroRect.width;
-          const startHeight = heroRect.height;
-          // True document top & left when scroll is 0
-          const startLeft = heroRect.left + currentScrollX;
-          const startTop = heroRect.top + currentScrollY;
+          const startWidth = heroAnchorRect.width;
+          const startHeight = heroAnchorRect.height;
 
-          const endWidth = navRect.width;
+          // Viewport-relative resting positions at scroll = 0
+          const startTop = heroAnchorRect.top - heroContainerRect.top;
+          const startLeft = heroAnchorRect.left - heroContainerRect.left;
+
           const endHeight = navRect.height;
           const endLeft = navRect.left;
           const endTop = navRect.top;
 
-          // Accurate aspect-ratio scale & top-left transform mapping
           const scaleRatio = endHeight / startHeight;
           const deltaX = endLeft - startLeft;
           const deltaY = endTop - startTop;
 
-          // Position floating logo over Hero anchor at scroll = 0
+          // Position floating logo directly over Hero anchor at scroll = 0
           gsap.set(floatingLogoRef.current, {
             position: 'fixed',
             top: startTop,
@@ -161,7 +152,7 @@ export default function HeroNavbarTransition() {
             zIndex: 60,
           });
 
-          // Initial state of navbar capsule: completely hidden and non-interactive
+          // Initial state of navbar capsule: completely hidden at top
           gsap.set(navCapsuleRef.current, {
             opacity: 0,
             y: -20,
@@ -169,7 +160,7 @@ export default function HeroNavbarTransition() {
             pointerEvents: 'none',
           });
 
-          // Master Hero ScrollTrigger timeline
+          // Master ScrollTrigger timeline scrubbed directly to hero scroll
           const heroTl = gsap.timeline({
             scrollTrigger: {
               trigger: heroContainerRef.current,
@@ -180,7 +171,7 @@ export default function HeroNavbarTransition() {
             },
           });
 
-          // Continuous smooth trajectory for the logo
+          // Continuous smooth trajectory for the logo into the navbar slot
           heroTl.to(
             floatingLogoRef.current,
             {
@@ -193,7 +184,7 @@ export default function HeroNavbarTransition() {
             0
           );
 
-          // Fade out ambient dark back shadow early in the scroll so it doesn't spill over navbar
+          // Fade out ambient dark back shadow early in scroll
           if (backShadowRef.current) {
             heroTl.to(
               backShadowRef.current,
@@ -206,7 +197,7 @@ export default function HeroNavbarTransition() {
             );
           }
 
-          // Smoothly blend white logo to pure official color logo during scroll for seamless navbar docking
+          // Crossfade white logo to official full-color logo
           if (whiteLayerRef.current) {
             heroTl.to(
               whiteLayerRef.current,
@@ -231,7 +222,7 @@ export default function HeroNavbarTransition() {
             );
           }
 
-          // Synchronized iPhone Dark Mirror Glass Navbar materialization
+          // Synchronized mirror-glass navbar materialization
           heroTl.fromTo(
             navCapsuleRef.current,
             {
@@ -251,7 +242,7 @@ export default function HeroNavbarTransition() {
             0.45
           );
 
-          // Reverse Transition: when approaching the footer, navbar glides out cleanly
+          // Pre-footer clean exit: hide navbar and logo before reaching footer
           const footerEl = document.getElementById('footer');
           if (footerEl) {
             ScrollTrigger.create({
@@ -259,6 +250,7 @@ export default function HeroNavbarTransition() {
               start: 'top 85%',
               end: 'bottom bottom',
               onEnter: () => {
+                if (window.scrollY < 300) return;
                 gsap.to(navCapsuleRef.current, {
                   opacity: 0,
                   y: -25,
@@ -278,7 +270,6 @@ export default function HeroNavbarTransition() {
               },
               onLeaveBack: () => {
                 const heroBottom = heroContainerRef.current?.getBoundingClientRect().bottom || 0;
-                // Re-reveal only if user has scrolled past hero
                 if (heroBottom <= window.innerHeight * 0.35) {
                   gsap.to(navCapsuleRef.current, {
                     opacity: 1,
@@ -304,22 +295,24 @@ export default function HeroNavbarTransition() {
         });
 
         // -------------------------------------------------------------------------
-        // MOBILE (< 768px): Smooth Responsive Flying Logo & Synchronized Navbar Materialization
+        // MOBILE (< 768px): Responsive Mobile Trajectory & Navbar Materialization
         // -------------------------------------------------------------------------
         mm.add('(max-width: 767px)', () => {
           gsap.set(navCapsuleRef.current, { clearProps: 'all' });
           gsap.set(floatingLogoRef.current, { clearProps: 'all' });
 
-          const currentScrollY = window.scrollY || window.pageYOffset || 0;
-          const currentScrollX = window.scrollX || window.pageXOffset || 0;
+          const heroAnchor = heroLogoAnchorRef.current!;
+          const heroContainer = heroContainerRef.current!;
+          const navSlot = navLogoSlotRef.current!;
 
-          const heroRect = heroLogoAnchorRef.current!.getBoundingClientRect();
-          const navRect = navLogoSlotRef.current!.getBoundingClientRect();
+          const heroAnchorRect = heroAnchor.getBoundingClientRect();
+          const heroContainerRect = heroContainer.getBoundingClientRect();
+          const navRect = navSlot.getBoundingClientRect();
 
-          const startWidth = heroRect.width;
-          const startHeight = heroRect.height;
-          const startLeft = heroRect.left + currentScrollX;
-          const startTop = heroRect.top + currentScrollY;
+          const startWidth = heroAnchorRect.width;
+          const startHeight = heroAnchorRect.height;
+          const startTop = heroAnchorRect.top - heroContainerRect.top;
+          const startLeft = heroAnchorRect.left - heroContainerRect.left;
 
           const endHeight = navRect.height;
           const endLeft = navRect.left;
@@ -329,7 +322,7 @@ export default function HeroNavbarTransition() {
           const deltaX = endLeft - startLeft;
           const deltaY = endTop - startTop;
 
-          // Position floating logo over Hero anchor at scroll = 0
+          // Position floating logo directly over Hero anchor at scroll = 0
           gsap.set(floatingLogoRef.current, {
             position: 'fixed',
             top: startTop,
@@ -438,6 +431,7 @@ export default function HeroNavbarTransition() {
               start: 'top 85%',
               end: 'bottom bottom',
               onEnter: () => {
+                if (window.scrollY < 300) return;
                 gsap.to(navCapsuleRef.current, {
                   opacity: 0,
                   y: -20,
@@ -527,19 +521,19 @@ export default function HeroNavbarTransition() {
           aria-label="Main Navigation"
           className="w-full max-w-4xl rounded-full relative flex items-center justify-between px-3 xs:px-4 sm:px-7 py-2 sm:py-2.5 md:py-3 border border-white/[0.14] overflow-hidden pointer-events-auto shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95),0_10px_25px_-5px_rgba(0,0,0,0.85)] opacity-0"
           style={{
-            backgroundColor: 'rgba(6, 8, 16, 0.30)',
-            backdropFilter: 'blur(16px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+            backgroundColor: 'rgba(6, 8, 16, 0.40)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
             boxShadow:
               '0 25px 60px -12px rgba(0, 0, 0, 0.95), 0 10px 25px -5px rgba(0, 0, 0, 0.85), 0 0 1px 1px rgba(255, 255, 255, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.22)',
           }}
         >
-          {/* Specular Top Reflection Highlight (iPhone Polished Mirror Glass effect) */}
+          {/* Specular Top Reflection Highlight (Polished Mirror Glass effect) */}
           <div
             className="absolute inset-x-0 top-0 h-[40%] rounded-t-full pointer-events-none opacity-60"
             style={{
               background:
-                'linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.02) 70%, transparent 100%)',
+                'linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.02) 70%, transparent 100%)',
             }}
           />
 
@@ -553,13 +547,12 @@ export default function HeroNavbarTransition() {
               ref={navLogoSlotRef}
               className="flex items-center relative"
             >
-              {/* Target bounding box / Navbar logo (docked by flying logo on all viewports) */}
               <Image
                 src="/brand/nexus-wordmark-official.png"
                 alt="Nexus Vyoma Logo Slot"
                 width={140}
                 height={32}
-                className="h-4.5 xs:h-5 sm:h-6 w-auto object-contain opacity-0 select-none"
+                className="h-4.5 xs:h-5 sm:h-6 w-auto object-contain opacity-0 select-none pointer-events-none"
                 priority
               />
             </div>
@@ -571,7 +564,7 @@ export default function HeroNavbarTransition() {
               <Link
                 key={link.label}
                 href={link.href}
-                className="text-xs sm:text-sm font-semibold text-zinc-100 hover:text-white transition-colors duration-200 relative group tracking-wide drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]"
+                className="text-xs sm:text-[13px] font-display font-normal tracking-[0.08em] text-zinc-300 hover:text-white transition-colors duration-200 relative group"
               >
                 <span>{link.label}</span>
                 <span className="absolute -bottom-1 left-0 right-0 h-[1.5px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
@@ -599,7 +592,7 @@ export default function HeroNavbarTransition() {
                 followMouse
                 proximity={220}
                 autoAnimate={false}
-                className="!font-sans !text-[9px] xs:!text-[11px] sm:!text-xs !font-black !tracking-wider uppercase !py-1.5 xs:!py-2 !px-2.5 xs:!px-3.5 sm:!px-5 !rounded-full select-none cursor-pointer"
+                className="!font-display !font-normal !text-[9px] xs:!text-[11px] sm:!text-xs !tracking-[0.14em] uppercase !py-1.5 xs:!py-2 !px-2.5 xs:!px-3.5 sm:!px-5 !rounded-full select-none cursor-pointer"
               >
                 <span>CLAIM YOUR PASS</span>
                 <svg
@@ -662,7 +655,7 @@ export default function HeroNavbarTransition() {
                     key={link.label}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="px-4 py-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-sm font-medium text-zinc-200 hover:text-white transition-all flex items-center justify-between"
+                    className="px-4 py-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.08] text-sm font-display font-normal tracking-[0.08em] text-zinc-300 hover:text-white transition-all flex items-center justify-between"
                   >
                     <span>{link.label}</span>
                     <span className="text-[#FF6A00] text-xs">→</span>
@@ -679,7 +672,7 @@ export default function HeroNavbarTransition() {
       </header>
 
       {/* ========================================================================= */}
-      {/* 02 — Single Continuous Transitioning Logo Actor with Cursor Color Reveal (Desktop md+) */}
+      {/* 02 — Single Continuous Transitioning Logo Actor with Cursor Color Reveal */}
       {/* ========================================================================= */}
       <div
         ref={floatingLogoRef}
@@ -688,7 +681,7 @@ export default function HeroNavbarTransition() {
         onPointerLeave={handlePointerLeave}
         className="flex fixed z-50 items-center justify-center pointer-events-auto select-none will-change-transform cursor-crosshair"
       >
-        {/* Ambient Dark Back Shadow Elevation (Elevates text above moving tiles in Hero) */}
+        {/* Ambient Dark Back Shadow Elevation */}
         <div
           ref={backShadowRef}
           className="absolute inset-x-[-8%] inset-y-[-18%] rounded-full opacity-85 blur-2xl pointer-events-none -z-10"
@@ -762,7 +755,7 @@ export default function HeroNavbarTransition() {
         ref={heroContainerRef}
         className="relative min-h-screen min-h-[100svh] w-full flex items-center justify-center px-4 sm:px-8 bg-transparent overflow-hidden select-none"
       >
-        {/* LAYER 1: Ambient Brand Mesh Gradient (Strictly in the back, compact vertical height, subtle mobile scale) */}
+        {/* LAYER 1: Ambient Brand Mesh Gradient */}
         <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden flex items-center justify-center">
           <div
             className="w-[50vw] sm:w-[28vw] max-w-[180px] sm:max-w-[320px] h-[5vh] sm:h-[10vh] max-h-[40px] sm:max-h-[90px] rounded-full opacity-15 sm:opacity-35 blur-[35px] sm:blur-[55px]"
@@ -773,7 +766,7 @@ export default function HeroNavbarTransition() {
           />
         </div>
 
-        {/* LAYER 2: React Bits DriftWall 3D Perspective Tile Wall (Subdued & Darkened Ambient Background Images) */}
+        {/* LAYER 2: React Bits DriftWall 3D Perspective Tile Wall */}
         <div className="absolute inset-0 z-10 pointer-events-none sm:pointer-events-auto">
           <DriftWall
             columns={7}
@@ -800,7 +793,16 @@ export default function HeroNavbarTransition() {
         <div
           ref={heroLogoAnchorRef}
           className="w-[85vw] max-w-[280px] xs:max-w-[340px] sm:max-w-[480px] md:max-w-[620px] lg:max-w-[760px] aspect-[1024/341] flex items-center justify-center relative z-10 pointer-events-none"
-        />
+        >
+          <Image
+            src="/brand/nexus-wordmark-white.png"
+            alt="Hero Logo Anchor"
+            width={1024}
+            height={341}
+            priority
+            className="w-full h-auto object-contain opacity-0 pointer-events-none select-none"
+          />
+        </div>
       </section>
     </div>
   );

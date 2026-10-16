@@ -5,12 +5,50 @@ import Image from 'next/image';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import Spark from '@/components/brand/Spark';
 import ScrollReveal from '@/components/ui/ScrollReveal';
+import AboutHoverCard, { HoverCardData } from './AboutHoverCard';
 
 if (typeof window !== 'undefined') {
   gsap.registerPlugin(ScrollTrigger, useGSAP);
 }
+
+const ABOUT_HOVER_CARDS: Record<string, HoverCardData> = {
+  'Nexus Vyoma': {
+    badge: '10–12 NOV 2026',
+    title: 'ISL Engineering College',
+    description: 'The premier 3-day inter-college festival uniting tech, culture, and creative minds.',
+    href: '#about',
+    actionText: 'Explore Fest Details',
+  },
+  technology: {
+    badge: 'ARENA I · TECH BATTLES',
+    title: 'Hackathons & Robotics',
+    description: 'High-stakes coding sprints, combat robotics, AI challenges, and developer arenas.',
+    href: '#events',
+    actionText: 'View Tech Events',
+  },
+  creativity: {
+    badge: 'ARENA II · CREATIVE ARTS',
+    title: 'Design & Visual Media',
+    description: 'Automobile expo, digital design showcases, photography, and cinematography.',
+    href: '#events',
+    actionText: 'Explore Creative Tracks',
+  },
+  culture: {
+    badge: 'ARENA III · STAGE & SOUND',
+    title: 'Qawwali, DJ & Dance',
+    description: 'Soulful sufi melodies, competitive choreography, and electrifying concert nights.',
+    href: '#events',
+    actionText: 'Discover Cultural Lineup',
+  },
+  'unforgettable experiences': {
+    badge: 'PASSES NOW OPEN',
+    title: 'All-Access Fest Passes',
+    description: '3 days of unrestricted access to all 6 flagship arenas, concerts, and food fest.',
+    href: '/register',
+    actionText: 'Claim Your Pass',
+  },
+};
 
 export default function AboutSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -36,27 +74,26 @@ export default function AboutSection() {
       });
     },
     { scope: containerRef }
-  );
+  );          
 
   const manifestoText =
-    'Three days. One shared sky. Nexus Vyoma brings culture and technology together at ISL Engineering College, Hyderabad.';
+    '**Nexus Vyoma** is a three day inter-college fest at ISL Engineering College, Hyderabad, celebrating **technology**, **creativity**, **culture**, and **unforgettable experiences**.';
 
   return (
     <section
       id="about"
       ref={containerRef}
-      className="relative w-full min-h-[75vh] sm:min-h-[80vh] flex flex-col items-center justify-center pt-24 pb-20 sm:pt-36 sm:pb-28 px-4 sm:px-6 lg:px-8 bg-transparent overflow-hidden select-none"
+      className="relative w-full min-h-[70vh] sm:min-h-[75vh] flex flex-col items-start justify-center pt-24 pb-12 sm:pt-36 sm:pb-16 px-6 sm:px-12 md:px-16 lg:px-24 xl:px-28 bg-transparent overflow-visible select-none"
     >
-      {/* Content Container - Left Aligned */}
-      <div className="w-full max-w-5xl mx-auto flex flex-col items-start text-left relative z-10 self-stretch">
-        {/* Title: Bold Condensed Display (Anton), uppercase, tracking, warm gold/orange accent */}
-        <div className="flex items-center gap-2.5 mb-8 sm:mb-10">
-          <Spark size={14} color="#FF6A00" glow={true} />
-          <span className="font-[family-name:var(--font-display)] font-bold text-sm sm:text-base tracking-[0.2em] uppercase text-transparent bg-clip-text bg-gradient-to-r from-[#FF6A00] to-[#FBB03B]">
-            ABOUT NEXUS VYOMA
-          </span>
-        </div>
+      {/* Section Header - Centered in the middle */}
+      <div className="w-full flex flex-col items-center text-center mb-6 sm:mb-8 px-4 relative z-20">
+        <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-bold tracking-wider text-white uppercase">
+          ABOUT
+        </h2>
+      </div>
 
+      {/* Content Container - Anchored to the left of the screen */}
+      <div className="w-full max-w-5xl mr-auto flex flex-col items-start text-left relative z-10 self-stretch">
         {/* Paragraph container with subtle emblem watermark placed directly behind text */}
         <div className="relative w-full self-stretch">
           {/* Faint, Transparent Cosmic Nexus Emblem Logo Watermark (Behind Text) */}
@@ -75,7 +112,7 @@ export default function AboutSection() {
             />
           </div>
 
-          {/* Official Approved About Paragraph with ScrollReveal (Balanced pacing across scroll) */}
+          {/* Official Approved About Paragraph with ScrollReveal & ChaiUI/shadcn Hover Cards */}
           <div className="relative z-10 w-full text-left self-stretch">
             <ScrollReveal
               enableBlur={true}
@@ -86,7 +123,13 @@ export default function AboutSection() {
               wordAnimationEnd="bottom 35%"
               scrub={1}
               containerClassName="my-0 w-full self-stretch"
-              textClassName="font-[family-name:var(--font-barlow-condensed)] text-[24px] xs:text-[28px] sm:text-[36px] md:text-[44px] font-medium leading-[1.16] text-[#FFFFFF] select-none text-left self-stretch not-italic"
+              textClassName="font-[family-name:var(--font-inter)] text-[20px] xs:text-[24px] sm:text-[30px] md:text-[38px] lg:text-[44px] font-extralight tracking-[-0.06em] [word-spacing:-0.12em] leading-[1.14] text-[#FFFFFF] select-none text-left self-stretch not-italic"
+              highlightClassName="font-light text-transparent bg-clip-text bg-gradient-to-r from-[#FFE0B2] via-[#FFD29D] to-[#FBB03B] drop-shadow-[0_0_8px_rgba(251,176,59,0.18)]"
+              renderHighlight={(term, words) => {
+                const cardData = ABOUT_HOVER_CARDS[term];
+                if (!cardData) return words;
+                return <AboutHoverCard data={cardData}>{words}</AboutHoverCard>;
+              }}
             >
               {manifestoText}
             </ScrollReveal>

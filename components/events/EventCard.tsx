@@ -34,7 +34,7 @@ export default function EventCard({ event }: EventCardProps) {
             <span className="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#FF6A00] block mb-1 select-none">
               {event.category}
             </span>
-            <h3 className="font-display text-xl sm:text-2xl md:text-3xl font-bold tracking-wide text-white uppercase group-hover:text-zinc-100 transition-colors leading-tight">
+            <h3 className="font-subheading font-medium text-xl sm:text-2xl md:text-3xl tracking-wide text-white uppercase group-hover:text-zinc-100 transition-colors leading-tight">
               {event.title}
             </h3>
             <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed mt-1 line-clamp-2">

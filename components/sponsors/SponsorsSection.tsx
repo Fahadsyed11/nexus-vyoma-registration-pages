@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import CircularCarousel, { CircularCarouselItem } from '@/components/ui/CircularCarousel';
+import CircularCarousel, { CircularCarouselHandle, CircularCarouselItem } from '@/components/ui/CircularCarousel';
 import ISLLogo from '@/components/brand/ISLLogo';
 import NexusMark from '@/components/brand/NexusMark';
 
@@ -16,6 +16,18 @@ export default function SponsorsSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const carouselWrapperRef = useRef<HTMLDivElement>(null);
+  const carouselRef = useRef<CircularCarouselHandle>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useGSAP(
     () => {
@@ -23,31 +35,67 @@ export default function SponsorsSection() {
         return;
       }
 
-      // Elegant Entrance: Text header then 3D Carousel with smooth mobile scroll progression
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: containerRef.current,
-          start: 'top 85%',
-          end: 'top 45%',
-          scrub: 1,
-        },
+      const mm = gsap.matchMedia();
+
+      // DESKTOP: Smooth entrance animation + ambient drift
+      mm.add('(min-width: 768px)', () => {
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: containerRef.current,
+            start: 'top 85%',
+            end: 'top 45%',
+            scrub: 1,
+          },
+        });
+
+        tl.from(textRef.current, {
+          opacity: 0,
+          y: 35,
+          duration: 0.6,
+          ease: 'power2.out',
+        }).from(
+          carouselWrapperRef.current,
+          {
+            opacity: 0,
+            scale: 0.92,
+            duration: 0.8,
+            ease: 'power2.out',
+          },
+          '-=0.2'
+        );
       });
 
-      tl.from(textRef.current, {
-        opacity: 0,
-        y: 35,
-        duration: 0.6,
-        ease: 'power2.out',
-      }).from(
-        carouselWrapperRef.current,
-        {
-          opacity: 0,
-          scale: 0.92,
-          duration: 0.8,
-          ease: 'power2.out',
-        },
-        '-=0.2'
-      );
+      // MOBILE: Pinned page-scroll rotation (advance 1 card per scroll gesture with snap)
+      mm.add('(max-width: 767px)', () => {
+        const count = 6;
+        const step = 360 / count; // 60 degrees
+        const totalRotation = (count - 1) * step; // 300 degrees
+
+        const st = ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: 'top top+=60',
+          end: '+=1400',
+          pin: true,
+          scrub: 0.35,
+          snap: {
+            snapTo: 1 / (count - 1),
+            duration: { min: 0.2, max: 0.4 },
+            ease: 'power1.inOut',
+          },
+          onUpdate: (self) => {
+            const currentAngle = -self.progress * totalRotation;
+            carouselRef.current?.setAngle(currentAngle);
+            const index = Math.min(count - 1, Math.round(self.progress * (count - 1)));
+            setActiveIndex(index);
+          },
+        });
+
+        return () => {
+          st.kill();
+        };
+      });
+
+      return () => mm.revert();
     },
     { scope: containerRef }
   );
@@ -174,19 +222,20 @@ export default function SponsorsSection() {
           className="relative w-full h-[320px] sm:h-[380px] lg:h-[420px] flex items-center justify-center will-change-transform"
         >
           <CircularCarousel
+            ref={carouselRef}
             items={sponsorItems}
             preset="cylinder"
             intro="rise"
-            cardWidth={310}
+            cardWidth={isMobile ? 260 : 310}
             aspectRatio={1}
-            spread={1.35}
-            speed={14}
+            spread={isMobile ? 1.15 : 1.35}
+            speed={isMobile ? 0 : 14}
             captions={false}
             gap={14}
             tilt={-5}
             curve={1}
             perspective={2500}
-            autoplay="drift"
+            autoplay={isMobile ? 'off' : 'drift'}
             interval={3}
             direction="left"
             momentum={0.6}
@@ -197,10 +246,26 @@ export default function SponsorsSection() {
             parallax={0.3}
             stretch={0.5}
             fadeColor="#000000"
-            depthFade={0.2}
+            depthFade={isMobile ? 0.75 : 0.2}
             innerShade={0.55}
             cornerRadius={14}
+            onChange={(idx) => setActiveIndex(idx)}
           />
+        </div>
+
+        {/* Active Sponsor Indicator on Mobile */}
+        <div className="flex md:hidden items-center justify-center gap-2 mt-2 mb-0.5">
+          {sponsorItems.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => carouselRef.current?.focusIndex(i)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                activeIndex === i ? 'w-6 bg-[#FF6A00]' : 'w-1.5 bg-white/25'
+              }`}
+              aria-label={`Go to sponsor ${i + 1}`}
+            />
+          ))}
         </div>
 
         {/* Supporting Sponsor CTA - Fluid Wrap on Mobile */}

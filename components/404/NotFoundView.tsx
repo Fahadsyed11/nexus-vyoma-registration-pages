@@ -6,15 +6,14 @@ import FluxLines from './FluxLines';
 import TechText from './TechText';
 
 export default function NotFoundView() {
-
   return (
     <div
       style={{
         position: 'relative',
         width: '100%',
         minHeight: '100svh',
-        backgroundColor: '#ffffff',
-        color: '#000000',
+        backgroundColor: '#000000',
+        color: '#ffffff',
         overflow: 'hidden',
       }}
     >
@@ -25,7 +24,7 @@ export default function NotFoundView() {
         style={{
           position: 'fixed',
           inset: 0,
-          backgroundColor: '#ffffff',
+          backgroundColor: '#000000',
           zIndex: 0,
           pointerEvents: 'none',
         }}
@@ -33,7 +32,7 @@ export default function NotFoundView() {
       />
 
       {/* ========================================================================= */}
-      {/* LAYER 2: Official React Bits Flux Lines background effect (Black Lines)    */}
+      {/* LAYER 2: Official React Bits Flux Lines background effect (White Lines)    */}
       {/* ========================================================================= */}
       <div
         style={{
@@ -46,7 +45,7 @@ export default function NotFoundView() {
         }}
       >
         <FluxLines
-          colors={["#000000", "#000000", "#000000"]}
+          colors={["#ffffff", "#ffffff", "#ffffff"]}
           glow={2}
           rimWidth={0.2}
           lineWidth={1}
@@ -62,7 +61,7 @@ export default function NotFoundView() {
           mouseStrength={1}
           mouseRadius={0.35}
           intro
-          lightMode={true}
+          lightMode={false}
         />
       </div>
 
@@ -91,12 +90,7 @@ export default function NotFoundView() {
             className="group flex items-center gap-2 outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
             aria-label="Nexus Vyoma Home"
           >
-            <span className="font-[family-name:var(--font-display)] text-lg sm:text-xl tracking-wider text-black uppercase group-hover:text-zinc-600 transition-colors">
-              NEXUS VYOMA
-            </span>
           </Link>
-
-          
         </header>
 
         {/* Center Main Stage */}
@@ -121,8 +115,8 @@ export default function NotFoundView() {
               dashGap={2}
               specks={15}
               fontFamily=""
-              color="#000000"
-              accentColor="#000000"
+              color="#ffffff"
+              accentColor="#ffffff"
               letterSpacing={-0.05}
               reach={200}
               softness={0.7}
@@ -144,7 +138,7 @@ export default function NotFoundView() {
             {/* Primary Action Button */}
             <Link
               href="/"
-              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-7 py-2.5 rounded-lg border border-black/20 bg-black hover:bg-zinc-800 text-white font-sans font-semibold text-xs sm:text-sm tracking-wider uppercase backdrop-blur-md transition-all duration-200 outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
+              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-7 py-2.5 rounded-lg border border-white/20 bg-white hover:bg-zinc-200 text-black font-sans font-semibold text-xs sm:text-sm tracking-wider uppercase backdrop-blur-md transition-all duration-200 outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
             >
               BACK TO HOME
             </Link>
@@ -152,7 +146,7 @@ export default function NotFoundView() {
             {/* Explore Events Link */}
             <Link
               href="/events"
-              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-lg border border-black/15 hover:border-black/35 font-sans font-medium text-xs sm:text-sm text-black hover:bg-black/5 tracking-wider uppercase transition-all duration-200 outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
+              className="w-full sm:w-auto inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-lg border border-white/20 hover:border-white/40 font-sans font-medium text-xs sm:text-sm text-white hover:bg-white/10 tracking-wider uppercase transition-all duration-200 outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
             >
               EXPLORE EVENTS
             </Link>
@@ -162,7 +156,7 @@ export default function NotFoundView() {
         {/* Footer Telemetry */}
         <footer
           style={{ pointerEvents: 'auto' }}
-          className="w-full max-w-7xl mx-auto px-5 sm:px-8 pb-6 sm:pb-8 flex flex-wrap items-center justify-between gap-3 text-[10px] sm:text-[11px] font-mono tracking-widest text-zinc-600 uppercase"
+          className="w-full max-w-7xl mx-auto px-5 sm:px-8 pb-6 sm:pb-8 flex flex-wrap items-center justify-between gap-3 text-[10px] sm:text-[11px] font-mono tracking-widest text-zinc-500 uppercase"
         >
           <span>NEXUS VYOMA // ISL ENGINEERING COLLEGE, HYDERABAD</span>
           <span>17.38405° N / 78.45636° E</span>

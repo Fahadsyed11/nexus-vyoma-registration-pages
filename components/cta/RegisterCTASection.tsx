@@ -122,7 +122,7 @@ export default function RegisterCTASection() {
 
           {/* Description */}
           <p className="font-sans text-sm sm:text-base lg:text-lg text-zinc-300 leading-relaxed max-w-lg font-normal">
-            Three days. One shared sky. Join us for an unforgettable convergence of technology, creativity, and culture.
+            Be part of Nexus VYOMA 2026. Explore, compete, connect, and create unforgettable memories across three extraordinary days.
           </p>
 
           {/* Action Buttons: Sleek Black Pills with Circular Arrow Badges */}
