@@ -43,6 +43,31 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-16 — Implemented Checkout Event Page (`/register/checkout-event`)
+
+**Done**
+- **Server Component Stage (`app/register/checkout-event/page.tsx`)**:
+  - Implemented the Server Component route with `<Navbar alwaysVisible />` and `<FooterSection />`.
+  - Enforced strict session token validation (`nv-session` / `nv-session-temp`) via `verifyJWT()`, redirecting unauthenticated visitors to `/register/check-email`.
+  - Connected to MongoDB and queried real participant details from `RegisterUser`.
+  - Retrieved real unpaid enrolled individual and team events from `EnrolledIndividualEvent` and `EnrolledTeamEvent` (`isPaid: false`), populated with `Event` schema details.
+  - Wrapped dynamic content inside Next.js `<Suspense>` boundary for PPR resilience.
+- **Client Stage & Wireframe Hierarchy (`components/registration/CheckoutEventView.tsx`)**:
+  - `‹ Back to enrollment` navigation pointing to `/register/enroll-event`.
+  - Entry-fee / payment status badge (`Payment Pending`).
+  - `Checkout Event` display heading.
+  - Participant Information card showing real name, email, institution, degree, and verified badge.
+  - Enrolled Events (Unpaid) section with itemized cards for individual and team events, displaying title, category badge, venue, schedule, squad members, and entry fee. Clean empty state when 0 unpaid events are present.
+  - Order Summary card itemizing Subtotal, Service Charge (`₹0`), Entry Fees, and Total.
+- **Pay Now Interactive Component (`components/ui/SlideCommit.tsx`)**:
+  - Integrated the official React Bits Slide Commit micro-interaction component using `motion/react` and `lucide-react` with zero added dependencies.
+  - Includes pointer/touch dragging, spin indicator during in-flight payment execution, unfurl into confirmed state, keyboard accessibility, ARIA slider semantics, and `prefers-reduced-motion` support.
+  - Connected to payment handler awaiting confirmed completion before navigating to verified ticket route.
+- **Verification & Constraints**:
+  - `npx eslint components/ui/SlideCommit.tsx components/registration/CheckoutEventView.tsx app/register/checkout-event/page.tsx` passed with 0 errors.
+  - Verified 0 backend, API, schema, or webhook files were modified.
+
+
 ### 2026-10-15 — Resolved `issue-18` Merge Conflicts with `main`
 
 **Done**
