@@ -43,6 +43,173 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-16 — Removed "OUR SPONSORS" Section from Home Page
+
+**Done**
+- **Home Page Streamlining ([`app/page.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/page.tsx))**:
+  - Removed `SponsorsSection` import and its component invocation from the Home page layout.
+  - Allowed Flagship Arenas ([`FlagshipEventsSection`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/FlagshipEventsSection.tsx)) to flow directly into the Registration Portal CTA ([`RegisterCTASection`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/cta/RegisterCTASection.tsx)).
+  - Cleaned up page scroll weight and eliminated the pinned 3D orbit carousel scroll trigger.
+- **Verification**:
+  - `npx tsc --noEmit` verified with 0 errors.
+  - Dev server HTTP status verified with `200 OK`.
+
+### 2026-10-16 — Complete Home Page Navbar & Scroll-Linked Hero Logo Rebuild
+
+**Done**
+- **Eliminated Ancestor Containing Block Trap ([`app/template.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/template.tsx))**:
+  - Removed `will-change-transform` from `#page-transition-wrapper`, which per W3C CSS Transforms spec was turning `position: fixed` elements into `position: absolute` within the scrolling wrapper and pushing the navbar/logo hundreds of pixels off-screen on scroll.
+  - Retargeted horizontal page entrance animation specifically to `main` so viewport-fixed navbar and floating logo remain completely rock-solid.
+- **Complete Rebuild of Navbar & Scroll Transition ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Rebuilt the fixed obsidian mirror-glass navbar capsule (`backdrop-filter: blur(20px) saturate(180%)`, specular reflection highlight, subtle border, multi-layer elevation shadows).
+  - Preserved typography tokens (`font-display font-normal tracking-[0.08em]`), `SpecularButton` CTA ("CLAIM YOUR PASS" -> `/register`), and animated mobile drawer.
+  - Restored continuous hero-logo docking animation:
+    - Added sizing placeholder image in `heroLogoAnchorRef` to guarantee non-zero geometric bounds at all viewport sizes.
+    - Added `opacity-0` initial state on navbar capsule preventing initial visual flash before GSAP init.
+    - Scrubbed ScrollTrigger timeline maps `floatingLogoRef` from hero center (`top: 230, left: 260`) directly into the navbar slot (`top: 35, left: 221`), crossfading from white cursor-mask base to official color wordmark.
+    - Verified smooth bidirectional reversal on scroll-up back to the top of the hero.
+- **Automated Real Browser Verification**:
+  - Executed automated Chrome DevTools Protocol (CDP) compositor gesture tests:
+    - `scroll = 0`: Navbar hidden (`opacity: 0, pointerEvents: 'none'`), hero logo centered (`top: 230, left: 260`).
+    - `scroll = 600px`: Logo docks with exact pixel precision into `navSlotRect` (`top: 35, left: 221, width: 72, height: 24`), navbar glides in (`opacity: 1, pointerEvents: 'auto'`).
+    - `scroll = 1400px`: Navbar and logo stay fixed at `headerTop: 0` without clipping or drifting.
+    - `scroll = 0` (reverse): Returns smoothly to initial hero center state (`logoTransform: matrix(1, 0, 0, 1, 0, 0)`), navbar hides cleanly.
+    - Verified 0 console errors and 0 type errors (`npx tsc --noEmit`).
+
+### 2026-10-16 — Restored Scroll Navbar & Continuous Hero-to-Navbar Logo Animation
+
+**Done**
+- **Restored Continuous Flying Logo Trajectory ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Restored the 4-layer logo stack inside `floatingLogoRef` (`backShadowRef`, `whiteLayerRef`, `colorMaskLayerRef`, `scrollSolidRef`).
+  - Configured exact document resting coordinates (`startWidth`, `startHeight`, `startLeft`, `startTop`, `deltaX`, `deltaY`) and scale ratio (`scaleRatio = endHeight / startHeight`) relative to the viewport.
+  - Linked continuous motion path directly to ScrollTrigger scrub: smoothly glides from hero center directly into the navbar logo slot (`navLogoSlotRef`) while blending from white wordmark to the official full-color wordmark.
+  - Reversed trajectory correctly on scroll-up back to the top of the hero without jumps, flickering, or duplicated images.
+- **Restored Scroll-Triggered Navbar Materialization ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Navbar starts completely hidden (`opacity: 0, y: -20, pointerEvents: 'none'`) at `scroll = 0`.
+  - Glides into view at progress 0.45 (`opacity: 1, y: 0, pointerEvents: 'auto'`) synchronously with the docking logo.
+  - Clean pre-footer exit trigger fades out navbar and logo before reaching the footer and restores when scrolling back up.
+  - Preserved typography tokens (`font-display font-normal tracking-[0.08em]`), `SpecularButton` CTA ("CLAIM YOUR PASS"), and mobile drawer.
+- **Verification**:
+  - `npx tsc --noEmit` verified with 0 errors.
+  - Server status verified active at `http://localhost:3000` (`HTTP 200 OK`).
+
+### 2026-10-16 — Strict Targeted Restoration: Home Page Navbar
+
+**Done**
+- **Exact Rollback of Navbar Component ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Restored `components/hero/HeroNavbarTransition.tsx` to its exact previous working state from `HEAD` (`f04c215`).
+  - Restored exact dimensions, padding, borders, shadows, mirror-glass styling (`backdrop-blur(16px)`), and layout.
+  - Re-established the permanent `/brand/nexus-wordmark-official.png` logo asset inside the navbar header slot.
+  - Restored desktop navigation links (`Home`, `Events`, `Organizers`, `Contact`) with gradient underline hover effect, `SpecularButton` "CLAIM YOUR PASS" CTA, and responsive mobile menu drawer with ISL Engineering College footer badge.
+  - Restored the unified hero ScrollTrigger timeline (hero logo dissolves/contracts smoothly as user scrolls, navbar capsule glides in from the top) and pre-footer exit ScrollTrigger (`top 85%`).
+  - Retained all existing user work across other sections, templates, and pages untouched.
+- **Verification**:
+  - TypeScript compilation check (`npx tsc --noEmit`) succeeded with 0 errors.
+  - Confirmed local server response (`HTTP 200 OK`).
+
+### 2026-10-16 — Scroll-Triggered Navbar Appearance, Flying Hero Logo Dock & Pre-Footer Exit
+
+**Done**
+- **Hidden Initial State & Scroll-Triggered Appearance ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Configured initial resting state at scroll = 0 to completely hide the top navbar (`opacity: 0, y: -24, pointerEvents: 'none'`).
+  - Implemented scrubbed ScrollTrigger timeline: as user scrolls down, the glass navbar capsule smoothly glides down into position (`y: 0, opacity: 1, pointerEvents: 'auto'`).
+- **Continuous Flying Hero Logo Docking ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - The hero `NEXUS VYOMA` text logo animates seamlessly with scroll, translating (`deltaX, deltaY`) and scaling down to dock precisely into the navbar's center logo slot (`navLogoSlotRef`).
+  - Seamlessly crossfades from the glowing white cursor-interactive mask layer to the official color logo asset.
+- **Pre-Footer Exit Animation ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Added dedicated ScrollTrigger connected to `#footer`: cleanly fades out (`opacity: 0, y: -20`) the navbar and docked logo before reaching the footer, and restores them when scrolling back up.
+- **Verification**:
+  - Type-checked via `npx tsc --noEmit` with 0 errors.
+
+### 2026-10-16 — Restored Hero Navbar & Transition to Previous Working Version
+
+**Done**
+- **Hero Navbar Restoration ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Restored `components/hero/HeroNavbarTransition.tsx` to its exact previous version per user request.
+  - Retained the Barba-style page loading transition with the Nexus mark loading screen in `HorizontalStageTransition.tsx` and `app/template.tsx`.
+- **Verification**:
+  - TypeScript compilation check (`npx tsc --noEmit`) verified with 0 errors.
+
+**Done**
+- **Navbar Visibility & Persistent Interaction ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Removed initial `opacity-0` blocking class so the dark mirror-glass navbar capsule (`navCapsuleRef`) with navigation links (`Home`, `Events`, `Organizers`, `Contact`) and `CLAIM YOUR PASS` is immediately visible and interactive at the top of the viewport.
+  - Refactored animation setup to use official `@gsap/react` `useGSAP` hook with `scope: containerRef`, eliminating React hydration race conditions and `Invalid scope` warnings.
+- **Continuous Flying Logo Transition Restored ([`components/hero/HeroNavbarTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/hero/HeroNavbarTransition.tsx))**:
+  - Restored the fixed continuous transitioning logo actor (`floatingLogoRef`) with dynamic scroll trajectory from the hero center directly into the navbar slot (`navLogoSlotRef`) across both desktop (`>= 768px`) and mobile (`< 768px`) viewports via `gsap.matchMedia()`.
+  - Fixed viewport-relative coordinate math (`startTop`, `startLeft`, `deltaX`, `deltaY`) to prevent scroll-offset accumulation or off-screen jumps.
+  - Re-enabled the 3-layer hero logo stack: dark back shadow blur elevation (`backShadowRef`), pure white base (`whiteLayerRef`), interactive flashlight cursor color reveal (`colorMaskLayerRef`), and scroll crossfade solid official logo (`scrollSolidRef`).
+  - Adjusted footer exit trigger safely to `top 25%` without `overwrite: 'auto'`, preventing false-positive navbar hiding on page load.
+- **Verification**:
+  - TypeScript compilation check (`npx tsc --noEmit`) succeeded with 0 errors.
+
+### 2026-10-16 — Barba.js Page Transition with Nexus Mark Loading Screen
+
+**Done**
+- **Barba-Style Page Exit & Screen Slide ([`components/transitions/HorizontalStageTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/transitions/HorizontalStageTransition.tsx), [`app/template.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/template.tsx))**:
+  - Implemented the custom Barba.js page transition lifecycle: upon clicking an internal route link, the active screen moves to the right (`x: 100vw`, `duration: 0.45s`, `ease: power3.in`).
+  - Coordinated with `#page-transition-wrapper` in `app/template.tsx` to ensure complete view coverage and smooth arrival of the new incoming page (`x: -30` to `x: 0`).
+- **Branded Nexus Mark Loading Screen ([`components/transitions/HorizontalStageTransition.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/transitions/HorizontalStageTransition.tsx))**:
+  - Rendered a focused intermediate loading stage overlay (`#030408` with subtle ambient radial glow) displaying the official NEXUS VYOMA mark (`/brand/nexus-mark-no-background.png`) in small favicon/emblem dimensions (`w-12 h-12 sm:w-14 sm:h-14`).
+  - Added a subtle breathing scale pulse (`scale: 1.08`, `ease: sine.inOut`) and luminous ambient glow ring behind the logo mark.
+  - Configured a ~1.0-second display hold before triggering `router.push(href)`.
+  - On route change completion (`pathname` change), the loading stage smoothly dissolves (`opacity: 0`, `duration: 0.4s`) revealing the next page.
+  - Included a safety reset timeout (5s) and `prefers-reduced-motion` bypass.
+- **Verification**:
+  - TypeScript compilation check (`npx tsc --noEmit`) succeeded with 0 errors.
+
+### 2026-10-15 — 404 Page: Color Theme Reversion to Black & White
+
+**Done**
+- **404 Page Reversion ([`components/404/NotFoundView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/404/NotFoundView.tsx))**:
+  - Reverted the 404 error page background to solid black (`#000000`).
+  - Set all interactive and foreground elements to white (`#ffffff` typography, white animated TechText, and white FluxLines stream).
+  - Styled the action buttons for dark aesthetics (solid white primary button with black text, subtle white hairline outline button for events).
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 47/47 routes.
+
+### 2026-10-15 — Event Details Page: Prize Display Copy Refinement
+
+**Done**
+- **Prize Copy Refinement ([`components/events/EventDetailsView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/EventDetailsView.tsx))**:
+  - Replaced exact monetary amounts with the general label **"Exciting prizes"** when prize pools are active, and **"N/A"** for non-competitive tracks, preserving the dual-card highlight layout beside the event fee.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 47/47 routes.
+
+### 2026-10-15 — Event Details Page: Highlighted Event Fee & Prize Money Display
+
+**Done**
+- **Highlighted Fee & Prize Display ([`components/events/EventDetailsView.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/EventDetailsView.tsx))**:
+  - Replaced the plain text fee label with a side-by-side dual-card display positioned directly below the event image.
+  - Highlighted **EVENT FEE** with branded flame gradient styling (`from-[#FF6A00]/15`, `border-[#FF6A00]/40`, soft glow shadow, bold price).
+  - Displayed **PRIZE POOL** directly beside it in golden amber styling (`from-[#FBB03B]/15`, `border-[#FBB03B]/40`, soft glow shadow), displaying the event's prize money (e.g. `₹50,000`, `₹40,000`, `₹25,000`) or `N/A` if none is assigned.
+- **Data Model Integration ([`lib/data/eventsCatalog.ts`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/lib/data/eventsCatalog.ts))**:
+  - Added `prizePool?: string` to `CatalogEvent` interface and populated all events.
+  - Added fallback in `getEventBySlug` to seamlessly map official flagship events with their prize pool data.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 47/47 routes.
+
+### 2026-10-15 — Events Page Mobile Collapsible Filter Button & Drawer
+
+**Done**
+- **Mobile Filter Button & Expandable Drawer ([`components/events/EventsExplorer.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/EventsExplorer.tsx))**:
+  - Implemented a dedicated mobile-only (`lg:hidden`) filter trigger button with an active filter count pill (`activeFilterCount`), filter icon, chevron state indicator, and quick "Clear All" action.
+  - Placed mobile filtering options inside an expandable dark glass drawer with real-time result counter and "Apply Filters" button, preventing mobile users from having to scroll past all filter options before seeing events.
+  - Kept the desktop layout (`hidden lg:flex lg:col-span-4 ...`) completely unchanged, maintaining the stationary sticky filter panel beside the event catalog.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
+### 2026-10-15 — Flagship Events Card Subtle Glow Effect
+
+**Done**
+- **Cinematic Edge Glow & Hover States ([`components/events/FlagshipScrollDeck.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/events/FlagshipScrollDeck.tsx))**:
+  - Replaced the harsh solid border with a refined translucent border (`${theme.color}40`, ~25% opacity) and dual-tier soft edge glow (`0 0 22px -4px ${theme.color}28, 0 16px 44px rgba(0, 0, 0, 0.95), inset 0 0 14px -6px ${theme.color}20`) using official Nexus Vyoma brand colors (`#0066FF`, `#7B2CFF`, `#FF207D`, `#FF6A00`, `#FBB03B`).
+  - Added smooth hover (`onMouseEnter`/`onMouseLeave`) and keyboard focus (`onFocus`/`onBlur`) states that smoothly intensify the edge glow (`0 0 32px -2px ${theme.color}50, inset 0 0 18px -4px ${theme.color}30`) and tighten the border to `${theme.color}80`.
+  - Added an integrated top specular sheen hairline and subtle corner atmospheric bloom without floating particles or distracting animations.
+  - Provided full mobile/touch screen support with tasteful resting glow and respected `prefers-reduced-motion` (`motion-reduce:transition-none`).
+  - Preserved all card dimensions, content, spacing, and scroll stack animations.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 41/41 routes.
+
 ### 2026-10-15 — About Section ChaiUI/shadcn Floating Hover Cards
 
 **Done**

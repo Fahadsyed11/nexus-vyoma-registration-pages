@@ -50,12 +50,47 @@ export default function FlagshipScrollDeck() {
               itemClassName="w-full max-w-6xl mx-auto"
             >
               <div
-                className="relative w-full rounded-2xl sm:rounded-3xl border bg-[#060913] p-4 sm:p-8 lg:p-12 overflow-hidden transition-shadow duration-300"
+                tabIndex={0}
+                role="region"
+                aria-label={event.title}
+                className="group/card relative w-full rounded-2xl sm:rounded-3xl border bg-[#060913] p-4 sm:p-8 lg:p-12 overflow-hidden transition-all duration-300 ease-out motion-reduce:transition-none focus-visible:outline-none"
                 style={{
-                  borderColor: theme.color,
-                  boxShadow: `0 0 22px -3px ${theme.color}45, 0 16px 44px rgba(0, 0, 0, 0.95), inset 0 0 14px -6px ${theme.color}30`,
+                  borderColor: `${theme.color}40`,
+                  boxShadow: `0 0 22px -4px ${theme.color}28, 0 16px 44px rgba(0, 0, 0, 0.95), inset 0 0 14px -6px ${theme.color}20`,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = `${theme.color}80`;
+                  e.currentTarget.style.boxShadow = `0 0 32px -2px ${theme.color}50, 0 20px 52px rgba(0, 0, 0, 0.98), inset 0 0 18px -4px ${theme.color}30`;
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = `${theme.color}40`;
+                  e.currentTarget.style.boxShadow = `0 0 22px -4px ${theme.color}28, 0 16px 44px rgba(0, 0, 0, 0.95), inset 0 0 14px -6px ${theme.color}20`;
+                }}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = `${theme.color}90`;
+                  e.currentTarget.style.boxShadow = `0 0 36px -2px ${theme.color}60, 0 22px 56px rgba(0, 0, 0, 0.98), inset 0 0 20px -4px ${theme.color}35`;
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = `${theme.color}40`;
+                  e.currentTarget.style.boxShadow = `0 0 22px -4px ${theme.color}28, 0 16px 44px rgba(0, 0, 0, 0.95), inset 0 0 14px -6px ${theme.color}20`;
                 }}
               >
+                {/* Top Specular Sheen Line with Theme Color Bloom */}
+                <div
+                  className="absolute inset-x-0 top-0 h-[1px] pointer-events-none opacity-40 transition-opacity duration-300 group-hover/card:opacity-85"
+                  style={{
+                    background: `linear-gradient(90deg, transparent 0%, ${theme.color}80 35%, rgba(255, 255, 255, 0.35) 50%, ${theme.color}80 65%, transparent 100%)`,
+                  }}
+                  aria-hidden="true"
+                />
+
+                {/* Corner Ambient Glow Bloom (Integrated, Soft, No Particles) */}
+                <div
+                  className="absolute -top-24 -right-24 w-64 h-64 rounded-full pointer-events-none opacity-15 transition-opacity duration-500 blur-3xl group-hover/card:opacity-30"
+                  style={{ backgroundColor: theme.color }}
+                  aria-hidden="true"
+                />
+
                 <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-8 lg:gap-14 items-center w-full min-h-0 sm:min-h-[320px] lg:min-h-[360px]">
                   {/* LEFT: Visual / Image Card (Neutral subtle border, no colored border inside) */}
                   <div className="lg:col-span-5 w-full h-[120px] sm:h-[220px] lg:h-full flex flex-col items-center justify-center p-3 sm:p-6 lg:p-10 rounded-xl sm:rounded-2xl bg-[#0C101D] border border-white/[0.08] relative overflow-hidden group">

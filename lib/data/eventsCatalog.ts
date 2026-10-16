@@ -12,6 +12,7 @@ export interface CatalogEvent {
   category: string;
   participationType: string;
   feeText?: string;
+  prizePool?: string;
   imageUrl?: string;
   registrationUrl?: string | null;
   isFlagship: boolean;
@@ -40,6 +41,7 @@ export const SAMPLE_EVENT: CatalogEvent = {
   category: 'Workshop (sample)',
   participationType: 'Individual (sample)',
   feeText: '₹200 (sample amount)',
+  prizePool: 'N/A',
   isFlagship: false,
   statusNote: 'Sample event only. Registration is not active.',
 };
@@ -67,6 +69,7 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     category: 'Competition',
     participationType: 'Team',
     feeText: '₹250 (sample amount)',
+    prizePool: '₹40,000',
     isFlagship: true,
     statusNote: 'Awaiting official schedule confirmation',
   },
@@ -92,6 +95,7 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     category: 'Entertainment',
     participationType: 'Individual',
     feeText: '₹150 (sample amount)',
+    prizePool: 'N/A',
     isFlagship: true,
     statusNote: 'Awaiting official lineup confirmation',
   },
@@ -117,6 +121,7 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     category: 'Competition',
     participationType: 'Team',
     feeText: '₹200 (sample amount)',
+    prizePool: '₹15,000',
     isFlagship: false,
     statusNote: 'Awaiting official schedule confirmation',
   },
@@ -142,6 +147,7 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     category: 'Hackathon',
     participationType: 'Individual',
     feeText: '₹100 (sample amount)',
+    prizePool: '₹25,000',
     isFlagship: false,
     statusNote: 'Awaiting official schedule confirmation',
   },
@@ -167,6 +173,7 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     category: 'Competition',
     participationType: 'Team',
     feeText: '₹300 (sample amount)',
+    prizePool: '₹30,000',
     isFlagship: true,
     statusNote: 'Awaiting official bracket confirmation',
   },
@@ -192,6 +199,7 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     category: 'Workshop',
     participationType: 'Individual',
     feeText: '₹150 (sample amount)',
+    prizePool: 'N/A',
     isFlagship: false,
     statusNote: 'Awaiting official speaker confirmation',
   },
@@ -217,6 +225,7 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     category: 'Workshop',
     participationType: 'Team',
     feeText: '₹200 (sample amount)',
+    prizePool: 'N/A',
     isFlagship: false,
     statusNote: 'Awaiting official mentor confirmation',
   },
@@ -242,21 +251,53 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     category: 'Talk',
     participationType: 'Individual',
     feeText: '₹150 (sample amount)',
+    prizePool: 'N/A',
     isFlagship: false,
     statusNote: 'Awaiting official keynote confirmation',
   },
 ];
+
+import { OFFICIAL_FLAGSHIP_EVENTS } from './events';
 
 export function getEventBySlug(slug: string): CatalogEvent | undefined {
   const normalized = decodeURIComponent(slug).toLowerCase().trim();
   if (normalized === 'sample-event' || normalized === 'sample') {
     return SAMPLE_EVENT;
   }
-  return EVENTS_CATALOG.find(
+  const fromCatalog = EVENTS_CATALOG.find(
     (e) => e.slug.toLowerCase() === normalized || e.id.toLowerCase() === normalized
   );
+  if (fromCatalog) return fromCatalog;
+
+  const flagship = OFFICIAL_FLAGSHIP_EVENTS.find(
+    (e) => e.slug.toLowerCase() === normalized || e.id.toLowerCase() === normalized
+  );
+  if (flagship) {
+    return {
+      id: flagship.id,
+      slug: flagship.slug,
+      mockId: 'FLAGSHIP',
+      title: flagship.title,
+      shortDescription: flagship.description,
+      description: [flagship.description],
+      requirements: flagship.rules,
+      venue: flagship.venue,
+      date: flagship.day ? `${flagship.day} (${flagship.date})` : flagship.date,
+      time: flagship.time,
+      category: flagship.category,
+      participationType: flagship.entryType,
+      feeText: `₹${flagship.price}`,
+      prizePool: flagship.prizePool || 'N/A',
+      isFlagship: true,
+      statusNote: 'Official Flagship Arena',
+    };
+  }
+
+  return undefined;
 }
 
 export function getAllEventSlugs(): string[] {
-  return ['sample-event', ...EVENTS_CATALOG.map((e) => e.slug)];
+  const catalogSlugs = EVENTS_CATALOG.map((e) => e.slug);
+  const flagshipSlugs = OFFICIAL_FLAGSHIP_EVENTS.map((e) => e.slug);
+  return Array.from(new Set(['sample-event', ...catalogSlugs, ...flagshipSlugs]));
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, createContext, useContext, useCallback } from 'react';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import gsap from 'gsap';
 
@@ -18,15 +19,15 @@ export default function HorizontalStageTransition() {
   const router = useRouter();
   const pathname = usePathname();
   const stageRef = useRef<HTMLDivElement>(null);
+  const logoBoxRef = useRef<HTMLDivElement>(null);
+  const glowRingRef = useRef<HTMLDivElement>(null);
   const isTransitioningRef = useRef(false);
+  const safetyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const navigateWithTransition = useCallback(
     (href: string) => {
       if (isTransitioningRef.current) return;
-      if (href === pathname || !stageRef.current) {
-        router.push(href);
-        return;
-      }
+      if (href === pathname) return;
 
       const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       if (isReduced) {
@@ -34,26 +35,118 @@ export default function HorizontalStageTransition() {
         return;
       }
 
+      if (!stageRef.current) {
+        router.push(href);
+        return;
+      }
+
       isTransitioningRef.current = true;
 
-      // Enable visibility and pointer events during transition
+      // Ensure stage is mounted and visible
       stageRef.current.style.visibility = 'visible';
       stageRef.current.style.pointerEvents = 'auto';
 
-      // Barba Horizontal Slide — Leave phase: slide stage panel in from right to center FIRST
-      gsap.fromTo(
-        stageRef.current,
-        { xPercent: 100 },
-        {
-          xPercent: 0,
-          duration: 0.45,
-          ease: 'power3.inOut',
-          onComplete: () => {
-            // ONLY navigate AFTER stage has fully covered the viewport
-            router.push(href);
+      const pageWrapper = document.getElementById('page-transition-wrapper');
+
+      // Create coordinated Barba Leave & Hold timeline
+      const tl = gsap.timeline();
+
+      // 1. Current screen moves to the right
+      if (pageWrapper) {
+        tl.to(
+          pageWrapper,
+          {
+            x: '100vw',
+            opacity: 0.2,
+            duration: 0.45,
+            ease: 'power3.in',
           },
-        }
+          0
+        );
+      }
+
+      // 2. Loading screen with logo appears
+      tl.fromTo(
+        stageRef.current,
+        { opacity: 0 },
+        {
+          opacity: 1,
+          duration: 0.35,
+          ease: 'power2.out',
+        },
+        0.2
       );
+
+      // Logo entrance & breathing pulse
+      if (logoBoxRef.current) {
+        tl.fromTo(
+          logoBoxRef.current,
+          { scale: 0.8, opacity: 0 },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.3,
+            ease: 'back.out(1.5)',
+          },
+          0.3
+        );
+
+        // Breathing pulse during hold
+        tl.to(
+          logoBoxRef.current,
+          {
+            scale: 1.08,
+            duration: 0.5,
+            repeat: 1,
+            yoyo: true,
+            ease: 'sine.inOut',
+          },
+          0.6
+        );
+      }
+
+      if (glowRingRef.current) {
+        tl.fromTo(
+          glowRingRef.current,
+          { scale: 0.7, opacity: 0.3 },
+          {
+            scale: 1.3,
+            opacity: 0.8,
+            duration: 0.6,
+            repeat: 1,
+            yoyo: true,
+            ease: 'sine.inOut',
+          },
+          0.4
+        );
+      }
+
+      // 3. Screen appears for a second (~1.0s hold), then transition redirects to the next page
+      tl.call(
+        () => {
+          router.push(href);
+        },
+        undefined,
+        1.15 // ~1 second appearance
+      );
+
+      // Failsafe timeout in case route resolution hangs
+      if (safetyTimeoutRef.current) clearTimeout(safetyTimeoutRef.current);
+      safetyTimeoutRef.current = setTimeout(() => {
+        if (stageRef.current && isTransitioningRef.current) {
+          gsap.to(stageRef.current, {
+            opacity: 0,
+            duration: 0.3,
+            onComplete: () => {
+              if (stageRef.current) {
+                stageRef.current.style.visibility = 'hidden';
+                stageRef.current.style.pointerEvents = 'none';
+              }
+              isTransitioningRef.current = false;
+            },
+          });
+        }
+      }, 5000);
     },
     [pathname, router]
   );
@@ -61,7 +154,6 @@ export default function HorizontalStageTransition() {
   // Global click listener to intercept internal route links
   useEffect(() => {
     const handleLinkClick = (e: MouseEvent) => {
-      // Find nearest anchor tag
       const anchor = (e.target as HTMLElement).closest('a');
       if (!anchor) return;
 
@@ -85,7 +177,6 @@ export default function HorizontalStageTransition() {
       }
 
       if (href.startsWith('/')) {
-        // Stop Next.js synthetic router from executing prematurely
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -99,58 +190,84 @@ export default function HorizontalStageTransition() {
     };
   }, [navigateWithTransition]);
 
-  // When pathname changes (after route push), play Barba Enter phase in parallel with new page
+  // When pathname changes (after route redirect completes), smoothly transition loader out
   useEffect(() => {
+    if (safetyTimeoutRef.current) {
+      clearTimeout(safetyTimeoutRef.current);
+      safetyTimeoutRef.current = null;
+    }
+
     if (!stageRef.current) return;
 
     if (isTransitioningRef.current) {
       gsap.to(stageRef.current, {
-        xPercent: -100,
-        duration: 0.5,
-        ease: 'power3.out',
+        opacity: 0,
+        duration: 0.4,
+        ease: 'power2.out',
         onComplete: () => {
           if (stageRef.current) {
-            gsap.set(stageRef.current, { xPercent: 100 });
-            stageRef.current.style.pointerEvents = 'none';
             stageRef.current.style.visibility = 'hidden';
+            stageRef.current.style.pointerEvents = 'none';
           }
           isTransitioningRef.current = false;
         },
       });
     } else {
-      // Direct initial load / once hook: ensure stage is parked off-screen right and hidden
-      gsap.set(stageRef.current, { xPercent: 100 });
-      stageRef.current.style.pointerEvents = 'none';
+      // Direct load initial state
+      gsap.set(stageRef.current, { opacity: 0 });
       stageRef.current.style.visibility = 'hidden';
+      stageRef.current.style.pointerEvents = 'none';
     }
   }, [pathname]);
 
   return (
-    <div
-      ref={stageRef}
-      className="fixed inset-0 z-[9999] pointer-events-none select-none flex items-center justify-center will-change-transform shadow-[0_0_80px_rgba(255,106,0,0.3)]"
-      style={{
-        transform: 'translate3d(100%, 0, 0)',
-        visibility: 'hidden',
-        backgroundColor: '#05070d',
-        backgroundImage:
-          'radial-gradient(ellipse at 50% 50%, rgba(255, 106, 0, 0.12) 0%, rgba(10, 15, 30, 0.95) 70%, #030408 100%)',
-        borderLeft: '2px solid rgba(255, 106, 0, 0.7)',
-        borderRight: '2px solid rgba(255, 32, 125, 0.7)',
-      }}
-      aria-hidden="true"
-    >
-      {/* Dynamic leading edge glow streaks */}
-      <div className="absolute top-0 bottom-0 left-0 w-24 bg-gradient-to-r from-[#FF6A00]/25 to-transparent pointer-events-none" />
-      <div className="absolute top-0 bottom-0 right-0 w-24 bg-gradient-to-l from-[#FF207D]/25 to-transparent pointer-events-none" />
+    <TransitionContext.Provider value={{ navigateWithTransition }}>
+      {/* Intermediate Loading Stage Overlay */}
+      <div
+        ref={stageRef}
+        className="fixed inset-0 z-[99999] pointer-events-none select-none flex flex-col items-center justify-center opacity-0 will-change-opacity"
+        style={{
+          visibility: 'hidden',
+          backgroundColor: '#030408',
+          backgroundImage:
+            'radial-gradient(circle at 50% 50%, rgba(255, 106, 0, 0.12) 0%, rgba(5, 7, 13, 0.98) 55%, #000000 100%)',
+        }}
+        aria-hidden="true"
+      >
+        {/* Ambient Pulsing Glow behind the Logo */}
+        <div
+          ref={glowRingRef}
+          className="absolute w-44 h-44 rounded-full pointer-events-none blur-3xl opacity-40 will-change-transform"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(255,106,0,0.6) 0%, rgba(255,32,125,0.25) 50%, transparent 75%)',
+          }}
+        />
 
-      {/* Center ambient branding insignia */}
-      <div className="flex flex-col items-center gap-3 opacity-90 scale-90 sm:scale-100">
-        <span className="font-mono text-[11px] sm:text-xs tracking-[0.4em] uppercase text-zinc-400">
-          NEXUS VYOMA
-        </span>
-        <div className="w-12 h-[1px] bg-gradient-to-r from-transparent via-[#FF6A00] to-transparent" />
+        {/* Small Nexus Vyoma Logo (Favicon / Mark) with crisp styling */}
+        <div
+          ref={logoBoxRef}
+          className="relative flex flex-col items-center justify-center gap-3 z-10 will-change-transform"
+        >
+          <div className="relative w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center drop-shadow-[0_0_25px_rgba(255,106,0,0.7)]">
+            <Image
+              src="/brand/nexus-mark-no-background.png"
+              alt="NEXUS VYOMA Logo"
+              width={56}
+              height={56}
+              priority
+              className="w-full h-full object-contain select-none filter contrast-125 brightness-110"
+            />
+          </div>
+
+          <div className="flex flex-col items-center gap-1.5 mt-1">
+            <span className="font-mono text-[9px] sm:text-[10px] tracking-[0.35em] uppercase text-zinc-400 font-medium">
+              NEXUS VYOMA
+            </span>
+            <div className="w-10 h-[1.5px] bg-gradient-to-r from-transparent via-[#FF6A00] to-transparent rounded-full" />
+          </div>
+        </div>
       </div>
-    </div>
+    </TransitionContext.Provider>
   );
 }

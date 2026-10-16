@@ -13,8 +13,8 @@ export default function Template({ children }: { children: React.ReactNode }) {
     if (isReduced) return;
 
     const ctx = gsap.context(() => {
-      // Synchronized horizontal stage arrival for dynamic page content on wrapper
-      const target = containerRef.current;
+      // Synchronized horizontal stage arrival for dynamic page content (targets main so fixed viewport navbar stays rock-solid)
+      const target = containerRef.current?.querySelector('main') || containerRef.current;
       if (!target) return;
 
       gsap.fromTo(
@@ -34,7 +34,11 @@ export default function Template({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div ref={containerRef} className="w-full min-h-full flex-1 flex flex-col">
+    <div
+      id="page-transition-wrapper"
+      ref={containerRef}
+      className="w-full min-h-full flex-1 flex flex-col"
+    >
       {children}
     </div>
   );

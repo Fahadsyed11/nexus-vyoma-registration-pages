@@ -111,11 +111,31 @@ export default function EventDetailsView({ event }: EventDetailsViewProps) {
             )}
           </div>
 
-          {/* Entry Fee (immediately below image) */}
-          <div className="mt-3.5 sm:mt-4 text-left">
-            <p className="font-sans text-xs sm:text-sm font-medium tracking-wide text-[#FF6A00] select-none">
-              event fee: {event.feeText || '₹200 (sample amount)'}
-            </p>
+          {/* Highlighted Event Fee & Prize Money */}
+          <div className="mt-4 sm:mt-5 grid grid-cols-2 gap-3 text-left">
+            {/* 1. Highlighted Event Fee */}
+            <div className="rounded-xl border border-[#FF6A00]/40 bg-gradient-to-br from-[#FF6A00]/15 via-[#FF3B2E]/10 to-transparent p-3 sm:p-3.5 shadow-[0_0_20px_rgba(255,106,0,0.15)] flex flex-col justify-center">
+              <span className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#FF6A00] select-none flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00]" />
+                EVENT FEE
+              </span>
+              <span className="font-sans text-sm sm:text-base font-extrabold text-white tracking-tight mt-0.5">
+                {event.feeText || '₹200'}
+              </span>
+            </div>
+
+            {/* 2. Prize Money Display */}
+            <div className="rounded-xl border border-[#FBB03B]/40 bg-gradient-to-br from-[#FBB03B]/15 via-[#FF6A00]/10 to-transparent p-3 sm:p-3.5 shadow-[0_0_20px_rgba(251,176,59,0.12)] flex flex-col justify-center">
+              <span className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#FBB03B] select-none flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FBB03B]" />
+                PRIZE POOL
+              </span>
+              <span className="font-sans text-xs sm:text-sm md:text-base font-extrabold text-white tracking-tight mt-0.5">
+                {event.prizePool && event.prizePool !== 'N/A'
+                  ? 'Exciting prizes'
+                  : 'N/A'}
+              </span>
+            </div>
           </div>
 
           {/* Desktop Grab Seat Action */}

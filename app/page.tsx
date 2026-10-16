@@ -1,7 +1,6 @@
 import HeroNavbarTransition from "@/components/hero/HeroNavbarTransition";
 import AboutSection from "@/components/about/AboutSection";
 import FlagshipEventsSection from "@/components/events/FlagshipEventsSection";
-import SponsorsSection from "@/components/sponsors/SponsorsSection";
 import RegisterCTASection from "@/components/cta/RegisterCTASection";
 import FooterSection from "@/components/footer/FooterSection";
 
@@ -18,10 +17,7 @@ export default function Home() {
         {/* 04 — Flagship Arenas & Competitions (Scroll Expand Card Sequence) */}
         <FlagshipEventsSection />
 
-        {/* 05 — Partners & Sponsors 3D Orbit Carousel */}
-        <SponsorsSection />
-
-        {/* 06 — Official Registration Portal CTA */}
+        {/* 05 — Official Registration Portal CTA */}
         <RegisterCTASection />
       </main>
 
