@@ -1,16 +1,17 @@
 import { connectToDatabase } from "@/database/db";
 import Event from "@/database/schema/event.schema";
 import { NextRequest, NextResponse } from "next/server";
-import enrolledEventModel from "@/database/schema/enrolled-event.schema";
+import enrolledIndividualEventModel from "@/database/schema/enrolled-individual-event.schema";
+import enrolledTeamEventModel from "@/database/schema/enrolled-team-event.schema";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await connectToDatabase();
         const { id }: { id: string } = await params;
 
-        const events = await Event.findById(id);
+        const event = await Event.findById(id);
 
-        if (!events) {
+        if (!event) {
             return NextResponse.json({
                 message: "Event not found",
                 data: null,
@@ -20,22 +21,31 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             }, { status: 404 })
         }
 
-        const countEnrolledEvents = await enrolledEventModel.countDocuments({
-            $and: [
-                { event_id: events._id }
-            ]
-        })
+        let enrolledEventsCount = 0;
+        if (event && event.participants_type === "team") {
+            enrolledEventsCount = await enrolledTeamEventModel.countDocuments({
+                $and: [
+                    { event_id: event._id }
+                ]
+            })
+        } else {
+            enrolledEventsCount = await enrolledIndividualEventModel.countDocuments({
+                $and: [
+                    { event_id: event._id }
+                ]
+            })
+        }
 
         let isSoldOut = false;
 
-        if (countEnrolledEvents >= events.participant_limit) {
+        if (enrolledEventsCount >= event.participant_limit) {
             isSoldOut = true;
         }
 
         return NextResponse.json({
             message: "Event fetched successfully",
             data: {
-                ...events.toObject(),
+                ...event.toObject(),
                 isSoldOut
             },
             error: null,

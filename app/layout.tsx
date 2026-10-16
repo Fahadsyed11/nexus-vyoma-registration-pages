@@ -52,7 +52,7 @@ const aldrich = Aldrich({
 });
 
 export const metadata: Metadata = {
-  title: "Nexus Vyoma islec",
+  title: "Nexus Vyoma ISL Engineering College, Hyderabad | Official Registration Portal",
   description:
     "Official registration portal for Nexus Vyoma (10–12 Nov 2026) organized by ISL Engineering College, Hyderabad. Featuring Cosplay Championship, Mega DJ Night, Automobile Expo, Sufi & Qawwali Night, Tech Battles, and Food Fest.",
   keywords: [
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     "Registration",
   ],
   openGraph: {
-    title: "Nexus Vyoma islec ",
+    title: "Nexus Vyoma ISL Engineering College, Hyderabad | Official Registration Portal",
     description: "Ideas • People • Culture • Beyond | ISL Engineering College, Hyderabad",
     type: "website",
   },
@@ -94,7 +94,7 @@ export default function RootLayout({
     >
       <body
         className="min-h-full flex flex-col font-sans bg-transparent text-[#FFFFFF] selection:bg-[#FF6A00] selection:text-white"
-        suppressHydrationWarning  
+        suppressHydrationWarning
       >
         <HorizontalStageTransition />
         <DualBackground />

@@ -9,7 +9,9 @@ export async function uploadImageToS3(file: Buffer, extension: string, contentTy
         "image/webp": ["webp"],
     };
 
-    if (allowedTypes[contentType]?.includes(extension.toLowerCase())) {
+    console.log(!(allowedTypes[contentType].includes(extension.toLowerCase())))
+
+    if (!(allowedTypes[contentType]?.includes(extension.toLowerCase()))) {
         // return "Unsupported image type or extension";
         return {
             success: false,
