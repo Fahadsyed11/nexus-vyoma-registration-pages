@@ -142,6 +142,21 @@ Newest first.
 - **Verification**:
   - TypeScript compilation check (`npx tsc --noEmit`) succeeded with 0 errors.
 
+### 2026-10-16 — Verify Email: Unregistered User Redirection to Registration Form
+
+**Done**
+- **Conditional OTP Verification Redirection ([`app/api/(registrations)/verify-email/route.ts`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/api/%28registrations%29/verify-email/route.ts), [`components/registration/OtpStepForm.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/components/registration/OtpStepForm.tsx))**:
+  - Configured conditional redirection on OTP verification:
+    - **Unregistered users** (`!isRegistered`): Redirected directly to the canonical registration form at `/register/form?email={encodedEmail}` with prefilled locked email state.
+    - **Already-registered users** (`isRegistered`): Redirected to the event and competition enrollment portal at `/register/enroll-event`.
+  - Updated client-side fallback in `OtpStepForm.tsx` to `/register/form?email=${encodeURIComponent(email)}`.
+- **Form Session & Query Guard ([`app/register/page.tsx`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/register/page.tsx))**:
+  - Updated route handler to redirect completed registrants navigating to `/register` or `/register/form` directly to `/register/enroll-event`.
+- **Prospective Attendee OTP Generation ([`app/api/(registrations)/check-email/route.ts`](file:///Users/syedfahad/Developer/College/Nexus%20Vyoma/registration-pages/app/api/%28registrations%29/check-email/route.ts))**:
+  - Removed blocking check preventing new prospective attendees from requesting initial OTP codes.
+- **Verification**:
+  - Full production build (`npm run build`) succeeded with 0 errors across 47/47 routes.
+
 ### 2026-10-16 — Page Transition: Nexus Logo Size Enlargement
 
 **Done**

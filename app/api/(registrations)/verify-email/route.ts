@@ -110,8 +110,10 @@ export async function POST(request: NextRequest) {
             maxAge: 1 * 60 * 60 + 55 * 60,
         });
 
-        // Determine destination: existing completed registrants go to confirmation/success, new registrants go to /register
-        const destination = isRegistered ? "/payment/success" : "/register";
+        // Determine destination: existing completed registrants go to event enrollment, unregistered users go to registration form
+        const destination = isRegistered
+            ? "/register/enroll-event"
+            : `/register/form?email=${encodeURIComponent(email)}`;
 
         return NextResponse.json({
             message: "OTP verified successfully",

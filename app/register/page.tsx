@@ -55,11 +55,11 @@ async function RegisterContent({ searchParams }: RegisterPageProps) {
   await connectToDatabase();
   const existingUser = await RegisterUser.findOne({ email: verifiedEmail });
 
-  // In production, route completed registrants to ticket status.
-  // In development, keep the form accessible so it can be previewed and tested repeatedly.
+  // Route completed registrants to event enrollment portal.
+  // In development, keep the form accessible if ?preview=1 is passed.
   const shouldEnforceRedirect = process.env.NODE_ENV === 'production' || params.enforce === '1';
   if (existingUser && existingUser.full_name && existingUser.institution && shouldEnforceRedirect && !isPreview) {
-    redirect('/payment/success');
+    redirect('/register/enroll-event');
   }
 
   return <RegistrationFormStep verifiedEmail={verifiedEmail} />;

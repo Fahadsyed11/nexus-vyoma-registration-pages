@@ -33,7 +33,7 @@ export default function HorizontalStageTransition() {
       if (isReduced) {
         router.push(href);
         return;
-      }
+      } 
 
       if (!stageRef.current) {
         router.push(href);

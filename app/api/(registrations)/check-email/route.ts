@@ -36,15 +36,6 @@ export async function POST(request: NextRequest) {
             email
         }).sort({ time: -1 });
 
-        if (!checkOtp) {
-            return NextResponse.json({
-                message: "No OTP found for this user. Please request a new OTP.",
-                data: null,
-                error: null,
-                redirect: false,
-                redirect_url: null
-            }, { status: 404 });
-        }
 
         const currentTime = new Date();
 
