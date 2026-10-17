@@ -57,14 +57,33 @@ export default function ComingSoonPage() {
             </div>
           </div>
 
-          {/* Back to Home Button */}
-          <div className="pt-2">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 hover:border-[#FF6A00]/50 text-xs font-mono tracking-widest text-zinc-300 hover:text-white transition-all uppercase outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
-            >
-              <span>&larr;</span> Back to Home
-            </Link>
+          {/* Actions & Contact Whitelisting */}
+          <div className="pt-2 flex flex-col items-center gap-4 w-full">
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-white/15 bg-white/5 hover:bg-white/10 hover:border-[#FF6A00]/50 text-xs font-mono tracking-widest text-zinc-300 hover:text-white transition-all uppercase outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
+              >
+                <span>&larr;</span> Back to Home
+              </Link>
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-[#FF6A00]/40 bg-[#FF6A00]/10 hover:bg-[#FF6A00]/20 hover:border-[#FF6A00] text-xs font-mono tracking-widest text-[#FF8533] hover:text-white transition-all uppercase outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
+              >
+                Contact Us <span>&rarr;</span>
+              </Link>
+            </div>
+
+            <p className="font-mono text-[11px] text-zinc-500 leading-normal max-w-sm">
+              Need early registration access? Email on our{' '}
+              <Link
+                href="/contact"
+                className="text-zinc-300 underline underline-offset-4 decoration-[#FF6A00]/60 hover:text-[#FF6A00] transition-colors"
+              >
+                Contact Us page
+              </Link>{' '}
+              for whitelisting.
+            </p>
           </div>
         </div>
       </main>
