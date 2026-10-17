@@ -43,6 +43,24 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-17 — Initial Loading Screen with Liquid Water-Filling Logo Transition
+
+**Done**
+- **Home Initial Loader Component (`components/loading/HomeInitialLoader.tsx`)**:
+  - Implemented full-screen fixed black overlay (`fixed inset-0 z-[100] bg-black`).
+  - Positioned the faint outlined logo (`/brand/nexus-wordmark-outline.png`) as the placeholder silhouette in the exact position and responsive dimensions of the hero section logo (`w-[85vw] max-w-[280px] xs:max-w-[340px] sm:max-w-[480px] md:max-w-[620px] lg:max-w-[760px] aspect-[1024/341]`).
+  - Filled the logo with crisp pure white (`/brand/nexus-wordmark-white.png`) using true liquid water-wavy clipping via dynamic SVG `clipPath` (`clipPathUnits="objectBoundingBox"`), generating undulating sinusoidal waves that translate horizontally while rising from bottom to top over 2.4s with zero artificial stroke lines.
+  - Softened the ambient completion glow and drop shadow for a subtle, refined visual finish.
+  - Implemented seamless fading effect transition into the hero page (`opacity: 1 -> 0`, 0.75s), revealing the resting hero section with zero position shift.
+  - Disabled scrollbar during loading (`document.body.style.overflow = 'hidden'`) and restored upon transition completion.
+  - Unmounts cleanly (`setIsMounted(false)`) to render `null` (`Display - null`).
+  - Added `prefers-reduced-motion` compliance.
+- **Home Integration (`app/page.tsx`)**:
+  - Mounted `<HomeInitialLoader />` at the top of the Home page.
+- **Verification**:
+  - `npx eslint components/loading/HomeInitialLoader.tsx app/page.tsx` passed with 0 errors and 0 warnings.
+  - Verified `http://localhost:3000/` returns `HTTP 200 OK`. Zero backend/schema changes.
+
 ### 2026-10-17 — Updated Slide Commit Labels and Redirecting Flow
 
 **Done**
