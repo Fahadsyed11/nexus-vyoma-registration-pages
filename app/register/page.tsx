@@ -1,28 +1,14 @@
 import { Suspense } from 'react';
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import Navbar from '@/components/navbar/Navbar';
 import RegistrationGridBackground from '@/components/registration/RegistrationGridBackground';
 import RegistrationFormStep from '@/components/registration/RegistrationFormStep';
-import { verifyJWT } from '@/utilities/jwt';
-import { connectToDatabase } from '@/database/db';
-import RegisterUser from '@/database/schema/register-user.schema';
 
 export const metadata: Metadata = {
   title: 'Complete Registration | Nexus Vyoma 2026',
   description:
     'Complete your registration details for Nexus Vyoma 2026, ISL Engineering College, Hyderabad.',
 };
-
-interface JWTPayloadUser {
-  user?: {
-    id?: string;
-    name?: string;
-    email?: string;
-  };
-  email?: string;
-}
 
 interface RegisterPageProps {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
@@ -31,36 +17,7 @@ interface RegisterPageProps {
 async function RegisterContent({ searchParams }: RegisterPageProps) {
   const params = searchParams ? await searchParams : {};
   const queryEmail = typeof params.email === 'string' ? params.email.trim() : undefined;
-  const isPreview = params.preview === '1' || params.preview === 'true';
-
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get('nv-session')?.value || cookieStore.get('nv-session-temp')?.value;
-
-  let verifiedEmail: string | undefined;
-
-  if (sessionToken) {
-    const payload = verifyJWT(sessionToken) as JWTPayloadUser | null;
-    verifiedEmail = payload?.user?.email || payload?.email;
-  }
-
-  // Development or preview fallback to allow direct form access without session
-  if (!verifiedEmail && (process.env.NODE_ENV === 'development' || isPreview || queryEmail)) {
-    verifiedEmail = queryEmail || 'attendee@nexusvyoma.com';
-  }
-
-  if (!verifiedEmail) {
-    redirect('/register/check-email');
-  }
-
-  await connectToDatabase();
-  const existingUser = await RegisterUser.findOne({ email: verifiedEmail });
-
-  // Route completed registrants to event enrollment portal.
-  // In development, keep the form accessible if ?preview=1 is passed.
-  const shouldEnforceRedirect = process.env.NODE_ENV === 'production' || params.enforce === '1';
-  if (existingUser && existingUser.full_name && existingUser.institution && shouldEnforceRedirect && !isPreview) {
-    redirect('/register/enroll-event');
-  }
+  const verifiedEmail = queryEmail || 'attendee@nexusvyoma.com';
 
   return <RegistrationFormStep verifiedEmail={verifiedEmail} />;
 }

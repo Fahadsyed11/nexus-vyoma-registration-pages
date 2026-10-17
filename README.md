@@ -43,6 +43,28 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-17 — Registration Backend Decoupling, Coming Soon Page & Next 16 `proxy.ts` Gatekeeper
+
+**Done**
+- **Removed Backend & DB Calls from Registration Pages (`app/register/page.tsx`, `app/register/enroll-event/page.tsx`, `app/register/checkout-event/page.tsx`)**:
+  - Detached all direct database connections (`connectToDatabase`), Mongoose queries (`RegisterUser`, `Event`, `EnrolledIndividualEvent`, `EnrolledTeamEvent`), and server session/JWT logic (`verifyJWT`, `cookies()`).
+  - Switched the registration pages to feed static dummy datasets (`attendee@nexusvyoma.com`, sample individual and team events) directly into existing client visual components (`RegistrationFormStep`, `EventEnrollmentView`, `CheckoutEventView`) without modifying UI design or altering any code in `/app/api/*`.
+- **Created `app/coming-soon/page.tsx`**:
+  - Implemented a clean, branded "Registrations Opening Soon" announcement page matching the Nexus Vyoma aesthetic:
+    - Glowing badge indicator (`Registration Portal`),
+    - Bold gradient headline (`COMING SOON`),
+    - Key festival dates & venue cards,
+    - Seamless navigation link back to `/`.
+- **Implemented Next.js 16 Gatekeeper Proxy (`proxy.ts`)**:
+  - Created root-level Next 16 `proxy.ts` with custom matcher:
+    - **Frontend Interception**: Any direct route request to `/register`, `/register/*`, `/check-email`, `/verify-email`, `/email-verify`, `/enroll-events`, `/enroll-event`, or `/checkout-event` is automatically redirected to `/coming-soon`.
+    - **API Endpoint Blocking**: Any external API calls targeting registration, enrollment, checkout, or payment endpoints (`/api/register/*`, `/api/check-email/*`, `/api/verify-email/*`, `/api/submit-registration/*`, `/api/enroll-event/*`, `/api/enrolled-event/*`, `/api/payment/*`) are immediately blocked with HTTP 403 Forbidden and the exact plain-text payload: `"You cannot access this cheater"`.
+- **Verification**:
+  - Successfully verified `proxy.ts` redirection via `curl -s -i http://localhost:3000/register` (returns HTTP 307 Redirect to `/coming-soon`).
+  - Verified API blocking via `curl -s -i http://localhost:3000/api/register/check-email` and `POST /api/enroll-event` (returns HTTP 403 Forbidden with payload: `"You cannot access this cheater"`).
+  - Verified `/coming-soon` loads HTTP 200 with zero redirect loops.
+  - Verified root page `/` continues to function smoothly.
+
 ### 2026-10-17 — DriftWall: Resting Depth-of-Field Blur Effect & Interactive Hover Focus
 
 **Done**
