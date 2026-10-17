@@ -43,6 +43,102 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-17 — DriftWall: Resting Depth-of-Field Blur Effect & Interactive Hover Focus
+
+**Done**
+- **Depth-of-Field Aesthetic Blur (`components/ui/DriftWall.css`, `components/ui/DriftWall.tsx`, `components/hero/HeroNavbarTransition.tsx`)**:
+  - Added resting Gaussian blur (`filter: blur(var(--dw-blur, 1.5px))`) to `.drift-wall__tile img` with subtle micro-scale (`transform: scale(1.05)`) to eliminate edge-clipping artifacts.
+  - This introduces a cinematic depth-of-field effect behind the hero logo, softening background high-frequency noise and making the floating white "NEXUS VYOMA" wordmark and countdown timer stand out with razor-sharp prominence.
+  - On hover or keyboard focus (`:focus-visible`), tiles smoothly transition from `blur(1.5px)` to `blur(0px)` crystal-clear focus (`transform: scale(1)`), lifting `64px` in 3D with the brand orange glow border.
+  - Added configurable `blur?: number` prop (default `1.5`) to `DriftWallProps` and passed `blur={1.5}` in `HeroNavbarTransition.tsx`.
+- **Verification**:
+  - Zero ESLint errors.
+  - Dev server HTTP 200 validated.
+
+### 2026-10-17 — DriftWall: 20 Pure-Event Action Tiles & Zero Visible Duplicate Viewport Upgrade
+
+**Done**
+- **100% Pure Event Grid (`public/brand/drift-wall/`, `components/ui/DriftWall.tsx`)**:
+  - Replaced all non-event campus architecture filler (empty staircases, corridors, chandeliers, trees) with dedicated event action spotlights cropped from the official posters:
+    1. `rpm-gear-up.webp` (RPM Gear Up Automotive Fest title & racing graphics)
+    2. `cipher-hacker-main.webp` (Nexus Cipher CTF hacker at glowing cyber terminal)
+    3. `jashn-e-suroor.webp` (Jashn-E-Suroor Qawwali Night ornate title & night arch)
+    4. `eclipse-dj-night.webp` (Eclipse 404 Mega DJ Night title & red solar eclipse)
+    5. `charcha-open-mic.webp` (Charcha The Talk Open Mic title & glowing tree lights)
+    6. `signal-hunt-main.webp` (Signal Hunt RF Radio Quest & radar map)
+    7. `rpm-superbike.webp` (RPM Superbike Racing & Stunt Arena)
+    8. `cipher-cyber-skyline.webp` (Nexus Cipher Cyberpunk Metropolis & Neon Grid)
+    9. `jashn-qawwali-stage.webp` (Qawwali Live Ensemble carpeted stage & harmonium)
+    10. `charcha-acoustic-stage.webp` (Charcha Live Acoustic Stage, Guitars & Hanging Vinyls)
+    11. `rpm-drift-cars.webp` (RPM Custom Performance Tuning & Drift Arena)
+    12. `eclipse-disco-ball.webp` (Eclipse 404 Cosmic Mirrorball & Light Show)
+    13. `cipher-badges.webp` (Web Exploitation, Cryptography & Steganography Arenas)
+    14. `signal-hunt-antenna.webp` (Signal Hunt Satellite Radar & Wave Antenna)
+    15. `charcha-art-show.webp` (Charcha Art Exhibition & Cultural Forest Stage)
+    16. `rpm-speedometer.webp` (RPM Tachometer & Drag Challenge)
+    17. `jashn-courtyard-banner.webp` (Jashn Grand Stage Banner)
+    18. `nexus-fest-marquee.webp` (Nexus Vyoma Official 3D Chrome Festival Marquee)
+    19. `charcha-wet-reflections.webp` (Charcha Golden Hour Stage Ambiance)
+    20. `nexus-fest-badge.webp` (Nexus Vyoma Official Fest Fiery Emblem)
+- **Deep 10-Item Column Allocation & Coprime Stride (`stride = 7`)**:
+  - Expanded unique items per column from 8 to 10 before looping, yielding a virtual track height of >1340px (well beyond full screen viewports).
+  - Users will practically never see any repeated image within the entire visible viewport.
+  - Interleaved event categories (Auto, Cyber, Sufi, DJ, Open Mic, Radar, Art) so adjacent tiles belong to completely different disciplines.
+- **Verification**:
+  - Zero TypeScript or ESLint errors (`npx eslint components/ui/DriftWall.tsx`).
+  - Dev server HTTP 200 validated.
+
+### 2026-10-17 — DriftWall: Anti-Repetition Dispersion & 4 New Event Posters (19 Total Tiles)
+
+**Done**
+- **4 New Event Posters Integration (`public/brand/drift-wall/`)**:
+  - Processed and calibrated 6 additional 3:2 landscape WebP tiles (600×400):
+    1. `nexus-cipher-ctf.webp` (Nexus Cipher CTF hacker at terminal with neon purple/blue cyberpunk skyline)
+    2. `cipher-skyline-detail.webp` (Cyberpunk city skyline & terminal close-up)
+    3. `charcha-stage-acoustic.webp` (Charcha daytime acoustic stage with hanging vinyl records, guitars & draped canopy)
+    4. `signal-hunt.webp` (Signal Hunt dark distressed radar map & toxic lime green title)
+    5. `rpm-gear-up.webp` (RPM Automotive Fest checkered flag, racecars & superbike; exposure lowered by -22% to prevent white glare)
+    6. `rpm-superbike-detail.webp` (Action superbike & sports car lower panel)
+  - Expanding the DriftWall pool to **19 unique festival and campus tiles**.
+- **Anti-Repetition Dispersion Algorithm (`components/ui/DriftWall.tsx`)**:
+  - Eliminated duplicate images appearing in the same horizontal row or rapid vertical succession.
+  - Implemented coprime stride (`stride = 5`) and phased starting offsets (`(c * 7 + 3) % 19`) across columns, guaranteeing that across any horizontal slice, every single tile in a row is 100% unique (`all_rows_unique = True` on mobile, tablet, and desktop).
+  - Increased unique tiles per column to 8 before looping, ensuring no single column repeats an image within view.
+  - Applied golden ratio vertical stagger (`((c * 0.618 + 0.17) % 1) * copyHeight`) to offset column positions so adjacent columns never align horizontally.
+- **Verification**:
+  - Clean ESLint check with 0 errors (`npx eslint "components/ui/DriftWall.tsx"`).
+  - Dev server HTTP 200 verified.
+
+### 2026-10-17 — DriftWall 3D Hero Perspective Wall: Official Assets & Exposure Calibration
+
+**Done**
+- **Official Brand & Event Assets Integration (`public/brand/drift-wall/`, `components/ui/DriftWall.tsx`)**:
+  - Replaced all placeholder picsum images with 13 official, user-provided event posters and campus photographs cropped to high-DPI 3:2 landscape WebP tiles (600×400):
+    1. `jashn-e-suroor.webp` (Jashn-E-Suroor Qawwali Night title & nocturnal courtyard facade)
+    2. `jashn-stage-detail.webp` (Qawwali night stage, instruments & fairy lights)
+    3. `amphitheatre-steps.webp` (Open-Air Amphitheatre concrete tier steps under trees)
+    4. `amphitheatre-canopy.webp` (Amphitheatre forest canopy & dappled sunlight)
+    5. `isl-courtyard.webp` (ISL Central Courtyard with royal palms & white campus arches)
+    6. `isl-arcade-detail.webp` (Heritage arcade colonnade & palms corridor)
+    7. `eclipse-dj-night.webp` (Eclipse 404 DJ Night poster with disco ball & cosmic flare)
+    8. `eclipse-disco-ball.webp` (Disco ball specular facet close-up)
+    9. `charcha-open-mic.webp` (Charcha The Talk Open Mic title & tree string lights)
+    10. `charcha-reflections.webp` (Wet ground reflecting golden fairy lights)
+    11. `nexus-launch-ceremony.webp` (College leadership & dignitaries poster launch ceremony in boardroom)
+    12. `nexus-chandelier-detail.webp` (Crystal chandelier & rosette ceiling detail)
+    13. `nexus-emblem-dark.webp` (Official glowing Nexus Vyoma emblem with fiery gradient star)
+- **Exposure & Detailing Calibration**:
+  - Toned down high-key daylight campus photos (ISL Courtyard, Amphitheatre) by lowering highlight brightness (-16% to -18%) and boosting shadow depth (+12% to +18% contrast), preventing washed-out whites in the dark hero theme.
+  - Enhanced nocturnal event posters (Jashn-E-Suroor, Eclipse 404, Charcha, Launch Ceremony) with boosted color saturation (+10% to +15%) and rich black points so titles and specular highlights pop.
+  - Calibrated all 13 tiles into a harmonious mean exposure distribution (30–95), ensuring balanced visual rhythm across the 7 drifting columns.
+- **Micro-Detailing & Styling (`components/ui/DriftWall.css`, `components/hero/HeroNavbarTransition.tsx`)**:
+  - Added hairline borders (`border: 1px solid rgba(255, 255, 255, 0.08)`) and deep drop shadows (`box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.6)`) to each tile.
+  - Added brand orange-red border glow (`border-color: rgba(255, 106, 0, 0.45); box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.85), 0 0 24px -4px rgba(255, 106, 0, 0.28)`) on hover/focus states.
+  - Tuned `dim={0.52}` and `overlayColor="#04060e"` in `HeroNavbarTransition.tsx` to maintain distinct contrast for the foreground floating white Nexus Vyoma wordmark.
+- **Verification**:
+  - Zero TypeScript or ESLint errors (`npx eslint "components/ui/DriftWall.tsx" "components/hero/HeroNavbarTransition.tsx"` passed clean).
+  - Dev server HTTP 200 validated.
+
 ### 2026-10-17 — Initial Loading Screen with Liquid Water-Filling Logo Transition
 
 **Done**
