@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { EVENTS_CATALOG, CatalogEvent } from '@/lib/data/eventsCatalog';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import type { CatalogEvent } from '@/lib/data/eventsCatalog';
 import EventCard from './EventCard';
 import EventsTitleRolling from './EventsTitleRolling';
 
@@ -11,19 +12,49 @@ const DATES: ('10 November' | '11 November' | '12 November')[] = [
   '12 November',
 ];
 
-const CATEGORIES: ('Competition' | 'Hackathon' | 'Talk' | 'Entertainment' | 'Workshop')[] = [
-  'Competition',
-  'Hackathon',
-  'Talk',
-  'Entertainment',
-  'Workshop',
-];
+interface EventsExplorerProps {
+  events: CatalogEvent[];
+}
 
-export default function EventsExplorer() {
+export default function EventsExplorer({ events }: EventsExplorerProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [flagshipOnly, setFlagshipOnly] = useState<boolean>(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState<boolean>(false);
+
+  // Category options come straight from the event documents.
+  const CATEGORIES = useMemo(
+    () =>
+      Array.from(new Set(events.map((e) => e.category).filter(Boolean))).sort(
+        (a, b) => a.localeCompare(b)
+      ),
+    [events]
+  );
+
+  // The URL (?category=technical&category=gaming) is the single source of truth,
+  // so a copied link always reproduces the same filtered list.
+  const urlCategoryKey = searchParams.getAll('category').join('\u0000');
+  const selectedCategories = useMemo(() => {
+    const wanted = urlCategoryKey
+      .split('\u0000')
+      .map((c) => c.trim().toLowerCase())
+      .filter(Boolean);
+    return CATEGORIES.filter((cat) => {
+      const c = cat.toLowerCase();
+      return wanted.some((w) => c === w || c.startsWith(w));
+    });
+  }, [urlCategoryKey, CATEGORIES]);
+
+  const writeCategoriesToUrl = (next: string[]) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('category');
+    next.forEach((c) => params.append('category', c.toLowerCase()));
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
+  };
 
   // Toggle date selection
   const handleToggleDate = (date: string) => {
@@ -32,25 +63,25 @@ export default function EventsExplorer() {
     );
   };
 
-  // Toggle category selection
+  // Toggle category selection (updates the URL)
   const handleToggleCategory = (category: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(category)
-        ? prev.filter((c) => c !== category)
-        : [...prev, category]
+    writeCategoriesToUrl(
+      selectedCategories.includes(category)
+        ? selectedCategories.filter((c) => c !== category)
+        : [...selectedCategories, category]
     );
   };
 
   // Reset all filters
   const handleClearFilters = () => {
     setSelectedDates([]);
-    setSelectedCategories([]);
     setFlagshipOnly(false);
+    writeCategoriesToUrl([]);
   };
 
   // Filter computation
   const filteredEvents = useMemo(() => {
-    return EVENTS_CATALOG.filter((event: CatalogEvent) => {
+    return events.filter((event: CatalogEvent) => {
       // Date filter
       if (selectedDates.length > 0 && !selectedDates.includes(event.date)) {
         return false;
@@ -71,7 +102,7 @@ export default function EventsExplorer() {
 
       return true;
     });
-  }, [selectedDates, selectedCategories, flagshipOnly]);
+  }, [events, selectedDates, selectedCategories, flagshipOnly]);
 
   const hasActiveFilters =
     selectedDates.length > 0 || selectedCategories.length > 0 || flagshipOnly;
