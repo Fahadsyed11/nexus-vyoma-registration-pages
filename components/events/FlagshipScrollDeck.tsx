@@ -99,8 +99,9 @@ export default function FlagshipScrollDeck() {
 
                 <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-10 w-full min-h-0">
                   {/* LEFT: Visual / Image Card - snug fixed frame strictly as per poster size with NO side gaps */}
-                  <div
-                    className="relative flex-shrink-0 rounded-xl sm:rounded-2xl overflow-hidden group/visual border transition-all duration-300 shadow-2xl flex items-center justify-center bg-[#07090F]"
+                  <Link
+                    href="/events"
+                    className="relative flex-shrink-0 rounded-xl sm:rounded-2xl overflow-hidden group/visual border transition-all duration-300 shadow-2xl flex items-center justify-center bg-[#07090F] block cursor-pointer"
                     style={{
                       aspectRatio: event.aspectRatio || '1/1',
                       height: 'clamp(280px, 42vw, 420px)',
@@ -116,7 +117,7 @@ export default function FlagshipScrollDeck() {
                           alt={event.title}
                           fill
                           sizes="(max-width: 1024px) 100vw, 420px"
-                          className="object-cover transition-transform duration-500 ease-out group-hover/visual:scale-105"
+                          className="object-contain transition-transform duration-500 ease-out group-hover/visual:scale-105"
                           priority={event.id === 'auto-show'}
                         />
 
@@ -163,7 +164,7 @@ export default function FlagshipScrollDeck() {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </Link>
 
                   {/* RIGHT: Title & Description & Metadata */}
                   <div className="flex-1 min-w-0 flex flex-col justify-center gap-2.5 sm:gap-4 w-full">
@@ -215,7 +216,7 @@ export default function FlagshipScrollDeck() {
                             borderWidth: 1,
                           }}
                         >
-                          <span>🏆</span> Prize {event.prizePool}
+                          <span>🏆</span> Exciting Prizes
                         </div>
                       )}
                     </div>
@@ -223,7 +224,7 @@ export default function FlagshipScrollDeck() {
                     {/* Action Link */}
                     <div className="pt-1.5 sm:pt-2">
                       <Link
-                        href={`/events/${event.slug}`}
+                        href="/events"
                         className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                         style={{
                           boxShadow: `0 0 16px -4px ${themeColor}35`,

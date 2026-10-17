@@ -304,3 +304,86 @@ export function getAllEventSlugs(): string[] {
   const flagshipSlugs = OFFICIAL_FLAGSHIP_EVENTS.map((e) => e.slug);
   return Array.from(new Set(['sample-event', ...catalogSlugs, ...flagshipSlugs]));
 }
+
+/**
+ * Shape of one event document as returned by `GET /api/event` and
+ * `GET /api/event/:id` (see database/schema/event.schema.ts).
+ */
+export interface ApiEvent {
+  _id: string;
+  title: string;
+  short_description?: string;
+  long_description?: string;
+  venue?: string;
+  date_time?: string;
+  image_url?: string;
+  isFlatship?: boolean;
+  category?: string;
+  participant_limit?: number;
+  prize?: string;
+  entry_fee?: number;
+  participants_type?: 'individual' | 'team';
+  team_size?: number;
+  min_team_size?: number;
+  max_team_size?: number;
+  requirements?: string[];
+}
+
+/** Pure mapper: API event document -> UI model. No network / DB access. */
+export function mapApiEventToCatalog(doc: ApiEvent, index = 0): CatalogEvent {
+  const parsed = doc.date_time ? new Date(doc.date_time) : null;
+  const valid = parsed !== null && !Number.isNaN(parsed.getTime());
+
+  // Always format in IST so server and browser render the same text.
+  const date = valid
+    ? new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Kolkata',
+        day: 'numeric',
+        month: 'long',
+      }).format(parsed)
+    : 'Date TBA';
+  const time = valid
+    ? new Intl.DateTimeFormat('en-US', {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true,
+      }).format(parsed)
+    : 'Time TBA';
+
+  let participationType = 'Individual';
+  if (doc.participants_type === 'team') {
+    const min = doc.min_team_size ?? 1;
+    const max = doc.max_team_size ?? doc.team_size ?? min;
+    participationType = min === max ? `Team of ${max}` : `Team of ${min}–${max}`;
+  }
+
+  const fee = Number(doc.entry_fee) || 0;
+  const prize = (doc.prize || '').trim();
+
+  return {
+    id: String(doc._id),
+    slug: String(doc._id),
+    mockId: String(index + 1).padStart(2, '0'),
+    title: doc.title,
+    shortDescription: doc.short_description || '',
+    description: (doc.long_description || doc.short_description || '')
+      .split(/\r?\n+/)
+      .map((p) => p.trim())
+      .filter(Boolean),
+    requirements: (doc.requirements || [])
+      .flatMap((r) => r.split(/\r?\n+/))
+      .map((r) => r.trim())
+      .filter(Boolean),
+    venue: doc.venue || 'ISL Engineering College, Hyderabad',
+    date,
+    time,
+    category: (doc.category || 'General').trim(),
+    participationType,
+    feeText: fee === 0 ? 'Free' : `₹${fee}`,
+    prizePool: prize && prize.toLowerCase() !== 'no prize' ? prize : 'N/A',
+    imageUrl: doc.image_url || undefined,
+    isFlagship: Boolean(doc.isFlatship),
+    statusNote: 'Registration opens soon.',
+  };
+}

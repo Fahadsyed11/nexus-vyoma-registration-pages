@@ -15,6 +15,11 @@ export default function Template({ children }: { children: React.ReactNode }) {
     let ctx: gsap.Context | null = null;
     const rafId = requestAnimationFrame(() => {
       ctx = gsap.context(() => {
+        // Ensure outer page-transition-wrapper transform is completely cleared
+        if (containerRef.current) {
+          gsap.set(containerRef.current, { clearProps: 'transform,opacity' });
+        }
+
         // Synchronized horizontal stage arrival for dynamic page content (targets main so fixed viewport navbar stays rock-solid)
         const target = containerRef.current?.querySelector('main') || containerRef.current;
         if (!target) return;

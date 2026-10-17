@@ -43,6 +43,74 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-17 — Fix Partial Prerendering build error on `/events` and `/events/[eventSlug]`
+
+**Done**
+- `app/events/page.tsx` & `app/events/[eventSlug]/page.tsx`: wrapped dynamic data fetching components in `<Suspense fallback={null}>`, satisfying Next.js 16 Partial Prerendering (`cacheComponents: true` / PPR) and allowing static shell prerendering at build time.
+- `components/navbar/Navbar.tsx`: wrapped in `<Suspense>` to cleanly handle dynamic `usePathname()` client hook access during static shell generation across all routes.
+- Verified: `npm run build` completed successfully, prerendering all 35 routes.
+
+### 2026-10-17 — Connected contact form to `POST /api/contact`
+
+**Done**
+- `components/contact/ContactSection.tsx`: wired the form to `POST /api/contact` matching `contactDto` (`full_name`, `phone_number`, `email`, `message`); added 10-digit phone number validation and field-level error display; added button loading state (`SUBMITTING...`) and feedback banners for success (201) and errors (400/500); removed mock "Message delivery is not configured yet" text.
+- `app/api/contact/route.ts`: mapped `data.phone_number` to `phone_no` on document creation so it matches `contactSchema` requirements.
+
+### 2026-10-17 — Flagship event cards redirect to `/events`
+
+**Done**
+- `components/events/FlagshipScrollDeck.tsx`: all flagship cards (both the visual poster card and the "Explore Arena" action button) now link directly to `/events`.
+- `next.config.ts`: added permanent redirect from `/event` to `/events` so both singular and plural paths resolve cleanly.
+
+### 2026-10-17 — Fix page-transition-wrapper reset on navigation to `/events/:id`
+
+**Done**
+- `HorizontalStageTransition.tsx`: immediately reset `#page-transition-wrapper` (`gsap.set(..., { x: 0, opacity: 1, clearProps: 'all' })`) upon `pathname` change and in completion/failsafe callbacks, fixing the issue where dynamic pages stayed translated off-screen (`100vw`) until manual refresh. Reduced `router.push` dispatch delay from 1.15s to 0.35s so backend data fetching starts immediately.
+- `app/template.tsx`: explicitly clear lingering exit transforms on `containerRef.current` during arrival animation.
+
+### 2026-10-17 — Replaced EventsLoading with official page-to-page transition
+
+**Done**
+- Deleted redundant `components/events/EventsLoading.tsx`.
+- `app/events/page.tsx` & `app/events/[eventSlug]/page.tsx`: converted into clean async Server Components without outer `<Suspense>` wrappers, allowing Next.js to hold navigation while server data resolves.
+- `components/transitions/HorizontalStageTransition.tsx`: sustained logo breathing and glow ring animation (`repeat: -1`) during data resolution hold, gracefully fading out via GSAP on route completion.
+
+### 2026-10-17 — Loading page while event data loads
+
+**Done**
+- New `components/events/EventsLoading.tsx` (server component): full-screen black loader with the brand emblem (existing asset) and orange glow; pulse disabled for reduced motion.
+- `app/events/page.tsx` and `app/events/[eventSlug]/page.tsx`: the whole page (navbar, content, footer) now sits behind a `<Suspense>` with this loader, so only the loading screen shows until the API responds. Removed the old skeletons.
+
+### 2026-10-17 — "Exciting Prizes" label & uncropped event posters
+
+**Done**
+- `EventDetailsView.tsx`: prize box always shows "Exciting Prizes"; poster now renders at its natural aspect ratio (full image, no crop).
+- `EventCard.tsx`: banner uses `object-contain` so the whole poster shows in the card thumbnail.
+- `FlagshipScrollDeck.tsx`: prize pill shows "Exciting Prizes"; poster uses `object-contain`.
+
+### 2026-10-17 — Fix blocking-prerender-client-hook on `/events/[eventSlug]`
+
+**Done**
+- `app/layout.tsx`: wrapped `<HorizontalStageTransition />` (reads `usePathname()`) in `<Suspense fallback={null}>`. The overlay is invisible by default, and `DualBackground` and `{children}` stay outside the boundary, so the static shell is unchanged.
+
+**Follow-ups**
+- Verify in the browser that the dev overlay Insight is gone and transitions still animate.
+
+### 2026-10-17 — Events pages now powered by `/api/event` & `/api/event/:id`, shareable category filter
+
+**Done**
+- **`/events`** (`app/events/page.tsx`): server component fetches the existing `GET /api/event` route (no DB code, no new routes/files) and passes the events to `EventsExplorer` inside `<Suspense>`.
+- **`/events/[eventSlug]`** (`app/events/[eventSlug]/page.tsx`): fetches the existing `GET /api/event/:id` route (React `cache` dedupes metadata + content). The `_id` is the URL param; unknown/invalid ids render the 404 page. Removed `generateStaticParams`.
+- **Filter** (`components/events/EventsExplorer.tsx`): category options are derived from the event documents' `category`. The URL is the single source of truth: `?category=technical&category=gaming` (multi-select). Toggling a category / Clear Filters updates the URL via `router.replace(..., { scroll: false })`, so shared links reproduce the same list. Prefix values like `?category=tech` also resolve.
+- **Mapper** (`lib/data/eventsCatalog.ts`): added `ApiEvent` + pure `mapApiEventToCatalog` (IST date/time, `Team of min–max`, `Free`/`₹fee`, real prize, requirements split on newlines). No network/DB code.
+- **UI** (`EventCard.tsx`, `EventDetailsView.tsx`): card links to `/events/:id`, shows the S3 banner via `next/image`, "SAMPLE" label removed; detail page shows the real prize instead of hard-coded text.
+- **Config** (`next.config.ts`): `images.remotePatterns` for the `nexus-vyoma` S3 bucket (`/event-banners/**`).
+- `/app/api/*` untouched.
+
+**Follow-ups**
+- Several events store times like `01:00 AM` / `02:00 AM` (e.g. `…T01:00:00+05:30`) — likely PM entered as AM in the data; the UI shows exactly what the API returns.
+- Pre-existing `tsc` error in `app/api/register/enroll-event/route.ts` (missing `enrolled-event.schema`) is unrelated and left as-is.
+
 ### 2026-10-17 — Registration Backend Decoupling, Coming Soon Page & Next 16 `proxy.ts` Gatekeeper
 
 **Done**
