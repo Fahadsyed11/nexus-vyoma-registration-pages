@@ -30,97 +30,20 @@ export interface DriftWallProps {
   lift?: number;
   fade?: number;
   dim?: number;
-  blur?: number;
   grayscale?: boolean;
   overlayColor?: string;
   className?: string;
   style?: React.CSSProperties;
 }
 
-export const DEFAULT_DRIFT_ITEMS: DriftWallItem[] = [
-  {
-    image: '/brand/drift-wall/rpm-gear-up.webp',
-    title: 'RPM (Gear Up) — Automotive Fest',
-  },
-  {
-    image: '/brand/drift-wall/cipher-hacker-main.webp',
-    title: 'Nexus Cipher — Capture The Flag',
-  },
-  {
-    image: '/brand/drift-wall/jashn-e-suroor.webp',
-    title: 'Jashn-E-Suroor — Qawwali Night',
-  },
-  {
-    image: '/brand/drift-wall/eclipse-dj-night.webp',
-    title: 'Eclipse 404 — Mega DJ Night',
-  },
-  {
-    image: '/brand/drift-wall/charcha-open-mic.webp',
-    title: 'Charcha The Talk — Open Mic & Comedy',
-  },
-  {
-    image: '/brand/drift-wall/signal-hunt-main.webp',
-    title: 'Signal Hunt — RF Radio Quest',
-  },
-  {
-    image: '/brand/drift-wall/rpm-superbike.webp',
-    title: 'RPM Superbike & Stunt Arena',
-  },
-  {
-    image: '/brand/drift-wall/cipher-cyber-skyline.webp',
-    title: 'Nexus Cipher — Cyberpunk Grid',
-  },
-  {
-    image: '/brand/drift-wall/jashn-qawwali-stage.webp',
-    title: 'Qawwali Live Ensemble Stage',
-  },
-  {
-    image: '/brand/drift-wall/charcha-acoustic-stage.webp',
-    title: 'Charcha Acoustic Stage & Jam',
-  },
-  {
-    image: '/brand/drift-wall/rpm-drift-cars.webp',
-    title: 'RPM Custom Drift Cars & Performance',
-  },
-  {
-    image: '/brand/drift-wall/eclipse-disco-ball.webp',
-    title: 'Eclipse 404 Cosmic Mirrorball',
-  },
-  {
-    image: '/brand/drift-wall/cipher-badges.webp',
-    title: 'Web Exploitation & Cryptography',
-  },
-  {
-    image: '/brand/drift-wall/signal-hunt-antenna.webp',
-    title: 'Signal Hunt Satellite Tracking',
-  },
-  {
-    image: '/brand/drift-wall/charcha-art-show.webp',
-    title: 'Charcha Art Show & Cultural Stage',
-  },
-  {
-    image: '/brand/drift-wall/rpm-speedometer.webp',
-    title: 'RPM Tachometer & Drag Challenge',
-  },
-  {
-    image: '/brand/drift-wall/jashn-courtyard-banner.webp',
-    title: 'Jashn Grand Stage Banner',
-  },
-  {
-    image: '/brand/drift-wall/nexus-fest-marquee.webp',
-    title: 'Nexus Vyoma Official Fest Marquee',
-  },
-  {
-    image: '/brand/drift-wall/charcha-wet-reflections.webp',
-    title: 'Charcha Golden Hour Stage Ambiance',
-  },
-  {
-    image: '/brand/drift-wall/nexus-fest-badge.webp',
-    title: 'Nexus Vyoma Official Fest Emblem',
-  },
-];
-
-const DEFAULT_ITEMS: DriftWallItem[] = DEFAULT_DRIFT_ITEMS;
+const DEFAULT_ITEMS: DriftWallItem[] = Array.from({ length: 15 }, (_, i) => {
+  const ids = [1015, 1025, 1039, 1043, 1044, 1050, 1062, 1069, 1074, 1080, 1084, 106, 110, 133, 164];
+  return {
+    image: `https://picsum.photos/id/${ids[i % ids.length]}/600/400`,
+    title: `Nexus Highlight ${i + 1}`,
+    href: undefined,
+  };
+});
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -150,7 +73,6 @@ export default function DriftWall({
   lift = 64,  
   fade = 0.8,
   dim = 0.70,
-  blur = 1.5,
   grayscale = false,
   overlayColor = '#060010',
   className = '',
@@ -173,9 +95,10 @@ export default function DriftWall({
   const [containerWidth, setContainerWidth] = useState(1200);
   const [activeId, setActiveId] = useState<string | null>(null);
   const activeIdRef = useRef<string | null>(null);
-  const [reduced, setReduced] = useState(() => prefersReducedMotion());
+  const [reduced, setReduced] = useState(false);
 
   useEffect(() => {
+    setReduced(prefersReducedMotion());
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
     const onChange = (e: MediaQueryListEvent) => setReduced(e.matches);
     mq.addEventListener('change', onChange);
@@ -227,22 +150,9 @@ export default function DriftWall({
 
   const columnItems = useMemo(() => {
     const colCount = responsiveConfig.columns;
-    if (!items.length) return [];
-
-    // Ensure each column has 10 unique events before looping, and NO two columns share the same image in any row
-    const itemsPerCol = Math.min(10, items.length);
-    const stride = 7; // coprime to 20 for maximum dispersion across the grid
-    const cols: DriftWallItem[][] = [];
-
-    for (let c = 0; c < colCount; c++) {
-      const colList: DriftWallItem[] = [];
-      const start = (c * 9 + 4) % items.length;
-      for (let k = 0; k < itemsPerCol; k++) {
-        colList.push(items[(start + k * stride) % items.length]);
-      }
-      cols.push(colList);
-    }
-    return cols;
+    const cols: DriftWallItem[][] = Array.from({ length: colCount }, () => []);
+    items.forEach((item, i) => cols[i % colCount].push(item));
+    return cols.map((col) => (col.length ? col : items.slice(0, 1)));
   }, [items, responsiveConfig.columns]);
 
   const columnMeta = useMemo(() => {
@@ -263,11 +173,7 @@ export default function DriftWall({
   }, [columnItems, speed, direction, variance]);
 
   useEffect(() => {
-    offsetsRef.current = columnMeta.map((meta, c) => {
-      // Golden ratio stagger prevents horizontal grid alignment across adjacent rows
-      const stagger = (c * 0.6180339887 + 0.17) % 1;
-      return meta.copyHeight * stagger;
-    });
+    offsetsRef.current = columnMeta.map((meta, c) => meta.copyHeight * ((c * 0.37) % 1));
     velocitiesRef.current = columnItems.map(() => 0);
   }, [columnMeta, columnItems]);
 
@@ -383,28 +289,36 @@ export default function DriftWall({
       '--dw-perspective': `${perspective}px`,
       '--dw-lift': `${lift}px`,
       '--dw-dim': dim,
-      '--dw-blur': `${blur}px`,
       '--dw-gray': grayscale ? 1 : 0,
       '--dw-overlay': overlayColor,
       '--dw-edge': `${Math.max(0, (1 - fade) * 100)}%`,
       ...style,
     } as React.CSSProperties),
-    [responsiveConfig, radius, perspective, lift, dim, blur, grayscale, overlayColor, fade, style]
+    [responsiveConfig, radius, perspective, lift, dim, grayscale, overlayColor, fade, style]
   );
 
   const renderTile = (item: DriftWallItem, id: string, colIndex: number) => {
     const isExternal = item.image.startsWith('http');
     const inner = (
       <span className="drift-wall__inner">
-        <Image
-          src={item.image}
-          alt={item.title ?? ''}
-          fill
-          unoptimized={isExternal}
-          sizes="250px"
-          className="object-cover pointer-events-none select-none"
-          draggable={false}
-        />
+        {isExternal ? (
+          <img
+            src={item.image}
+            alt={item.title ?? ''}
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+          />
+        ) : (
+          <Image
+            src={item.image}
+            alt={item.title ?? ''}
+            fill
+            sizes="250px"
+            className="object-cover pointer-events-none select-none"
+            draggable={false}
+          />
+        )}
         <span className="drift-wall__overlay" aria-hidden="true" />
       </span>
     );

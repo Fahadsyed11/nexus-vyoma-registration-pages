@@ -49,57 +49,55 @@ export const SAMPLE_EVENT: CatalogEvent = {
 export const EVENTS_CATALOG: CatalogEvent[] = [
   {
     id: 'rpm-auto-show',
-    slug: 'rpm-gear-up-expo',
+    slug: 'rpm-gear-up-auto-show',
     mockId: '01 / MOCK',
-    title: 'RPM Gear Up Expo · Fuel the Madness',
+    title: 'RPM (Gear Up) — Auto Show',
     shortDescription:
-      'Where power meets passion and engines ignite the adrenaline. RPM: Gear Up \'26 brings together the world of automobiles, from roaring supercars to powerful superbikes, celebrating speed, style, and the spirit of automotive culture.',
+      'A showcase and exhibition of custom performance engines, tuned machines, and automotive engineering concepts.',
     description: [
-      'Where power meets passion and engines ignite the adrenaline. RPM: Gear Up \'26 brings together the world of automobiles, from roaring supercars to powerful superbikes, celebrating speed, style, and the spirit of automotive culture.',
-      'Explore aerodynamic modifications, engine tuning configurations, and cutting-edge mechanical design. Meet enthusiast builders and experience the roar in designated zones.',
+      'A showcase and exhibition of custom performance engines, tuned machines, and automotive engineering concepts. Explore aerodynamic modifications, engine tuning configurations, and cutting-edge mechanical design.',
+      'Participants and engineering enthusiasts will have the opportunity to showcase custom builds, interact with industry professionals, and study high-performance vehicle tuning.',
     ],
     requirements: [
-      'Display vehicles must register specifications in advance.',
-      'Engine revving tests only permitted within the designated acoustic dyno-zone.',
-      'Follow all safety guidelines and marshals in pit and track inspection areas.',
+      'Sample equipment: safety gear required in pit inspection zones.',
+      'Sample eligibility: open to student automotive teams.',
+      'Sample conditions: vehicle technical documentation must be submitted.',
     ],
-    venue: 'Engineering Concourse & Arena',
-    date: '11 November 2026',
-    time: '10:00 AM – 5:00 PM',
-    category: 'Auto & Tech',
+    venue: 'Sample Concourse Arena',
+    date: '11 November',
+    time: '10:00 AM (sample)',
+    category: 'Competition',
     participationType: 'Team',
-    feeText: '₹250',
+    feeText: '₹250 (sample amount)',
     prizePool: '₹40,000',
-    imageUrl: '/brand/flagship/rpm-gear-up.webp',
     isFlagship: true,
-    statusNote: 'Official Flagship Event',
+    statusNote: 'Awaiting official schedule confirmation',
   },
   {
     id: 'eclipse-404-dj',
     slug: 'eclipse-404-dj',
     mockId: '02 / MOCK',
-    title: 'Eclipse 404',
+    title: 'Eclipse 404 — DJ',
     shortDescription:
-      'Eclipse 404 is a high-energy DJ event featuring electrifying beats, vibrant music, and exciting dance moves. Get ready to groove to the rhythm, unleash your energy, and experience an unforgettable musical vibe with friends',
+      'High-energy electronic music session, audio synthesis showcase, and live acoustic performance.',
     description: [
-      'Eclipse 404 is a high-energy DJ event featuring electrifying beats, vibrant music, and exciting dance moves. Get ready to groove to the rhythm, unleash your energy, and experience an unforgettable musical vibe with friends.',
-      'Featuring relentless bass drops, synced laser pyrotechnics, and the greatest crowd vibe in Hyderabad.',
+      'High-energy electronic music session, audio synthesis showcase, and live acoustic performance bringing cutting-edge sound engineering to the amphitheatre.',
+      'Learn about modular synthesis, DAW production pipelines, live performance controllers, and frequency modulation directly from electronic audio performers.',
     ],
     requirements: [
-      'Valid College ID and Festival Pass are strictly required at entry gates.',
-      'Gates close promptly at 7:30 PM.',
-      'Zero tolerance policy for unruly conduct.',
+      'Sample equipment: personal headphones recommended for listening tests.',
+      'Sample eligibility: open to all festival pass holders.',
+      'Sample conditions: amphitheatre seating on first-come basis.',
     ],
-    venue: 'ISL Mega Grounds',
-    date: '12 November 2026',
-    time: '06:30 PM – 10:30 PM',
-    category: 'Cultural',
-    participationType: 'Open Access',
-    feeText: '₹349',
+    venue: 'Sample Amphitheatre',
+    date: '12 November',
+    time: '06:30 PM (sample)',
+    category: 'Entertainment',
+    participationType: 'Individual',
+    feeText: '₹150 (sample amount)',
     prizePool: 'N/A',
-    imageUrl: '/brand/flagship/eclipse-404.webp',
     isFlagship: true,
-    statusNote: 'Official Flagship Event',
+    statusNote: 'Awaiting official lineup confirmation',
   },
   {
     id: 'signal-hunt',
@@ -290,7 +288,6 @@ export function getEventBySlug(slug: string): CatalogEvent | undefined {
       participationType: flagship.entryType,
       feeText: `₹${flagship.price}`,
       prizePool: flagship.prizePool || 'N/A',
-      imageUrl: flagship.image,
       isFlagship: true,
       statusNote: 'Official Flagship Arena',
     };
@@ -303,87 +300,4 @@ export function getAllEventSlugs(): string[] {
   const catalogSlugs = EVENTS_CATALOG.map((e) => e.slug);
   const flagshipSlugs = OFFICIAL_FLAGSHIP_EVENTS.map((e) => e.slug);
   return Array.from(new Set(['sample-event', ...catalogSlugs, ...flagshipSlugs]));
-}
-
-/**
- * Shape of one event document as returned by `GET /api/event` and
- * `GET /api/event/:id` (see database/schema/event.schema.ts).
- */
-export interface ApiEvent {
-  _id: string;
-  title: string;
-  short_description?: string;
-  long_description?: string;
-  venue?: string;
-  date_time?: string;
-  image_url?: string;
-  isFlatship?: boolean;
-  category?: string;
-  participant_limit?: number;
-  prize?: string;
-  entry_fee?: number;
-  participants_type?: 'individual' | 'team';
-  team_size?: number;
-  min_team_size?: number;
-  max_team_size?: number;
-  requirements?: string[];
-}
-
-/** Pure mapper: API event document -> UI model. No network / DB access. */
-export function mapApiEventToCatalog(doc: ApiEvent, index = 0): CatalogEvent {
-  const parsed = doc.date_time ? new Date(doc.date_time) : null;
-  const valid = parsed !== null && !Number.isNaN(parsed.getTime());
-
-  // Always format in IST so server and browser render the same text.
-  const date = valid
-    ? new Intl.DateTimeFormat('en-GB', {
-        timeZone: 'Asia/Kolkata',
-        day: 'numeric',
-        month: 'long',
-      }).format(parsed)
-    : 'Date TBA';
-  const time = valid
-    ? new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Asia/Kolkata',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-      }).format(parsed)
-    : 'Time TBA';
-
-  let participationType = 'Individual';
-  if (doc.participants_type === 'team') {
-    const min = doc.min_team_size ?? 1;
-    const max = doc.max_team_size ?? doc.team_size ?? min;
-    participationType = min === max ? `Team of ${max}` : `Team of ${min}–${max}`;
-  }
-
-  const fee = Number(doc.entry_fee) || 0;
-  const prize = (doc.prize || '').trim();
-
-  return {
-    id: String(doc._id),
-    slug: String(doc._id),
-    mockId: String(index + 1).padStart(2, '0'),
-    title: doc.title,
-    shortDescription: doc.short_description || '',
-    description: (doc.long_description || doc.short_description || '')
-      .split(/\r?\n+/)
-      .map((p) => p.trim())
-      .filter(Boolean),
-    requirements: (doc.requirements || [])
-      .flatMap((r) => r.split(/\r?\n+/))
-      .map((r) => r.trim())
-      .filter(Boolean),
-    venue: doc.venue || 'ISL Engineering College, Hyderabad',
-    date,
-    time,
-    category: (doc.category || 'General').trim(),
-    participationType,
-    feeText: fee === 0 ? 'Free' : `₹${fee}`,
-    prizePool: prize && prize.toLowerCase() !== 'no prize' ? prize : 'N/A',
-    imageUrl: doc.image_url || undefined,
-    isFlagship: Boolean(doc.isFlatship),
-    statusNote: 'Registration opens soon.',
-  };
 }

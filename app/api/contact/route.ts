@@ -22,10 +22,7 @@ export async function POST(request: NextRequest) {
         }
         await connectToDatabase();
 
-        const createContact = await Contact.create({
-            ...data,
-            phone_no: data.phone_number,
-        });
+        const createContact = await Contact.create(data);
 
         if (!createContact) {
             return NextResponse.json({

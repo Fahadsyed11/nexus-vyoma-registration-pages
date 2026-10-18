@@ -13,115 +13,37 @@ export default function ContactSection() {
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [feedback, setFeedback] = useState<{
-    type: 'success' | 'error';
-    message: string;
-  } | null>(null);
+  const [submittedStatus, setSubmittedStatus] = useState<string | null>(null);
 
   const instagramUrl =
     'https://www.instagram.com/nexusvyoma?utm_source=ig_web_button_share_sheet&rpxt=ZDNlZDc0MzIxNw==';
 
   const validate = () => {
     const errs: { [key: string]: string } = {};
-
-    const trimmedName = formData.name.trim();
-    if (!trimmedName) {
+    if (!formData.name.trim()) {
       errs.name = 'Please enter your name.';
-    } else if (trimmedName.length < 3) {
-      errs.name = 'Name must be at least 3 characters.';
-    } else if (trimmedName.length > 50) {
-      errs.name = 'Name cannot exceed 50 characters.';
     }
-
-    const trimmedEmail = formData.email.trim();
-    if (!trimmedEmail) {
+    if (!formData.email.trim()) {
       errs.email = 'Please enter your email.';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       errs.email = 'Please enter a valid email address.';
     }
-
-    const cleanPhone = formData.phone.trim().replace(/\D/g, '');
-    if (!cleanPhone) {
-      errs.phone = 'Please enter your phone number.';
-    } else if (cleanPhone.length !== 10) {
-      errs.phone = 'Phone number must be exactly 10 digits.';
-    }
-
-    const trimmedMessage = formData.message.trim();
-    if (!trimmedMessage) {
+    if (!formData.message.trim()) {
       errs.message = 'Please enter your message.';
     }
-
     return errs;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setFeedback(null);
     const errs = validate();
     setErrors(errs);
 
-    if (Object.keys(errs).length > 0) return;
-
-    setIsSubmitting(true);
-    try {
-      const cleanPhone = formData.phone.trim().replace(/\D/g, '');
-      const payload = {
-        full_name: formData.name.trim(),
-        phone_number: cleanPhone,
-        email: formData.email.trim(),
-        message: formData.message.trim(),
-      };
-
-      const res = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      const result = await res.json().catch(() => null);
-
-      if (res.status === 201) {
-        setFeedback({
-          type: 'success',
-          message:
-            result?.message || 'Thank you! Your message has been sent successfully.',
-        });
-        setFormData({ name: '', email: '', phone: '', message: '' });
-        setErrors({});
-      } else {
-        // Handle validation issues from backend Valibot schema if present
-        if (result?.error && Array.isArray(result.error)) {
-          const apiErrors: { [key: string]: string } = {};
-          for (const issue of result.error) {
-            const field = issue?.path?.[0]?.key;
-            if (field === 'full_name') apiErrors.name = issue.message || 'Invalid name';
-            if (field === 'phone_number') apiErrors.phone = issue.message || 'Invalid phone number';
-            if (field === 'email') apiErrors.email = issue.message || 'Invalid email';
-            if (field === 'message') apiErrors.message = issue.message || 'Invalid message';
-          }
-          if (Object.keys(apiErrors).length > 0) {
-            setErrors(apiErrors);
-          }
-        }
-
-        setFeedback({
-          type: 'error',
-          message:
-            result?.message ||
-            (typeof result?.error === 'string'
-              ? result.error
-              : 'Failed to send message. Please review your input.'),
-        });
-      }
-    } catch {
-      setFeedback({
-        type: 'error',
-        message: 'Network error. Please check your connection and try again.',
-      });
-    } finally {
-      setIsSubmitting(false);
+    if (Object.keys(errs).length === 0) {
+      // Truthful client submission status: backend delivery is not configured yet
+      setSubmittedStatus(
+        'Message delivery is not configured yet. Please email us directly at nexusvyoma@islec.edu.in.'
+      );
     }
   };
 
@@ -261,20 +183,10 @@ export default function ContactSection() {
                   id="phone"
                   name="phone"
                   type="tel"
-                  maxLength={10}
-                  placeholder="10-digit mobile number"
                   value={formData.phone}
-                  onChange={(e) => {
-                    const clean = e.target.value.replace(/\D/g, '').slice(0, 10);
-                    setFormData({ ...formData, phone: clean });
-                  }}
-                  className={`w-full rounded-xl bg-[#0c0d12] border ${
-                    errors.phone ? 'border-red-500' : 'border-white/[0.08]'
-                  } px-4 py-3 sm:py-3.5 text-base sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors`}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  className="w-full rounded-xl bg-[#0c0d12] border border-white/[0.08] px-4 py-3 sm:py-3.5 text-base sm:text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-400 focus:ring-1 focus:ring-zinc-400 transition-colors"
                 />
-                {errors.phone && (
-                  <p className="text-[11px] text-red-400 font-mono mt-1">{errors.phone}</p>
-                )}
               </div>
             </div>
 
@@ -303,47 +215,28 @@ export default function ContactSection() {
           </div>
 
           {/* ========================================================================= */}
-          {/* ROW 2 — Action Row: SUBMIT Button & Dynamic Feedback (Under Message Box) */}
+          {/* ROW 2 — Action Row: Notice & SUBMIT Button (Under Message Box) */}
           {/* ========================================================================= */}
           <div className="hidden lg:block lg:col-span-5" />
           <div className="lg:col-span-7 pt-1 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="text-zinc-500 text-xs font-mono tracking-wide">
-              We usually respond within 24–48 hours.
+            <div className="text-[#FF6A00] text-xs font-mono tracking-wide">
+              Message delivery is not configured yet.
             </div>
 
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="w-full sm:w-auto ml-auto px-8 py-3.5 sm:py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-[#FF5E00] to-[#E52020] hover:from-[#ff6a00] hover:to-[#ff207d] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold tracking-wider text-xs sm:text-sm uppercase transition-all duration-200 shadow-md active:scale-95 cursor-pointer flex items-center justify-center gap-2"
+              className="w-full sm:w-auto ml-auto px-8 py-3.5 sm:py-3 min-h-[44px] rounded-xl bg-gradient-to-r from-[#FF5E00] to-[#E52020] hover:from-[#ff6a00] hover:to-[#ff207d] text-white font-bold tracking-wider text-xs sm:text-sm uppercase transition-all duration-200 shadow-md active:scale-95 cursor-pointer flex items-center justify-center"
             >
-              {isSubmitting ? (
-                <>
-                  <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>SUBMITTING...</span>
-                </>
-              ) : (
-                <span>SUBMIT</span>
-              )}
+              SUBMIT
             </button>
           </div>
 
-          {feedback && (
+          {submittedStatus && (
             <>
               <div className="hidden lg:block lg:col-span-5" />
               <div className="lg:col-span-7">
-                <div
-                  role="status"
-                  aria-live="polite"
-                  className={`p-3.5 rounded-xl border text-xs font-mono flex items-center gap-2.5 animate-in fade-in duration-200 ${
-                    feedback.type === 'success'
-                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                      : 'border-red-500/30 bg-red-500/10 text-red-300'
-                  }`}
-                >
-                  <span className="text-base select-none font-bold">
-                    {feedback.type === 'success' ? '✓' : '⚠'}
-                  </span>
-                  <span>{feedback.message}</span>
+                <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-300 text-xs font-mono">
+                  {submittedStatus}
                 </div>
               </div>
             </>

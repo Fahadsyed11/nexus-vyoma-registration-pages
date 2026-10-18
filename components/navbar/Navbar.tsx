@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useRef, useState, Suspense } from 'react';
+import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -17,7 +17,8 @@ interface NavbarProps {
   alwaysVisible?: boolean;
 }
 
-function NavbarInner({ alwaysVisible = false }: NavbarProps = {}) {
+export default function Navbar({ alwaysVisible = false }: NavbarProps = {}) {
+  const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navContainerRef = useRef<HTMLDivElement>(null);
@@ -313,13 +314,5 @@ function NavbarInner({ alwaysVisible = false }: NavbarProps = {}) {
         </>
       )}
     </header>
-  );
-}
-
-export default function Navbar(props: NavbarProps = {}) {
-  return (
-    <Suspense fallback={<header className="fixed top-4 sm:top-6 inset-x-0 z-50 h-14 pointer-events-none" />}>
-      <NavbarInner {...props} />
-    </Suspense>
   );
 }

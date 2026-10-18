@@ -97,7 +97,7 @@ export default function HorizontalStageTransition() {
           {
             scale: 1.08,
             duration: 0.5,
-            repeat: -1,
+            repeat: 1,
             yoyo: true,
             ease: 'sine.inOut',
           },
@@ -113,7 +113,7 @@ export default function HorizontalStageTransition() {
             scale: 1.3,
             opacity: 0.8,
             duration: 0.6,
-            repeat: -1,
+            repeat: 1,
             yoyo: true,
             ease: 'sine.inOut',
           },
@@ -121,13 +121,13 @@ export default function HorizontalStageTransition() {
         );
       }
 
-      // 3. Screen appears, then transition redirects to the next page promptly
+      // 3. Screen appears for a second (~1.0s hold), then transition redirects to the next page
       tl.call(
         () => {
           router.push(href);
         },
         undefined,
-        0.35 // redirect as soon as stage is visible
+        1.15 // ~1 second appearance
       );
 
       // Failsafe timeout in case route resolution hangs
@@ -142,10 +142,6 @@ export default function HorizontalStageTransition() {
                 stageRef.current.style.visibility = 'hidden';
                 stageRef.current.style.pointerEvents = 'none';
               }
-              if (logoBoxRef.current) gsap.killTweensOf(logoBoxRef.current);
-              if (glowRingRef.current) gsap.killTweensOf(glowRingRef.current);
-              const pageWrapper = document.getElementById('page-transition-wrapper');
-              if (pageWrapper) gsap.set(pageWrapper, { x: 0, opacity: 1, clearProps: 'all' });
               isTransitioningRef.current = false;
             },
           });
@@ -204,12 +200,6 @@ export default function HorizontalStageTransition() {
     if (!stageRef.current) return;
 
     if (isTransitioningRef.current) {
-      // Immediately restore page wrapper to centered position with full opacity
-      const pageWrapper = document.getElementById('page-transition-wrapper');
-      if (pageWrapper) {
-        gsap.set(pageWrapper, { x: 0, opacity: 1, clearProps: 'transform,opacity' });
-      }
-
       gsap.to(stageRef.current, {
         opacity: 0,
         duration: 0.4,
@@ -219,10 +209,6 @@ export default function HorizontalStageTransition() {
             stageRef.current.style.visibility = 'hidden';
             stageRef.current.style.pointerEvents = 'none';
           }
-          if (logoBoxRef.current) gsap.killTweensOf(logoBoxRef.current);
-          if (glowRingRef.current) gsap.killTweensOf(glowRingRef.current);
-          const currentWrapper = document.getElementById('page-transition-wrapper');
-          if (currentWrapper) gsap.set(currentWrapper, { x: 0, opacity: 1, clearProps: 'all' });
           isTransitioningRef.current = false;
         },
       });
@@ -231,8 +217,6 @@ export default function HorizontalStageTransition() {
       gsap.set(stageRef.current, { opacity: 0 });
       stageRef.current.style.visibility = 'hidden';
       stageRef.current.style.pointerEvents = 'none';
-      const pageWrapper = document.getElementById('page-transition-wrapper');
-      if (pageWrapper) gsap.set(pageWrapper, { x: 0, opacity: 1, clearProps: 'all' });
     }
   }, [pathname]);
 

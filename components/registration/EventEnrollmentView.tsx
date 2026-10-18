@@ -276,9 +276,9 @@ export default function EventEnrollmentView({
       const data = await res.json().catch(() => null);
 
       if (res.ok) {
-        setFeedbackSuccess('Enrolment recorded successfully! Redirecting to checkout...');
+        setFeedbackSuccess('Enrolment recorded successfully! Redirecting...');
         setTimeout(() => {
-          router.push('/register/checkout-event');
+          router.push(data?.redirect_url || '/payment/success');
         }, 1000);
       } else {
         setFeedbackError(data?.message || 'Failed to process event enrolment.');
