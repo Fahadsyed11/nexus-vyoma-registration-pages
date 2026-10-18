@@ -40,12 +40,32 @@ export function proxy(request: NextRequest) {
     });
   }
 
-  // 2. Do not redirect /coming-soon itself
-  if (pathname === '/coming-soon' || pathname.startsWith('/coming-soon/')) {
+  // 2. Do not redirect /coming-soon or /under-construction themselves
+  if (
+    pathname === '/coming-soon' ||
+    pathname.startsWith('/coming-soon/') ||
+    pathname === '/under-construction' ||
+    pathname.startsWith('/under-construction/')
+  ) {
     return NextResponse.next();
   }
 
-  // 3. Frontend registration and enrollment related pages -> Redirect to /coming-soon
+  // 3. Frontend organizers pages -> Redirect to /under-construction
+  const isOrganizersPage =
+    pathname === '/organizers' ||
+    pathname.startsWith('/organizers/') ||
+    pathname === '/organizer' ||
+    pathname.startsWith('/organizer/') ||
+    pathname === '/organiser' ||
+    pathname.startsWith('/organiser/') ||
+    pathname === '/organisers' ||
+    pathname.startsWith('/organisers/');
+
+  if (isOrganizersPage) {
+    return NextResponse.redirect(new URL('/under-construction', request.url));
+  }
+
+  // 4. Frontend registration and enrollment related pages -> Redirect to /coming-soon
   const isRegistrationPage =
     pathname === '/register' ||
     pathname.startsWith('/register/') ||

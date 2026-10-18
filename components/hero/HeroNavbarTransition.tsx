@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import DriftWall from '@/components/ui/DriftWall';
+import DriftWall, { DEFAULT_DRIFT_ITEMS } from '@/components/ui/DriftWall';
 import SpecularButton from '@/components/ui/SpecularButton';
 
 if (typeof window !== 'undefined') {
@@ -769,6 +769,7 @@ export default function HeroNavbarTransition() {
         {/* LAYER 2: React Bits DriftWall 3D Perspective Tile Wall */}
         <div className="absolute inset-0 z-10 pointer-events-none sm:pointer-events-auto">
           <DriftWall
+            items={DEFAULT_DRIFT_ITEMS}
             columns={7}
             tileWidth={180}
             tileHeight={120}
@@ -783,7 +784,8 @@ export default function HeroNavbarTransition() {
             parallax={0.5}
             lift={64}
             fade={0.35}
-            dim={0.48}
+            dim={0.52}
+            blur={1.5}
             overlayColor="#04060e"
             grayscale={false}
           />

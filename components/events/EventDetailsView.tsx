@@ -75,14 +75,15 @@ export default function EventDetailsView({ event }: EventDetailsViewProps) {
         {/* ---------------------------------------------------------- */}
         <div className="w-full lg:col-span-5 flex flex-col">
           {/* Event Image Box */}
-          <div className="relative w-full aspect-[16/10] rounded-xl sm:rounded-2xl overflow-hidden bg-[#10121b] border border-white/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-center">
+          <div className={`relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-[#10121b] border border-white/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-center ${event.imageUrl ? '' : 'aspect-[16/10]'}`}>
             {event.imageUrl ? (
               <Image
                 src={event.imageUrl}
                 alt={event.title}
-                fill
+                width={0}
+                height={0}
                 priority
-                className="object-cover"
+                className="block w-full h-auto"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 45vw, 550px"
               />
             ) : (
@@ -131,9 +132,7 @@ export default function EventDetailsView({ event }: EventDetailsViewProps) {
                 PRIZE POOL
               </span>
               <span className="font-sans text-xs sm:text-sm md:text-base font-extrabold text-white tracking-tight mt-0.5">
-                {event.prizePool && event.prizePool !== 'N/A'
-                  ? 'Exciting prizes'
-                  : 'N/A'}
+                Exciting Prizes
               </span>
             </div>
           </div>

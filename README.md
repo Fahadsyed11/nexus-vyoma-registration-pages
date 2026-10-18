@@ -43,6 +43,403 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-18 — Gatekeep Organizers Routes to Under-Construction in `proxy.ts`
+
+**Done**
+- `proxy.ts`: Added passthrough exception for `/under-construction` (and subpaths) to prevent redirect loops.
+- Added gatekeeper rule redirecting `/organizers`, `/organizer`, `/organiser`, and `/organisers` (and subpaths) to `/under-construction`.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Verified with `curl -s -i http://localhost:3000/organiser` and `curl -s -i http://localhost:3000/organizers` returning HTTP 307 Temporary Redirect to `/under-construction`, and `/under-construction` returning HTTP 200 OK.
+
+### 2026-10-18 — Update Patrons portraits & profile details on Organizers page
+
+**Done**
+- `public/organizers/`: Added official patron portraits `patron-01.jpg` (Mr. Salman Ahmed, Chairman) and `patron-02.jpg` (Dr. Mohammed Masood, Principal).
+- `lib/data/organizersData.ts`: Updated `patrons` array with official names, roles (`Chairman`, `Principal`), and respective image paths.
+- Dismissed social media links entirely for both patrons so no social icons/links render.
+- Verified: `npm run build` completed cleanly with all 35 routes prerendered.
+
+### 2026-10-17 — Fix Partial Prerendering build error on `/events` and `/events/[eventSlug]`
+
+**Done**
+- `app/events/page.tsx` & `app/events/[eventSlug]/page.tsx`: wrapped dynamic data fetching components in `<Suspense fallback={null}>`, satisfying Next.js 16 Partial Prerendering (`cacheComponents: true` / PPR) and allowing static shell prerendering at build time.
+- `components/navbar/Navbar.tsx`: wrapped in `<Suspense>` to cleanly handle dynamic `usePathname()` client hook access during static shell generation across all routes.
+- Verified: `npm run build` completed successfully, prerendering all 35 routes.
+
+### 2026-10-17 — Connected contact form to `POST /api/contact`
+
+**Done**
+- `components/contact/ContactSection.tsx`: wired the form to `POST /api/contact` matching `contactDto` (`full_name`, `phone_number`, `email`, `message`); added 10-digit phone number validation and field-level error display; added button loading state (`SUBMITTING...`) and feedback banners for success (201) and errors (400/500); removed mock "Message delivery is not configured yet" text.
+- `app/api/contact/route.ts`: mapped `data.phone_number` to `phone_no` on document creation so it matches `contactSchema` requirements.
+
+### 2026-10-17 — Flagship event cards redirect to `/events`
+
+**Done**
+- `components/events/FlagshipScrollDeck.tsx`: all flagship cards (both the visual poster card and the "Explore Arena" action button) now link directly to `/events`.
+- `next.config.ts`: added permanent redirect from `/event` to `/events` so both singular and plural paths resolve cleanly.
+
+### 2026-10-17 — Fix page-transition-wrapper reset on navigation to `/events/:id`
+
+**Done**
+- `HorizontalStageTransition.tsx`: immediately reset `#page-transition-wrapper` (`gsap.set(..., { x: 0, opacity: 1, clearProps: 'all' })`) upon `pathname` change and in completion/failsafe callbacks, fixing the issue where dynamic pages stayed translated off-screen (`100vw`) until manual refresh. Reduced `router.push` dispatch delay from 1.15s to 0.35s so backend data fetching starts immediately.
+- `app/template.tsx`: explicitly clear lingering exit transforms on `containerRef.current` during arrival animation.
+
+### 2026-10-17 — Replaced EventsLoading with official page-to-page transition
+
+**Done**
+- Deleted redundant `components/events/EventsLoading.tsx`.
+- `app/events/page.tsx` & `app/events/[eventSlug]/page.tsx`: converted into clean async Server Components without outer `<Suspense>` wrappers, allowing Next.js to hold navigation while server data resolves.
+- `components/transitions/HorizontalStageTransition.tsx`: sustained logo breathing and glow ring animation (`repeat: -1`) during data resolution hold, gracefully fading out via GSAP on route completion.
+
+### 2026-10-17 — Loading page while event data loads
+
+**Done**
+- New `components/events/EventsLoading.tsx` (server component): full-screen black loader with the brand emblem (existing asset) and orange glow; pulse disabled for reduced motion.
+- `app/events/page.tsx` and `app/events/[eventSlug]/page.tsx`: the whole page (navbar, content, footer) now sits behind a `<Suspense>` with this loader, so only the loading screen shows until the API responds. Removed the old skeletons.
+
+### 2026-10-17 — "Exciting Prizes" label & uncropped event posters
+
+**Done**
+- `EventDetailsView.tsx`: prize box always shows "Exciting Prizes"; poster now renders at its natural aspect ratio (full image, no crop).
+- `EventCard.tsx`: banner uses `object-contain` so the whole poster shows in the card thumbnail.
+- `FlagshipScrollDeck.tsx`: prize pill shows "Exciting Prizes"; poster uses `object-contain`.
+
+### 2026-10-17 — Fix blocking-prerender-client-hook on `/events/[eventSlug]`
+
+**Done**
+- `app/layout.tsx`: wrapped `<HorizontalStageTransition />` (reads `usePathname()`) in `<Suspense fallback={null}>`. The overlay is invisible by default, and `DualBackground` and `{children}` stay outside the boundary, so the static shell is unchanged.
+
+**Follow-ups**
+- Verify in the browser that the dev overlay Insight is gone and transitions still animate.
+
+### 2026-10-17 — Events pages now powered by `/api/event` & `/api/event/:id`, shareable category filter
+
+**Done**
+- **`/events`** (`app/events/page.tsx`): server component fetches the existing `GET /api/event` route (no DB code, no new routes/files) and passes the events to `EventsExplorer` inside `<Suspense>`.
+- **`/events/[eventSlug]`** (`app/events/[eventSlug]/page.tsx`): fetches the existing `GET /api/event/:id` route (React `cache` dedupes metadata + content). The `_id` is the URL param; unknown/invalid ids render the 404 page. Removed `generateStaticParams`.
+- **Filter** (`components/events/EventsExplorer.tsx`): category options are derived from the event documents' `category`. The URL is the single source of truth: `?category=technical&category=gaming` (multi-select). Toggling a category / Clear Filters updates the URL via `router.replace(..., { scroll: false })`, so shared links reproduce the same list. Prefix values like `?category=tech` also resolve.
+- **Mapper** (`lib/data/eventsCatalog.ts`): added `ApiEvent` + pure `mapApiEventToCatalog` (IST date/time, `Team of min–max`, `Free`/`₹fee`, real prize, requirements split on newlines). No network/DB code.
+- **UI** (`EventCard.tsx`, `EventDetailsView.tsx`): card links to `/events/:id`, shows the S3 banner via `next/image`, "SAMPLE" label removed; detail page shows the real prize instead of hard-coded text.
+- **Config** (`next.config.ts`): `images.remotePatterns` for the `nexus-vyoma` S3 bucket (`/event-banners/**`).
+- `/app/api/*` untouched.
+
+**Follow-ups**
+- Several events store times like `01:00 AM` / `02:00 AM` (e.g. `…T01:00:00+05:30`) — likely PM entered as AM in the data; the UI shows exactly what the API returns.
+- Pre-existing `tsc` error in `app/api/register/enroll-event/route.ts` (missing `enrolled-event.schema`) is unrelated and left as-is.
+
+### 2026-10-17 — Registration Backend Decoupling, Coming Soon Page & Next 16 `proxy.ts` Gatekeeper
+
+**Done**
+- **Removed Backend & DB Calls from Registration Pages (`app/register/page.tsx`, `app/register/enroll-event/page.tsx`, `app/register/checkout-event/page.tsx`)**:
+  - Detached all direct database connections (`connectToDatabase`), Mongoose queries (`RegisterUser`, `Event`, `EnrolledIndividualEvent`, `EnrolledTeamEvent`), and server session/JWT logic (`verifyJWT`, `cookies()`).
+  - Switched the registration pages to feed static dummy datasets (`attendee@nexusvyoma.com`, sample individual and team events) directly into existing client visual components (`RegistrationFormStep`, `EventEnrollmentView`, `CheckoutEventView`) without modifying UI design or altering any code in `/app/api/*`.
+- **Created `app/coming-soon/page.tsx`**:
+  - Implemented a clean, branded "Registrations Opening Soon" announcement page matching the Nexus Vyoma aesthetic:
+    - Glowing badge indicator (`Registration Portal`),
+    - Bold gradient headline (`COMING SOON`),
+    - Key festival dates & venue cards,
+    - Seamless navigation link back to `/`.
+- **Implemented Next.js 16 Gatekeeper Proxy (`proxy.ts`)**:
+  - Created root-level Next 16 `proxy.ts` with custom matcher:
+    - **Frontend Interception**: Any direct route request to `/register`, `/register/*`, `/check-email`, `/verify-email`, `/email-verify`, `/enroll-events`, `/enroll-event`, or `/checkout-event` is automatically redirected to `/coming-soon`.
+    - **API Endpoint Blocking**: Any external API calls targeting registration, enrollment, checkout, or payment endpoints (`/api/register/*`, `/api/check-email/*`, `/api/verify-email/*`, `/api/submit-registration/*`, `/api/enroll-event/*`, `/api/enrolled-event/*`, `/api/payment/*`) are immediately blocked with HTTP 403 Forbidden and the exact plain-text payload: `"You cannot access this cheater"`.
+- **Verification**:
+  - Successfully verified `proxy.ts` redirection via `curl -s -i http://localhost:3000/register` (returns HTTP 307 Redirect to `/coming-soon`).
+  - Verified API blocking via `curl -s -i http://localhost:3000/api/register/check-email` and `POST /api/enroll-event` (returns HTTP 403 Forbidden with payload: `"You cannot access this cheater"`).
+  - Verified `/coming-soon` loads HTTP 200 with zero redirect loops.
+  - Verified root page `/` continues to function smoothly.
+
+### 2026-10-17 — DriftWall: Resting Depth-of-Field Blur Effect & Interactive Hover Focus
+
+**Done**
+- **Depth-of-Field Aesthetic Blur (`components/ui/DriftWall.css`, `components/ui/DriftWall.tsx`, `components/hero/HeroNavbarTransition.tsx`)**:
+  - Added resting Gaussian blur (`filter: blur(var(--dw-blur, 1.5px))`) to `.drift-wall__tile img` with subtle micro-scale (`transform: scale(1.05)`) to eliminate edge-clipping artifacts.
+  - This introduces a cinematic depth-of-field effect behind the hero logo, softening background high-frequency noise and making the floating white "NEXUS VYOMA" wordmark and countdown timer stand out with razor-sharp prominence.
+  - On hover or keyboard focus (`:focus-visible`), tiles smoothly transition from `blur(1.5px)` to `blur(0px)` crystal-clear focus (`transform: scale(1)`), lifting `64px` in 3D with the brand orange glow border.
+  - Added configurable `blur?: number` prop (default `1.5`) to `DriftWallProps` and passed `blur={1.5}` in `HeroNavbarTransition.tsx`.
+- **Verification**:
+  - Zero ESLint errors.
+  - Dev server HTTP 200 validated.
+
+### 2026-10-17 — DriftWall: 20 Pure-Event Action Tiles & Zero Visible Duplicate Viewport Upgrade
+
+**Done**
+- **100% Pure Event Grid (`public/brand/drift-wall/`, `components/ui/DriftWall.tsx`)**:
+  - Replaced all non-event campus architecture filler (empty staircases, corridors, chandeliers, trees) with dedicated event action spotlights cropped from the official posters:
+    1. `rpm-gear-up.webp` (RPM Gear Up Automotive Fest title & racing graphics)
+    2. `cipher-hacker-main.webp` (Nexus Cipher CTF hacker at glowing cyber terminal)
+    3. `jashn-e-suroor.webp` (Jashn-E-Suroor Qawwali Night ornate title & night arch)
+    4. `eclipse-dj-night.webp` (Eclipse 404 Mega DJ Night title & red solar eclipse)
+    5. `charcha-open-mic.webp` (Charcha The Talk Open Mic title & glowing tree lights)
+    6. `signal-hunt-main.webp` (Signal Hunt RF Radio Quest & radar map)
+    7. `rpm-superbike.webp` (RPM Superbike Racing & Stunt Arena)
+    8. `cipher-cyber-skyline.webp` (Nexus Cipher Cyberpunk Metropolis & Neon Grid)
+    9. `jashn-qawwali-stage.webp` (Qawwali Live Ensemble carpeted stage & harmonium)
+    10. `charcha-acoustic-stage.webp` (Charcha Live Acoustic Stage, Guitars & Hanging Vinyls)
+    11. `rpm-drift-cars.webp` (RPM Custom Performance Tuning & Drift Arena)
+    12. `eclipse-disco-ball.webp` (Eclipse 404 Cosmic Mirrorball & Light Show)
+    13. `cipher-badges.webp` (Web Exploitation, Cryptography & Steganography Arenas)
+    14. `signal-hunt-antenna.webp` (Signal Hunt Satellite Radar & Wave Antenna)
+    15. `charcha-art-show.webp` (Charcha Art Exhibition & Cultural Forest Stage)
+    16. `rpm-speedometer.webp` (RPM Tachometer & Drag Challenge)
+    17. `jashn-courtyard-banner.webp` (Jashn Grand Stage Banner)
+    18. `nexus-fest-marquee.webp` (Nexus Vyoma Official 3D Chrome Festival Marquee)
+    19. `charcha-wet-reflections.webp` (Charcha Golden Hour Stage Ambiance)
+    20. `nexus-fest-badge.webp` (Nexus Vyoma Official Fest Fiery Emblem)
+- **Deep 10-Item Column Allocation & Coprime Stride (`stride = 7`)**:
+  - Expanded unique items per column from 8 to 10 before looping, yielding a virtual track height of >1340px (well beyond full screen viewports).
+  - Users will practically never see any repeated image within the entire visible viewport.
+  - Interleaved event categories (Auto, Cyber, Sufi, DJ, Open Mic, Radar, Art) so adjacent tiles belong to completely different disciplines.
+- **Verification**:
+  - Zero TypeScript or ESLint errors (`npx eslint components/ui/DriftWall.tsx`).
+  - Dev server HTTP 200 validated.
+
+### 2026-10-17 — DriftWall: Anti-Repetition Dispersion & 4 New Event Posters (19 Total Tiles)
+
+**Done**
+- **4 New Event Posters Integration (`public/brand/drift-wall/`)**:
+  - Processed and calibrated 6 additional 3:2 landscape WebP tiles (600×400):
+    1. `nexus-cipher-ctf.webp` (Nexus Cipher CTF hacker at terminal with neon purple/blue cyberpunk skyline)
+    2. `cipher-skyline-detail.webp` (Cyberpunk city skyline & terminal close-up)
+    3. `charcha-stage-acoustic.webp` (Charcha daytime acoustic stage with hanging vinyl records, guitars & draped canopy)
+    4. `signal-hunt.webp` (Signal Hunt dark distressed radar map & toxic lime green title)
+    5. `rpm-gear-up.webp` (RPM Automotive Fest checkered flag, racecars & superbike; exposure lowered by -22% to prevent white glare)
+    6. `rpm-superbike-detail.webp` (Action superbike & sports car lower panel)
+  - Expanding the DriftWall pool to **19 unique festival and campus tiles**.
+- **Anti-Repetition Dispersion Algorithm (`components/ui/DriftWall.tsx`)**:
+  - Eliminated duplicate images appearing in the same horizontal row or rapid vertical succession.
+  - Implemented coprime stride (`stride = 5`) and phased starting offsets (`(c * 7 + 3) % 19`) across columns, guaranteeing that across any horizontal slice, every single tile in a row is 100% unique (`all_rows_unique = True` on mobile, tablet, and desktop).
+  - Increased unique tiles per column to 8 before looping, ensuring no single column repeats an image within view.
+  - Applied golden ratio vertical stagger (`((c * 0.618 + 0.17) % 1) * copyHeight`) to offset column positions so adjacent columns never align horizontally.
+- **Verification**:
+  - Clean ESLint check with 0 errors (`npx eslint "components/ui/DriftWall.tsx"`).
+  - Dev server HTTP 200 verified.
+
+### 2026-10-17 — DriftWall 3D Hero Perspective Wall: Official Assets & Exposure Calibration
+
+**Done**
+- **Official Brand & Event Assets Integration (`public/brand/drift-wall/`, `components/ui/DriftWall.tsx`)**:
+  - Replaced all placeholder picsum images with 13 official, user-provided event posters and campus photographs cropped to high-DPI 3:2 landscape WebP tiles (600×400):
+    1. `jashn-e-suroor.webp` (Jashn-E-Suroor Qawwali Night title & nocturnal courtyard facade)
+    2. `jashn-stage-detail.webp` (Qawwali night stage, instruments & fairy lights)
+    3. `amphitheatre-steps.webp` (Open-Air Amphitheatre concrete tier steps under trees)
+    4. `amphitheatre-canopy.webp` (Amphitheatre forest canopy & dappled sunlight)
+    5. `isl-courtyard.webp` (ISL Central Courtyard with royal palms & white campus arches)
+    6. `isl-arcade-detail.webp` (Heritage arcade colonnade & palms corridor)
+    7. `eclipse-dj-night.webp` (Eclipse 404 DJ Night poster with disco ball & cosmic flare)
+    8. `eclipse-disco-ball.webp` (Disco ball specular facet close-up)
+    9. `charcha-open-mic.webp` (Charcha The Talk Open Mic title & tree string lights)
+    10. `charcha-reflections.webp` (Wet ground reflecting golden fairy lights)
+    11. `nexus-launch-ceremony.webp` (College leadership & dignitaries poster launch ceremony in boardroom)
+    12. `nexus-chandelier-detail.webp` (Crystal chandelier & rosette ceiling detail)
+    13. `nexus-emblem-dark.webp` (Official glowing Nexus Vyoma emblem with fiery gradient star)
+- **Exposure & Detailing Calibration**:
+  - Toned down high-key daylight campus photos (ISL Courtyard, Amphitheatre) by lowering highlight brightness (-16% to -18%) and boosting shadow depth (+12% to +18% contrast), preventing washed-out whites in the dark hero theme.
+  - Enhanced nocturnal event posters (Jashn-E-Suroor, Eclipse 404, Charcha, Launch Ceremony) with boosted color saturation (+10% to +15%) and rich black points so titles and specular highlights pop.
+  - Calibrated all 13 tiles into a harmonious mean exposure distribution (30–95), ensuring balanced visual rhythm across the 7 drifting columns.
+- **Micro-Detailing & Styling (`components/ui/DriftWall.css`, `components/hero/HeroNavbarTransition.tsx`)**:
+  - Added hairline borders (`border: 1px solid rgba(255, 255, 255, 0.08)`) and deep drop shadows (`box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.6)`) to each tile.
+  - Added brand orange-red border glow (`border-color: rgba(255, 106, 0, 0.45); box-shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.85), 0 0 24px -4px rgba(255, 106, 0, 0.28)`) on hover/focus states.
+  - Tuned `dim={0.52}` and `overlayColor="#04060e"` in `HeroNavbarTransition.tsx` to maintain distinct contrast for the foreground floating white Nexus Vyoma wordmark.
+- **Verification**:
+  - Zero TypeScript or ESLint errors (`npx eslint "components/ui/DriftWall.tsx" "components/hero/HeroNavbarTransition.tsx"` passed clean).
+  - Dev server HTTP 200 validated.
+
+### 2026-10-17 — Initial Loading Screen with Liquid Water-Filling Logo Transition
+
+**Done**
+- **Home Initial Loader Component (`components/loading/HomeInitialLoader.tsx`)**:
+  - Implemented full-screen fixed black overlay (`fixed inset-0 z-[100] bg-black`).
+  - Positioned the faint outlined logo (`/brand/nexus-wordmark-outline.png`) as the placeholder silhouette in the exact position and responsive dimensions of the hero section logo (`w-[85vw] max-w-[280px] xs:max-w-[340px] sm:max-w-[480px] md:max-w-[620px] lg:max-w-[760px] aspect-[1024/341]`).
+  - Filled the logo with crisp pure white (`/brand/nexus-wordmark-white.png`) using true liquid water-wavy clipping via dynamic SVG `clipPath` (`clipPathUnits="objectBoundingBox"`), generating undulating sinusoidal waves that translate horizontally while rising from bottom to top over 2.4s with zero artificial stroke lines.
+  - Softened the ambient completion glow and drop shadow for a subtle, refined visual finish.
+  - Implemented seamless fading effect transition into the hero page (`opacity: 1 -> 0`, 0.75s), revealing the resting hero section with zero position shift.
+  - Disabled scrollbar during loading (`document.body.style.overflow = 'hidden'`) and restored upon transition completion.
+  - Unmounts cleanly (`setIsMounted(false)`) to render `null` (`Display - null`).
+  - Added `prefers-reduced-motion` compliance.
+- **Home Integration (`app/page.tsx`)**:
+  - Mounted `<HomeInitialLoader />` at the top of the Home page.
+- **Verification**:
+  - `npx eslint components/loading/HomeInitialLoader.tsx app/page.tsx` passed with 0 errors and 0 warnings.
+  - Verified `http://localhost:3000/` returns `HTTP 200 OK`. Zero backend/schema changes.
+
+### 2026-10-17 — Updated Slide Commit Labels and Redirecting Flow
+
+**Done**
+- **SlideCommit Labels (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed "pay" from the slider text: updated initial button label from `Slide to pay ₹${total}` to `Slide to confirm ₹${total}`.
+  - Set `doneLabel="Redirecting..."` so upon completing the slide action, the button displays "Redirecting..." with a check indicator.
+  - Updated helper text below the slider to remove references to "payment" (`Slide the handle to confirm your registration...`).
+- **Checkout Redirect (`components/registration/CheckoutEventView.tsx`)**:
+  - In `handleConfirmPayment`, added smooth resolution timing to allow the button to complete its slide and transition into the `doneLabel` state.
+  - In `handlePaymentDone`, routed to `/payment/success` via `useRouter()`.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Page verified with `HTTP 200 OK`. Zero backend/database schema changes.
+
+### 2026-10-17 — Per-Person Team Fee Pricing & Clean Navigation Header
+
+**Done**
+- **Navigation Bar (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed the top "Payment Pending" badge from the top bar above the checkout view, leaving a clean back link to event enrollment.
+- **Per-Person Team Fee Calculation (`components/registration/CheckoutEventView.tsx`)**:
+  - Updated the team fee business logic so `entry_fee` applies per person rather than dividing among members (`teamTotal = sum(ev.entry_fee * ev.team_size)`).
+  - In the team collapsed row: Displays `₹<entry_fee> / person` and `(₹<total> total)`.
+  - In the team expanded drawer: Displays `TOTAL TEAM FEE: ₹<entry_fee * team_size>` and itemizes Leader and each member at the full per-person `entry_fee` (e.g. ₹249 each).
+  - In Order Summary: Computes `Team Members Entry Fees` as `squad_members × entry_fee` with full itemization, accurately feeding Subtotal, Total, and the SlideCommit button.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Page verified with `HTTP 200 OK`. Zero backend/database schema changes.
+
+### 2026-10-17 — Checkout Event Page Visual & Fee Enhancements
+
+**Done**
+- **Title Rolling Animation (`components/registration/CheckoutEventView.tsx`)**:
+  - Replaced static `<h1>` with `<RegistrationTitleRolling title="CHECKOUT EVENT" as="h1" />`, bringing the signature 2-cycle GSAP 3D rolling text reveal to the checkout page.
+- **Participant Information Status (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed "Verified" mark from the Participant Information header.
+  - Added Entry Fees status badge (`Entry Fees: Not Paid` / `Paid`) with pulsing status indicator in the card header.
+  - Added an `Entry Fees Status` detail row inside the participant information grid.
+- **Enrolled Team Events (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed "PAID" from the team event collapsed header badge (now styled as `TEAM EVENT`).
+  - Added member-level entry fee breakdown pills in the expanded drawer for the team leader and each team member (showing allocated member fee and total flat team fee).
+- **Order Summary (`components/registration/CheckoutEventView.tsx`)**:
+  - Itemized `Team Members Entry Fees` distinctly alongside individual events, detailing each team name, member count, and fee.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Page verified with `HTTP 200 OK`. Zero backend/database schema changes.
+
+### 2026-10-17 — Set Team Event Dropdowns to Default Closed on Checkout Page
+
+**Done**
+- **Default State Update (`components/registration/CheckoutEventView.tsx`)**:
+  - Configured `isExpanded` in the team events drawer dropdown list to default to closed (`Boolean(expandedTeamRows[ev._id])` instead of defaulting to open), so cards start collapsed and reveal team metadata only when clicked.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Page renders with `HTTP 200 OK`.
+
+### 2026-10-17 — Replicated Team Events Drawer Dropdown on Checkout Page
+
+**Done**
+- **Expandable Team Drawer Dropdown (`components/registration/CheckoutEventView.tsx`)**:
+  - Replicated the exact expandable drawer dropdown structure for team-based events on the Checkout Event page, matching the reference screenshot from `/register/enroll-event`.
+  - Added collapsed header with `PAID • TEAM EVENT` emerald badge, event title, short description, metadata (`venue • date_time • fee`), and interactive rotate chevron.
+  - Added expanded details row displaying `TEAM: <name>`, `LEADER: <email>`, `SQUAD SIZE: <count>`, `FEE: ₹<fee>`, and `REGISTERED MEMBERS: <email1> | <email2>` pipe-delimited list.
+  - Preserved individual events in their original clean card layout without modifications.
+  - Removed unused imports and verified 0 ESLint errors and warnings.
+- **Server Fallback & Data (`app/register/checkout-event/page.tsx`)**:
+  - Added test individual and team events with `short_description` when zero unpaid events exist in development mode.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx` passed with 0 errors and 0 warnings.
+  - Direct HTTP verification: `/register/checkout-event` and `/register/enroll-event` return `HTTP 200 OK`.
+  - Zero backend/database schema changes; no fake payment order simulation.
+
+### 2026-10-17 — Restored RegisterUser Model Import in Event Enrollment
+
+**Done**
+- **Model Import Restoration (`app/register/enroll-event/page.tsx`)**:
+  - Re-added the missing `RegisterUser` schema import (`import RegisterUser from '@/database/schema/register-user.schema'`) required by `RegisterUser.findOne({ email: userEmail })`, resolving the runtime ReferenceError.
+  - Confirmed `/register/enroll-event` loads with `HTTP 200 OK`.
+- **Verification**:
+  - `npx eslint app/register/enroll-event/page.tsx` passed with 0 errors and 0 warnings.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Fixed Hydration Attribute Mismatch on Main Stage
+
+**Done**
+- **Hydration Sync (`app/template.tsx`, `app/register/enroll-event/page.tsx`, `app/register/checkout-event/page.tsx`)**:
+  - Deferred GSAP page entrance animation in `app/template.tsx` using `requestAnimationFrame`, preventing premature DOM inline-style manipulation during initial streaming SSR hydration.
+  - Added `suppressHydrationWarning` on `<main>` across `enroll-event` and `checkout-event` stages to cleanly handle parent template style transitions.
+  - Cleaned up unused imports in `app/register/enroll-event/page.tsx`.
+- **Verification**:
+  - `npx eslint app/template.tsx app/register/enroll-event/page.tsx app/register/checkout-event/page.tsx` passed with 0 errors and 0 warnings.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Expandable Drawer Dropdowns for Team Enrolled Events
+
+**Done**
+- **Team Events Drawer Dropdown UI (`components/registration/CheckoutEventView.tsx`)**:
+  - Replaced the static team event cards with expandable drawer dropdowns matching the team event rows in `/register/enroll-event`.
+  - Added collapsed card header with `TEAM EVENT` and category badges, event title, single-line `short_description`, venue, schedule, entry fee, and rotating chevron button.
+  - Added smooth CSS Grid transition (`grid-rows-[1fr]` to `grid-rows-[0fr]` with `motion-reduce:transition-none`).
+  - Added expanded panel containing Team Name, Leader Email, Squad Size, Entry Fee, and registered squad members separated by `|` delimiters.
+  - Added full keyboard accessibility (`role="button"`, `tabIndex={0}`, Enter / Space keys) and `aria-expanded` state attributes.
+  - Added `short_description` support across `UnpaidTeamEvent` and `app/register/checkout-event/page.tsx`.
+- **Verification**:
+  - `npx eslint components/registration/CheckoutEventView.tsx app/register/checkout-event/page.tsx` passed with 0 errors and 0 warnings.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Test Individual and Team Events for Checkout Verification
+
+**Done**
+- **Checkout Development Test Data (`app/register/checkout-event/page.tsx`)**:
+  - Added sample individual and team events in development mode (`process.env.NODE_ENV === 'development'`) when 0 unpaid events exist in MongoDB.
+  - Individual events: **Game Night** (₹99) and **Gemini Genie - Vibe Coding Hackathon** (₹199).
+  - Team events: **WEB 2 BUILD Hackathon** (₹99, team "HyperNova", 3 members) and **Financial Detectives** (₹99, team "Alpha Analysts", 2 members).
+  - Verified live rendering of itemized badges, schedule, venue, squad members, order summary (Subtotal: ₹496, Total: ₹496), and the interactive `SlideCommit` button (`Slide to pay ₹496`).
+- **Verification**:
+  - `npx eslint app/register/checkout-event/page.tsx` passed with 0 errors.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Fixed Build Error in Event Enrollment Page
+
+**Done**
+- **Schema Reference Resolution (`app/register/enroll-event/page.tsx`)**:
+  - Replaced the missing schema import (`@/database/schema/enrolled-event.schema`) with the active schemas (`EnrolledIndividualEvent` and `EnrolledTeamEvent`).
+  - Updated the database query to fetch individual and team enrolled events matching the attendee's profile, resolving the `Module not found` Turbopack build failure.
+  - Confirmed both `/register/enroll-event` and `/register/checkout-event` compile cleanly and respond with `HTTP 200 OK`.
+- **Verification**:
+  - `npx eslint app/register/enroll-event/page.tsx` passed with 0 errors.
+  - Zero backend or database schema modifications.
+
+### 2026-10-17 — Direct Development Access for Checkout Event Page
+
+**Done**
+- **Server Stage Direct Access (`app/register/checkout-event/page.tsx`)**:
+  - Implemented `searchParams` parsing (`?email=...`) and development-mode fallback (`process.env.NODE_ENV === 'development'`) matching the existing `/register` and `/register/enroll-event` access patterns.
+  - Queries real MongoDB attendee details (`RegisterUser`) and real unpaid enrollments (`EnrolledIndividualEvent` and `EnrolledTeamEvent`) without modifying any database schemas or backend APIs.
+  - Confirmed `http://localhost:3000/register/checkout-event` responds with `HTTP 200 OK` and renders `<title>Checkout Event | Nexus Vyoma 2026</title>`.
+- **Verification**:
+  - `npx eslint app/register/checkout-event/page.tsx` passed with 0 errors and 0 warnings.
+  - Zero backend or database schema modifications.
+
+### 2026-10-16 — Checkout Navigation Fix & Removal of Simulated Payment
+
+**Done**
+- **In-App Checkout Navigation (`components/registration/EventEnrollmentView.tsx`)**:
+  - Corrected `handleProceedToCheckout` success handler to navigate directly to `/register/checkout-event` instead of bypassing checkout and jumping to `/payment/success`.
+- **Removed Simulated Payment Success (`components/registration/CheckoutEventView.tsx`)**:
+  - Removed all fake order ID and transaction ID generation (`ORD_NV26_...`, `TXN_NV26_...`).
+  - Removed simulated payment redirect to `/payment/success`.
+  - Updated `handleConfirmPayment` to clearly state that online payment gateway integration is pending activation, strictly enforcing Rule 4 (no fake payment success or unverified confirmations).
+- **Verification**:
+  - ESLint passed with 0 errors on modified files.
+  - Zero backend code or database schemas modified.
+
+### 2026-10-16 — Implemented Checkout Event Page (`/register/checkout-event`)
+
+**Done**
+- **Server Component Stage (`app/register/checkout-event/page.tsx`)**:
+  - Implemented the Server Component route with `<Navbar alwaysVisible />` and `<FooterSection />`.
+  - Enforced strict session token validation (`nv-session` / `nv-session-temp`) via `verifyJWT()`, redirecting unauthenticated visitors to `/register/check-email`.
+  - Connected to MongoDB and queried real participant details from `RegisterUser`.
+  - Retrieved real unpaid enrolled individual and team events from `EnrolledIndividualEvent` and `EnrolledTeamEvent` (`isPaid: false`), populated with `Event` schema details.
+  - Wrapped dynamic content inside Next.js `<Suspense>` boundary for PPR resilience.
+- **Client Stage & Wireframe Hierarchy (`components/registration/CheckoutEventView.tsx`)**:
+  - `‹ Back to enrollment` navigation pointing to `/register/enroll-event`.
+  - Entry-fee / payment status badge (`Payment Pending`).
+  - `Checkout Event` display heading.
+  - Participant Information card showing real name, email, institution, degree, and verified badge.
+  - Enrolled Events (Unpaid) section with itemized cards for individual and team events, displaying title, category badge, venue, schedule, squad members, and entry fee. Clean empty state when 0 unpaid events are present.
+  - Order Summary card itemizing Subtotal, Service Charge (`₹0`), Entry Fees, and Total.
+- **Pay Now Interactive Component (`components/ui/SlideCommit.tsx`)**:
+  - Integrated the official React Bits Slide Commit micro-interaction component using `motion/react` and `lucide-react` with zero added dependencies.
+  - Includes pointer/touch dragging, spin indicator during in-flight payment execution, unfurl into confirmed state, keyboard accessibility, ARIA slider semantics, and `prefers-reduced-motion` support.
+  - Connected to payment handler awaiting confirmed completion before navigating to verified ticket route.
+- **Verification & Constraints**:
+  - `npx eslint components/ui/SlideCommit.tsx components/registration/CheckoutEventView.tsx app/register/checkout-event/page.tsx` passed with 0 errors.
+  - Verified 0 backend, API, schema, or webhook files were modified.
+
+
 ### 2026-10-15 — Resolved `issue-18` Merge Conflicts with `main`
 
 **Done**
