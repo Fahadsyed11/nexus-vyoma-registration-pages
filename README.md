@@ -43,6 +43,15 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-18 — Environment-Aware Organizers Gatekeeper in `proxy.ts`
+
+**Done**
+- `proxy.ts`: Updated `isOrganizersPage` gatekeeper logic to be environment-aware.
+  - On localhost/development: Allows direct access to `/organizers` so the team can preview and restructure the page locally; redirects alternate spellings (`/organiser`, `/organizer`) directly to `/organizers`.
+  - On deployment/production domains: Preserves the gatekeeper redirecting all organizer URLs to `/under-construction`.
+- Verified via NextRequest simulation and live dev server (`curl http://localhost:3000/organizers` &rarr; HTTP 200 OK; external host &rarr; HTTP 307 Redirect to `/under-construction`).
+- Strictly adhered to constraints: zero backend, database, route.ts, helper, or schema files touched.
+
 ### 2026-10-18 — Gatekeep Organizers Routes to Under-Construction in `proxy.ts`
 
 **Done**
