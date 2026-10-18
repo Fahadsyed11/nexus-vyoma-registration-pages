@@ -21,23 +21,15 @@ export interface OrganizerSectionConfig {
 export const patrons: OrganizerMember[] = [
   {
     id: 'patron-01',
-    name: 'Profile 01',
-    role: 'Patron',
-    imageUrl: '/organizers/member-01.jpg',
-    socials: {
-      instagram: 'https://instagram.com',
-      linkedin: 'https://linkedin.com',
-    },
+    name: 'Mr. Salman Ahmed',
+    role: 'Chairman',
+    imageUrl: '/organizers/patron-01.jpg',
   },
   {
     id: 'patron-02',
-    name: 'Profile 02',
-    role: 'Patron',
-    imageUrl: '/organizers/member-02.jpg',
-    socials: {
-      instagram: 'https://instagram.com',
-      linkedin: 'https://linkedin.com',
-    },
+    name: 'Dr. Mohammed Masood',
+    role: 'Principal',
+    imageUrl: '/organizers/patron-02.jpg',
   },
 ];
 

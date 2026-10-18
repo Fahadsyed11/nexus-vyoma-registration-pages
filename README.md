@@ -43,6 +43,21 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-18 — Gatekeep Organizers Routes to Under-Construction in `proxy.ts`
+
+**Done**
+- `proxy.ts`: Added passthrough exception for `/under-construction` (and subpaths) to prevent redirect loops.
+- Added gatekeeper rule redirecting `/organizers`, `/organizer`, `/organiser`, and `/organisers` (and subpaths) to `/under-construction`.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Verified with `curl -s -i http://localhost:3000/organiser` and `curl -s -i http://localhost:3000/organizers` returning HTTP 307 Temporary Redirect to `/under-construction`, and `/under-construction` returning HTTP 200 OK.
+
+### 2026-10-18 — Update Patrons portraits & profile details on Organizers page
+
+**Done**
+- `public/organizers/`: Added official patron portraits `patron-01.jpg` (Mr. Salman Ahmed, Chairman) and `patron-02.jpg` (Dr. Mohammed Masood, Principal).
+- `lib/data/organizersData.ts`: Updated `patrons` array with official names, roles (`Chairman`, `Principal`), and respective image paths.
+- Dismissed social media links entirely for both patrons so no social icons/links render.
+- Verified: `npm run build` completed cleanly with all 35 routes prerendered.
+
 ### 2026-10-17 — Fix Partial Prerendering build error on `/events` and `/events/[eventSlug]`
 
 **Done**
