@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { Anton, Montserrat, Inter, JetBrains_Mono, Barlow_Condensed, Space_Grotesk, Aldrich } from "next/font/google";
-import { Suspense } from "react";
 import "./globals.css";
 import DualBackground from "@/components/ui/DualBackground";
 
@@ -97,9 +96,7 @@ export default function RootLayout({
         className="min-h-full flex flex-col font-sans bg-transparent text-[#FFFFFF] selection:bg-[#FF6A00] selection:text-white"
         suppressHydrationWarning
       >
-        <Suspense fallback={null}>
-          <HorizontalStageTransition />
-        </Suspense>
+        <HorizontalStageTransition />
         <DualBackground />
         {children}
       </body>

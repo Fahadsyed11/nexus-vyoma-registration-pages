@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { CatalogEvent } from '@/lib/data/eventsCatalog';
 
@@ -10,7 +9,7 @@ interface EventCardProps {
 export default function EventCard({ event }: EventCardProps) {
   return (
     <Link
-      href={`/events/${event.id}`}
+      href={`/events/${event.slug}`}
       className="group block relative w-full rounded-2xl bg-[#0c0d13] border border-zinc-800/90 hover:border-zinc-700 transition-all duration-200 p-4 sm:p-5 md:p-6 text-left outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00]"
     >
       {/* Bottom Right Corner: Team Size */}
@@ -21,21 +20,11 @@ export default function EventCard({ event }: EventCardProps) {
       </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6">
-        {/* Left: Event banner (falls back to index mark if no image) */}
-        <div className="relative overflow-hidden w-full sm:w-44 md:w-48 h-28 sm:h-32 md:h-36 flex-shrink-0 rounded-xl bg-[#141620] border border-white/[0.06] flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]">
-          {event.imageUrl ? (
-            <Image
-              src={event.imageUrl}
-              alt={event.title}
-              fill
-              sizes="(max-width: 640px) 100vw, 192px"
-              className="object-contain"
-            />
-          ) : (
-            <span className="font-display text-xl sm:text-2xl md:text-3xl font-black text-[#FF6A00] tracking-wider select-none">
-              {event.mockId}
-            </span>
-          )}
+        {/* Left: Image / Mock Placeholder Block */}
+        <div className="w-full sm:w-44 md:w-48 h-28 sm:h-32 md:h-36 flex-shrink-0 rounded-xl bg-[#141620] border border-white/[0.06] flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]">
+          <span className="font-display text-xl sm:text-2xl md:text-3xl font-black text-[#FF6A00] tracking-wider select-none">
+            {event.mockId}
+          </span>
         </div>
 
         {/* Right: Event Information */}
@@ -64,7 +53,7 @@ export default function EventCard({ event }: EventCardProps) {
           {event.isFlagship && (
             <div className="flex items-center pt-0.5 pr-16 sm:pr-20">
               <span className="text-[#FF6A00] font-semibold tracking-wider text-xs uppercase font-mono">
-                FLAGSHIP
+                FLAGSHIP / SAMPLE
               </span>
             </div>
           )}

@@ -6,11 +6,7 @@ export type EventCategoryId =
   | "auto-expo"
   | "qawwali"
   | "tech-battles"
-  | "food-fest"
-  | "mehfil-e-hunar"
-  | "fandomania"
-  | "riwayat"
-  | "charcha";
+  | "food-fest";
 
 interface EventIconProps {
   id: EventCategoryId;
@@ -32,7 +28,7 @@ export const EVENT_DETAILS: Record<
     caption: "FEEL EVERY BEAT",
   },
   "auto-expo": {
-    title: "AUTO SHOW",
+    title: "AUTOMOBILE EXPO",
     caption: "MACHINES MOVE PEOPLE",
   },
   qawwali: {
@@ -46,22 +42,6 @@ export const EVENT_DETAILS: Record<
   "food-fest": {
     title: "FOOD FEST",
     caption: "TASTE THE CELEBRATION",
-  },
-  "mehfil-e-hunar": {
-    title: "MEHFIL-E-HUNAR",
-    caption: "TALENT & ARTISTRY",
-  },
-  fandomania: {
-    title: "FANDOMANIA",
-    caption: "POP CULTURE ARENA",
-  },
-  riwayat: {
-    title: "RIWAYAT",
-    caption: "HERITAGE & TRADITION",
-  },
-  charcha: {
-    title: "CHARCHA THE TALK",
-    caption: "CONVERSATIONS & LAUGHS",
   },
 };
 
