@@ -96,21 +96,23 @@ export default function ScrollReveal({
         : window;
 
     const ctx = gsap.context(() => {
-      gsap.fromTo(
-        el,
-        { transformOrigin: '0% 50%', rotate: baseRotation },
-        {
-          ease: 'none',
-          rotate: 0,
-          scrollTrigger: {
-            trigger: el,
-            scroller,
-            start: 'top 85%',
-            end: rotationEnd,
-            scrub,
-          },
-        }
-      );
+      if (baseRotation !== 0) {
+        gsap.fromTo(
+          el,
+          { transformOrigin: '0% 50%', rotate: baseRotation },
+          {
+            ease: 'none',
+            rotate: 0,
+            scrollTrigger: {
+              trigger: el,
+              scroller,
+              start: 'top 85%',
+              end: rotationEnd,
+              scrub,
+            },
+          }
+        );
+      }
 
       const wordElements = el.querySelectorAll('.word');
 
@@ -120,7 +122,7 @@ export default function ScrollReveal({
         {
           ease: 'none',
           opacity: 1,
-          stagger: 0.05,
+          stagger: 0.04,
           scrollTrigger: {
             trigger: el,
             scroller,
@@ -130,25 +132,6 @@ export default function ScrollReveal({
           },
         }
       );
-
-      if (enableBlur) {
-        gsap.fromTo(
-          wordElements,
-          { filter: `blur(${blurStrength}px)` },
-          {
-            ease: 'none',
-            filter: 'blur(0px)',
-            stagger: 0.05,
-            scrollTrigger: {
-              trigger: el,
-              scroller,
-              start: wordAnimationStart,
-              end: wordAnimationEnd,
-              scrub,
-            },
-          }
-        );
-      }
     }, el);
 
     return () => {
@@ -156,13 +139,11 @@ export default function ScrollReveal({
     };
   }, [
     scrollContainerRef,
-    enableBlur,
     baseRotation,
     baseOpacity,
     rotationEnd,
     wordAnimationStart,
     wordAnimationEnd,
-    blurStrength,
     scrub,
   ]);
 

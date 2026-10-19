@@ -43,6 +43,21 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Fix About Section Bugs: Navbar Overlap Clearance & Text Blurriness Elimination
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Resolved fixed navbar collision with "ABOUT EVENT" title by adding generous vertical clearance (`pt-24 sm:pt-32 pb-10 sm:pb-14`) and anchor scroll offset (`scroll-mt-28`), ensuring the floating mirror-glass navbar never obscures section headings.
+  - Adjusted `ScrollReveal` configuration (`baseOpacity={0.4}`, `wordAnimationStart="top 85%"`, `wordAnimationEnd="bottom 60%"`) for high-contrast, effortless progressive readability without fading into darkness.
+- `components/ui/ScrollReveal.tsx`:
+  - Stripped all `filter: blur(...)` GSAP animations from text reveal logic to ensure 100% crisp typography during all scroll states.
+  - Removed unnecessary base rotation when `baseRotation === 0` to prevent GPU subpixel anti-aliasing distortion.
+- `components/ui/ScrollReveal.css`:
+  - Removed `will-change: opacity, filter` and `will-change: transform, opacity` which trigger low-resolution layer rasterization in WebKit and Chromium.
+  - Added `-webkit-font-smoothing: antialiased`, `-moz-osx-font-smoothing: grayscale`, and `text-rendering: optimizeLegibility`.
+- Verified: `npx tsc --noEmit` passed with 0 errors; HTTP 200 on `http://localhost:3000/`.
+
+
 ### 2026-10-19 — Minimalist Refinement of About Section: Sizing, Spacing & Text Overlap Fix
 
 **Done**

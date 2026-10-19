@@ -83,7 +83,7 @@ export default function AboutSection() {
     <section
       id="about"
       ref={containerRef}
-      className="relative w-full flex flex-col items-center justify-center pt-8 pb-8 sm:pt-12 sm:pb-10 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 bg-transparent overflow-visible select-none"
+      className="relative w-full flex flex-col items-center justify-center pt-24 pb-10 sm:pt-32 sm:pb-14 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 bg-transparent overflow-visible select-none scroll-mt-28"
     >
       <div className="w-full max-w-4xl mx-auto flex flex-col items-start">
         {/* 01 — Sleek Minimal Header: 2px Accent Line + ABOUT EVENT */}
@@ -97,7 +97,7 @@ export default function AboutSection() {
           </h2>
         </div>
 
-        {/* 02 — Editorial Manifesto Paragraph (Minimal, Left-aligned, Clean inline color, No overlap glitch) */}
+        {/* 02 — Editorial Manifesto Paragraph (Minimal, Left-aligned, Crisp 100% sharp text, Zero blur) */}
         <div className="w-full relative z-10 text-left">
           <div className="relative w-full">
             {/* Faint, Transparent Cosmic Nexus Emblem Logo Watermark (Behind Text) */}
@@ -116,14 +116,14 @@ export default function AboutSection() {
               />
             </div>
 
-            {/* Paragraph with ScrollReveal: sleek text size, crisp inline color, zero clipping artifacts */}
+            {/* Paragraph with ScrollReveal: sleek text size, crisp inline color, zero blur, pure opacity reveal */}
             <div className="relative z-10 w-full text-left">
               <ScrollReveal
                 enableBlur={false}
-                baseOpacity={0.2}
+                baseOpacity={0.4}
                 baseRotation={0}
-                wordAnimationStart="top 86%"
-                wordAnimationEnd="bottom 55%"
+                wordAnimationStart="top 85%"
+                wordAnimationEnd="bottom 60%"
                 scrub={1}
                 containerClassName="my-0 w-full text-left"
                 textClassName="font-[family-name:var(--font-ibm-plex)] text-[14px] xs:text-[15px] sm:text-[17px] md:text-[18px] lg:text-[19px] font-light tracking-normal leading-[1.65] text-[#D4D4D8] select-none text-left not-italic"

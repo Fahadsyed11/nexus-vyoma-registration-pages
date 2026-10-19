@@ -1,6 +1,5 @@
 .scroll-reveal {
   margin: 20px 0;
-  will-change: transform, opacity;
 }
 
 .scroll-reveal-text {
@@ -8,9 +7,14 @@
   line-height: 1.45;
   font-weight: 400;
   letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .word {
   display: inline-block;
-  will-change: opacity, filter;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
+
