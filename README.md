@@ -43,6 +43,13 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Add Remote Image Patterns for OneDrive & Resilient Fallback
+
+**Done**
+- `next.config.ts`: Configured `images.remotePatterns` to allow `1drv.ms`, `**.1drv.ms`, `onedrive.live.com`, `**.live.com`, `**.sharepoint.com`, and `**.amazonaws.com` so cloud-hosted event images load through Next.js image optimization without runtime host rejection errors.
+- `components/events/EventCard.tsx` & `components/events/EventDetailsView.tsx`: Added client-side `hasImageError` state with `onError` fallback handling so any invalid or expired external link falls back to the branded placeholder rather than throwing unhandled runtime exceptions.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Verified `http://localhost:3000/events` returning HTTP 200 OK. Zero backend, database, route, or schema files touched.
+
 ### 2026-10-19 — Fix Template GSAP Hydration Mismatch & Image LCP Warning
 
 **Done**

@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CatalogEvent } from '@/lib/data/eventsCatalog';
@@ -8,6 +10,9 @@ interface EventCardProps {
 }
 
 export default function EventCard({ event }: EventCardProps) {
+  const [hasImageError, setHasImageError] = useState(false);
+  const showImage = Boolean(event.imageUrl && !hasImageError);
+
   return (
     <Link
       href={`/events/${event.id}`}
@@ -21,13 +26,14 @@ export default function EventCard({ event }: EventCardProps) {
       </div>
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6">
-        {/* Left: Event banner (falls back to index mark if no image) */}
+        {/* Left: Event banner (falls back to index mark if no image or error) */}
         <div className="relative overflow-hidden w-full sm:w-44 md:w-48 h-28 sm:h-32 md:h-36 flex-shrink-0 rounded-xl bg-[#141620] border border-white/[0.06] flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]">
-          {event.imageUrl ? (
+          {showImage ? (
             <Image
-              src={event.imageUrl}
+              src={event.imageUrl!}
               alt={event.title}
               fill
+              onError={() => setHasImageError(true)}
               sizes="(max-width: 640px) 100vw, 192px"
               className="object-contain"
             />
