@@ -53,12 +53,6 @@ const registrationUserSchema = new mongoose.Schema<RegisterUserModel, RegisterUs
         required: true,
         trim: true
     },
-    profile_image: {
-        type: String,
-        required: false,
-        default: "",
-        trim: true
-    },
     is_verified: {
         type: Boolean,
         default: false

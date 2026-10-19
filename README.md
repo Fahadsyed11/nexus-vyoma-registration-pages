@@ -43,6 +43,17 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-20 — Fix Ticket QR Mail Fallback `messageId` Type Error
+
+**Done**
+- Fixed TypeScript assignment error in `utilities/emails/ticket-qr-mail.ts` on line 314 where `fallbackRes.messageId` (type `string | null | undefined`) was assigned to `messageId` (type `string | null`).
+- Applied nullish coalescing (`fallbackRes.messageId ?? null`) to safely normalize `undefined` to `null`.
+- Verified type checking with `npx tsc --noEmit` (0 errors).
+
+**Files changed**
+- `utilities/emails/ticket-qr-mail.ts`
+- `README.md`
+
 ### 2026-10-19 — Add Unregistered Team Member Invitation Email Template
 
 **Done**
