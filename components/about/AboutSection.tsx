@@ -124,16 +124,16 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* 03 — 3 Minimalist Metallic Stat Cards with Subtle Ambient Glow */}
+        {/* 03 — 3 Minimalist Metallic Stat Cards Side-by-Side (Mobile & Desktop) */}
         <div
           ref={cardsRef}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-5 w-full mt-6 sm:mt-8 z-20"
+          className="grid grid-cols-3 gap-2 xs:gap-2.5 sm:gap-4 lg:gap-5 w-full mt-6 sm:mt-8 z-20"
         >
           {/* Card 1: 5,000+ Footfall (Subtle Red Glow) */}
-          <div className="stat-card relative flex flex-col items-center justify-center py-4 px-3 sm:py-5 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FF2525]/45 backdrop-blur-md shadow-[0_0_25px_-5px_rgba(255,37,37,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,37,37,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
+          <div className="stat-card relative flex flex-col items-center justify-center py-3 px-1.5 xs:py-3.5 xs:px-2 sm:py-5 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FF2525]/45 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(255,37,37,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,37,37,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
             <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-7 h-7 sm:w-8 sm:h-8 text-white stroke-current fill-none"
+                className="w-5 h-5 xs:w-6 xs:h-6 sm:w-8 sm:h-8 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
                 strokeWidth="1.5"
                 strokeLinecap="round"
@@ -150,10 +150,10 @@ export default function AboutSection() {
                 <path d="M17.5 17.2a3.5 3.5 0 0 1 5 2.8v1" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-2xl sm:text-3xl lg:text-4xl text-[#FF2525] tracking-tight mt-2 drop-shadow-[0_0_12px_rgba(255,37,37,0.3)]">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-base xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl text-[#FF2525] tracking-tight mt-1.5 sm:mt-2 drop-shadow-[0_0_12px_rgba(255,37,37,0.3)]">
               5,000+
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-snug">
+            <span className="font-[family-name:var(--font-helvetica)] text-[7px] xs:text-[8px] sm:text-[10px] sm:text-[11px] font-semibold tracking-[0.06em] xs:tracking-[0.08em] sm:tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-tight">
               ESTIMATED
               <br />
               FOOTFALL
@@ -161,10 +161,10 @@ export default function AboutSection() {
           </div>
 
           {/* Card 2: 3 Days (Subtle Orange Glow) */}
-          <div className="stat-card relative flex flex-col items-center justify-center py-4 px-3 sm:py-5 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FF6A00]/45 backdrop-blur-md shadow-[0_0_25px_-5px_rgba(255,106,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,106,0,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
+          <div className="stat-card relative flex flex-col items-center justify-center py-3 px-1.5 xs:py-3.5 xs:px-2 sm:py-5 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FF6A00]/45 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(255,106,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,106,0,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
             <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-7 h-7 sm:w-8 sm:h-8 text-white stroke-current fill-none"
+                className="w-5 h-5 xs:w-6 xs:h-6 sm:w-8 sm:h-8 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
                 strokeWidth="1.5"
                 strokeLinecap="round"
@@ -182,10 +182,10 @@ export default function AboutSection() {
                 <circle cx="16.5" cy="16" r="0.75" fill="currentColor" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-2xl sm:text-3xl lg:text-4xl text-[#FF6A00] tracking-tight mt-2 drop-shadow-[0_0_12px_rgba(255,106,0,0.3)]">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-base xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl text-[#FF6A00] tracking-tight mt-1.5 sm:mt-2 drop-shadow-[0_0_12px_rgba(255,106,0,0.3)]">
               3
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-snug">
+            <span className="font-[family-name:var(--font-helvetica)] text-[7px] xs:text-[8px] sm:text-[10px] sm:text-[11px] font-semibold tracking-[0.06em] xs:tracking-[0.08em] sm:tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-tight">
               DAYS OF
               <br />
               CELEBRATION
@@ -193,10 +193,10 @@ export default function AboutSection() {
           </div>
 
           {/* Card 3: Multiple Colleges (Subtle Amber Glow) */}
-          <div className="stat-card relative flex flex-col items-center justify-center py-4 px-3 sm:py-5 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FFB800]/45 backdrop-blur-md shadow-[0_0_25px_-5px_rgba(255,184,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,184,0,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
+          <div className="stat-card relative flex flex-col items-center justify-center py-3 px-1.5 xs:py-3.5 xs:px-2 sm:py-5 sm:px-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FFB800]/45 backdrop-blur-md shadow-[0_0_20px_-5px_rgba(255,184,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,184,0,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
             <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-7 h-7 sm:w-8 sm:h-8 text-white stroke-current fill-none"
+                className="w-5 h-5 xs:w-6 xs:h-6 sm:w-8 sm:h-8 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
                 strokeWidth="1.5"
                 strokeLinecap="round"
@@ -213,18 +213,18 @@ export default function AboutSection() {
                 <path d="M17.5 17.2a3.5 3.5 0 0 1 5 2.8v1" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-xl sm:text-2xl lg:text-3xl text-[#FFB800] tracking-tight mt-2 drop-shadow-[0_0_12px_rgba(255,184,0,0.3)]">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-[10px] xs:text-xs sm:text-xl md:text-2xl lg:text-3xl text-[#FFB800] tracking-tight mt-1.5 sm:mt-2 drop-shadow-[0_0_12px_rgba(255,184,0,0.3)]">
               MULTIPLE
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-snug">
-
+            <span className="font-[family-name:var(--font-helvetica)] text-[7px] xs:text-[8px] sm:text-[10px] sm:text-[11px] font-semibold tracking-[0.06em] xs:tracking-[0.08em] sm:tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-tight">
               COLLEGES
               <br />
               ACROSS HYDERABAD
             </span>
-
           </div>
         </div>
+
+
 
 
 

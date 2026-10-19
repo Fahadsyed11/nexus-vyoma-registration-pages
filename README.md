@@ -43,6 +43,19 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Arrange Stat Cards Side-by-Side in 3-Column Grid on Mobile View
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Converted the stat cards container from stacked (`grid-cols-1 sm:grid-cols-3`) to a unified 3-column row across all screen sizes (`grid grid-cols-3 gap-2 xs:gap-2.5 sm:gap-4 lg:gap-5`).
+  - Optimized mobile proportions to fit small phone viewports (360px–400px) cleanly with zero horizontal scroll:
+    - Reduced mobile card padding to `py-3 px-1.5 xs:py-3.5 xs:px-2`.
+    - Scaled icons down to `w-5 h-5 xs:w-6 xs:h-6` on mobile.
+    - Scaled stat numbers (`text-base xs:text-xl` on mobile) and 2-line labels (`text-[7px] xs:text-[8px]`, `leading-tight`).
+    - Preserved subtle ambient red, orange, and amber card glows and hover elevations.
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
 ### 2026-10-19 — Decrease Mobile Scroll Speed & Soften Touch Momentum
 
 **Done**
