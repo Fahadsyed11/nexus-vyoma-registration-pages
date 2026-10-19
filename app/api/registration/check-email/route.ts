@@ -5,7 +5,7 @@ import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
 
 import { generateOtp } from "@/utilities/generate-otp";
-import { sendOTPEmail } from "@/utilities/emails/otp-qr";
+import { sendOTPEmail } from "@/utilities/emails/otp.email";
 
 import { validateDto } from "@/dto/validate.dto-helper";
 import { checkUserEmailDto } from "@/dto/(register)/check-email.dto";

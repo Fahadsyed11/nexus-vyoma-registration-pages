@@ -43,6 +43,37 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Add Unregistered Team Member Invitation Email Template
+
+**Done**
+- Implemented `subject`, `htmlContent`, and `textContent` in `utilities/emails/new-team-member.email.ts` for notifying invited team members who haven't completed registration yet.
+- Designed a dark, responsive HTML email following the Nexus Vyoma brand (team invitation badge, team name, leader name and email, member email, event dates, registration explanation, and a direct CTA link prefilled with their email).
+- Fixed missing `EmailSchema` import in `utilities/emails/ticket-qr-mail.ts`.
+
+**Files changed**
+- `utilities/emails/new-team-member.email.ts`
+- `utilities/emails/ticket-qr-mail.ts`
+
+### 2026-10-19 — Add Payment-Failed Email Template
+
+**Done**
+- Implemented `subject`, `htmlContent`, and `textContent` in `utilities/emails/payment-failed.ts` for notifying attendees of incomplete/failed payments.
+- Designed a dark, responsive HTML email following the Nexus Vyoma brand (crimson alert banner, ISL Engineering College identity, transaction breakdown with attendee name, order ID, transaction reference, amount, bank refund reassurance note, and a direct CTA link to retry checkout).
+
+**Files changed**
+- `utilities/emails/payment-failed.ts`
+
+### 2026-10-19 — Connect Checkout Page to Cashfree Payment Gateway Popup
+
+**Done**
+- Loaded Cashfree v3 JavaScript SDK (`https://sdk.cashfree.com/js/v3/cashfree.js`) in `CheckoutEventPage`.
+- Updated `CheckoutEventView.tsx`: wired the `SlideCommit` button's `handleConfirmPayment` to call `POST /api/payments/create-order`, obtain the server-authoritative `payment_session_id`, and launch Cashfree checkout in a popup modal (`redirectTarget: "_modal"`).
+- Handled modal cancelation/failure feedback and redirected successful checkouts to `/payment/success`.
+
+**Files changed**
+- `app/register/checkout-event/page.tsx`
+- `components/registration/CheckoutEventView.tsx`
+
 ### 2026-10-19 — Fix Subtotal ReferenceError & Next.js Blocking Prerender
 
 **Done**

@@ -88,73 +88,38 @@ export async function POST() {
         }).sort({ createdAt: -1 });
 
         if (pendingTransaction) {
-            if (pendingTransaction.order_id) {
-                try {
-                    const existingOrder = await cashfree.PGFetchOrder(
-                        pendingTransaction.order_id
+            const ageInMinutes =
+                (Date.now() - pendingTransaction.createdAt.getTime()) /
+                (1000 * 60);
+
+            if (!pendingTransaction.order_id) {
+                if (ageInMinutes >= 10) {
+                    // Do not blindly delete: mark for reconciliation.
+                    await Transaction.updateOne(
+                        {
+                            _id: pendingTransaction._id,
+                            status: "pending",
+                            order_id: { $exists: false },
+                        },
+                        {
+                            $set: { status: "failed" },
+                        }
                     );
 
-                    const orderStatus = existingOrder.data.order_status;
-
-                    if (orderStatus === "PAID") {
-                        await Transaction.updateOne(
-                            {
-                                _id: pendingTransaction._id,
-                                status: "pending",
-                            },
-                            {
-                                $set: { status: "completed" },
-                            }
-                        );
-
-                        return NextResponse.json(
-                            {
-                                message: "Payment has already been completed",
-                                data: {
-                                    orderId: pendingTransaction.order_id,
-                                    status: "completed",
-                                },
-                                error: null,
-                            },
-                            { status: 200 }
-                        );
-                    }
-
+                    // Continue only if the update actually succeeded.
+                } else {
                     return NextResponse.json(
                         {
-                            message: "A payment is already in progress",
-                            data: {
-                                orderId: pendingTransaction.order_id,
-                                status: orderStatus,
-                            },
-                            error: "PAYMENT_ALREADY_PENDING",
+                            message: "Transaction is still being processed. Please wait 15 mins before retrying.",
+                            error: "PENDING_TRANSACTION_REQUIRES_RECONCILIATION",
                         },
                         { status: 409 }
-                    );
-                } catch (error) {
-                    console.error("Cashfree order status lookup failed:", error);
-
-                    return NextResponse.json(
-                        {
-                            message:
-                                "Unable to verify the existing payment. Please try again later.",
-                            data: null,
-                            error: "PAYMENT_STATUS_CHECK_FAILED",
-                        },
-                        { status: 503 }
                     );
                 }
             }
 
-            return NextResponse.json(
-                {
-                    message:
-                        "A pending transaction has no Cashfree order ID and requires reconciliation.",
-                    data: null,
-                    error: "PENDING_TRANSACTION_REQUIRES_RECONCILIATION",
-                },
-                { status: 409 }
-            );
+            // If an order ID exists, fetch the order status from Cashfree.
+            // Never delete it merely because it is older than 10 minutes.
         }
 
         // Find the latest transaction prepared by the checkout route.

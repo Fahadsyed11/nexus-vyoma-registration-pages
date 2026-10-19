@@ -9,7 +9,7 @@ import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
 import EntryTicket from "@/database/schema/entry-ticket.schema";
 import { sendQREmail } from "@/utilities/emails/ticket-qr-mail";
 import { generateQRCode } from "@/utilities/generate-qr";
-import { sendSpecialEmail } from "@/utilities/emails/special-qr";
+import { sendSpecialEmail } from "@/utilities/emails/special.email";
 
 export async function POST(request: NextRequest) {
     try {
@@ -72,9 +72,11 @@ export async function POST(request: NextRequest) {
 
         await EntryTicket.findOneAndUpdate({
             email: data.email,
+            isEmailSent: false,
         }, {
             $set: {
-                userId: createUser._id
+                userId: createUser._id,
+                isEmailSent: true
             }
         }, {
             new: true

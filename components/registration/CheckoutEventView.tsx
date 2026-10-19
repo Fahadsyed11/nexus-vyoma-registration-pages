@@ -69,6 +69,61 @@ export interface CheckoutEventViewProps {
   };
 }
 
+interface CashfreeCheckoutResult {
+  error?: { message?: string; code?: string };
+  redirect?: boolean;
+  paymentDetails?: unknown;
+}
+
+interface CashfreeInstance {
+  checkout: (options: {
+    paymentSessionId: string;
+    redirectTarget?: '_modal' | '_self' | '_top';
+  }) => Promise<CashfreeCheckoutResult>;
+}
+
+declare global {
+  interface Window {
+    Cashfree?: (options: { mode: 'sandbox' | 'production' }) => CashfreeInstance;
+  }
+}
+
+async function loadCashfreeSDK(): Promise<CashfreeInstance> {
+  const mode =
+    process.env.NEXT_PUBLIC_CASHFREE_MODE === 'production' ? 'production' : 'sandbox';
+
+  if (typeof window !== 'undefined' && window.Cashfree) {
+    return window.Cashfree({ mode });
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    if (typeof window === 'undefined') return reject(new Error('Window not available'));
+
+    if (window.Cashfree) return resolve();
+
+    const existing = document.querySelector('script[src*="cashfree.js"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', () => reject(new Error('Failed to load Cashfree SDK')));
+      if (window.Cashfree) resolve();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Cashfree SDK'));
+    document.body.appendChild(script);
+  });
+
+  if (!window.Cashfree) {
+    throw new Error('Cashfree SDK is not available');
+  }
+
+  return window.Cashfree({ mode });
+}
+
 export default function CheckoutEventView({
   userName,
   userEmail,
@@ -102,15 +157,59 @@ export default function CheckoutEventView({
     setErrorMessage(null);
 
     if (totalEventsCount === 0) {
-      setErrorMessage('No unpaid events available for checkout.');
-      throw new Error('No unpaid events available for checkout.');
+      const msg = 'No unpaid events available for checkout.';
+      setErrorMessage(msg);
+      throw new Error(msg);
     }
 
     setIsProcessing(true);
 
     try {
-      // Transition delay while sliding completes and trigger redirect
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      // 1. Request Cashfree order session from server
+      const res = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const resJson = await res.json().catch(() => null);
+
+      // Handle redirect instructions (e.g. unauthenticated / expired session)
+      if (resJson?.redirect && resJson?.redirectUrl) {
+        router.push(resJson.redirectUrl);
+        return false;
+      }
+
+      if (!res.ok || !resJson?.data?.payment_session_id) {
+        const errorMsg =
+          resJson?.message || resJson?.error || 'Unable to initiate payment. Please try again.';
+        setErrorMessage(errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      const paymentSessionId = resJson.data.payment_session_id as string;
+
+      // 2. Initialize Cashfree v3 SDK
+      const cashfree = await loadCashfreeSDK();
+
+      // 3. Open Cashfree modal checkout popup
+      const checkoutResult = await cashfree.checkout({
+        paymentSessionId,
+        redirectTarget: '_modal',
+      });
+
+      if (checkoutResult?.error) {
+        const cancelMsg = checkoutResult.error.message || 'Payment was cancelled or failed.';
+        setErrorMessage(cancelMsg);
+        throw new Error(cancelMsg);
+      }
+
+      if (checkoutResult?.paymentDetails) {
+        router.push('/payment/success');
+        return true;
+      }
+
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Processing failed';

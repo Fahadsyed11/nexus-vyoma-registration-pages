@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { connection } from 'next/server';
+import Script from 'next/script';
 import Navbar from '@/components/navbar/Navbar';
 import FooterSection from '@/components/footer/FooterSection';
 import CheckoutEventView, {
@@ -247,6 +248,9 @@ async function CheckoutEventContent() {
 export default function CheckoutEventPage() {
   return (
     <div className="relative min-h-screen flex flex-col bg-[#000000] text-white selection:bg-[#FF6A00] selection:text-white overflow-x-hidden">
+      {/* Cashfree v3 SDK */}
+      <Script src="https://sdk.cashfree.com/js/v3/cashfree.js" strategy="afterInteractive" />
+
       {/* 01 — Official Mirror-Glass Navbar */}
       <Navbar alwaysVisible />
 

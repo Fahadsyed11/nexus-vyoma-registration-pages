@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
-import { sendWelcomeEmail } from "@/utilities/emails/welcome-qr";
+import { sendWelcomeEmail } from "@/utilities/emails/welcome.email";
 import { signJWT } from "@/utilities/jwt";
 import { validateDto } from "@/dto/validate.dto-helper";
 import { verifyUserEmailDto } from "@/dto/(register)/verify-email.dto";
