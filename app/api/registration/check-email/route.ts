@@ -52,7 +52,8 @@ export async function POST(request: NextRequest) {
         const currentTime = new Date();
 
         // Check if the OTP was sent within the last 5 minutes then do not send the OTP again
-        if (checkOtp && currentTime.getTime() - checkOtp.time < 300000) {
+        if (checkOtp && (currentTime.getTime() - checkOtp.time) < 300000) {
+
             return NextResponse.json({
                 message: "OTP already sent. Please check your email or wait for 5 minutes before requesting a new OTP.",
                 data: null,
