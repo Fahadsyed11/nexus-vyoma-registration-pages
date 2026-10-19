@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import mongoose from "mongoose";
 
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
+
 import { generateOtp } from "@/utilities/generate-otp";
 import { sendOTPEmail } from "@/utilities/emails/otp-qr";
+
 import { validateDto } from "@/dto/validate.dto-helper";
 import { checkUserEmailDto } from "@/dto/(register)/check-email.dto";
 
@@ -28,9 +29,20 @@ export async function POST(request: NextRequest) {
         const { email } = data;
 
         await connectToDatabase();
+
         const user = await RegisterUser.findOne({
             email
         });
+
+        if(!user) {
+            return NextResponse.json({
+                message: "User not found",
+                data: null,
+                error: null,
+                redirect: true,
+                redirect_url: "/register"
+            }, { status: 404 });
+        }
 
         const checkOtp = await OtpVerification.findOne({
             email
@@ -51,11 +63,11 @@ export async function POST(request: NextRequest) {
         }
 
         const otp = generateOtp();
-        const recipientName = user?.full_name || "Nexus Attendee";
+        const recipientName = user.full_name;
 
         console.log("Generated OTP:", otp, "for email:", email, "at time:", currentTime);
         const { success: emailSuccess, error } = await sendOTPEmail(
-            user?._id ? user._id.toString() : null,
+            user._id.toString(),
             email,
             recipientName,
             otp
@@ -79,7 +91,7 @@ export async function POST(request: NextRequest) {
         }
 
         await OtpVerification.create({
-            user_id: user?._id || new mongoose.Types.ObjectId(),
+            user_id: user?._id,
             email: email,
             code: String(otp),
             time: currentTime.getTime(),
