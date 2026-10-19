@@ -50,11 +50,9 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
     city: '',
   });
 
-  React.useEffect(() => {
-    if (verifiedEmail) {
-      setFormData((prev) => ({ ...prev, email: verifiedEmail }));
-    }
-  }, [verifiedEmail]);
+  // Email is seeded from `verifiedEmail` in the initial state above.
+  // The parent page passes `key={verifiedEmail}` so a new query param remounts
+  // this component with fresh state (no setState-in-effect needed).
 
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);

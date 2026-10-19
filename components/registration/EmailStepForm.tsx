@@ -16,11 +16,8 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
   const [error, setError] = useState<string | null>(null);
   const [showVerifyLink, setShowVerifyLink] = useState(false);
 
-  React.useEffect(() => {
-    if (initialEmail) {
-      setEmail(initialEmail);
-    }
-  }, [initialEmail]);
+  // `initialEmail` seeds state above; the page passes `key={initialEmail}`
+  // so a changed query param remounts this form with fresh state.
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,12 +49,13 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
 
       if (res.ok) {
         // 200: Email found & OTP sent successfully -> redirect to verify-email
+        const now = Date.now();
         try {
-          localStorage.setItem('nv_otp_sent_time', String(Date.now()));
+          localStorage.setItem('nv_otp_sent_time', String(now));
         } catch {
           // ignore localStorage error
         }
-        router.push(`/register/verify-email?email=${encodeURIComponent(trimmed)}`);
+        router.push(`/register/verify-email?email=${encodeURIComponent(trimmed)}&sent=${now}`);
         return;
       }
 

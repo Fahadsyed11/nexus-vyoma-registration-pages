@@ -43,6 +43,55 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Reset OTP Verification State on Resend / New Email Session
+
+**Done**
+- `EmailStepForm.tsx`: passed `sent=${now}` timestamp query parameter on redirect to `/register/verify-email`.
+- `app/register/verify-email/page.tsx`: added `key={`${email}-${sent}`}` to `OtpStepForm` so Next.js Cache Components cleanly remounts the form and resets all state (typed digits, slot status, error banners) when a new OTP is requested.
+- `OtpStepForm.tsx`: in `handleResend`, reset `otp` digits, `status` to idle, and cleared any prior errors upon a successful resend response.
+
+**Files changed**
+- `components/registration/EmailStepForm.tsx`
+- `app/register/verify-email/page.tsx`
+- `components/registration/OtpStepForm.tsx`
+
+### 2026-10-19 — Fix Session Cookies Not Persisting After OTP Verify
+
+**Done** (approved by owner)
+- `app/api/registration/verify-email/route.ts`: replaced numeric `expires` (serialised by Next as a 1970 date → cookies dropped instantly) with `maxAge` in seconds — `nv-session` 7200s, `nv-session-temp` 6900s.
+- Fixed temp JWT lifetime typo `"690000000Ms"` (~8 days) → `"115m"`.
+
+### 2026-10-19 — Registration Funnel Polish & Enroll-Event Session Guard
+
+**Done**
+- `EmailStepForm.tsx` / `RegistrationFormStep.tsx`: removed `setState`-in-effect email syncing; pages now pass `key={email}` to remount with fresh state (fixes `react-hooks/set-state-in-effect` lint errors).
+- `OtpStepForm.tsx`: added `toSafeRegisterPath()` so API `redirect_url` values are only followed if they are same-origin paths (open-redirect guard); clears `nv_otp_sent_time` on successful verification.
+- `app/register/enroll-event/page.tsx`: server-side session guard verifies `nv-session` + `nv-session-temp` JWTs and redirects to `/register/check-email` if missing/invalid; greeting name/email now come from the signed token (removed `?email=` / dummy fallback).
+
+**Files changed**
+- `components/registration/EmailStepForm.tsx`, `components/registration/RegistrationFormStep.tsx`, `components/registration/OtpStepForm.tsx`
+- `app/register/page.tsx`, `app/register/check-email/page.tsx`, `app/register/enroll-event/page.tsx`
+
+**Follow-ups (backend, needs owner approval)**
+- `app/api/registration/verify-email/route.ts` L87/L90: `expires` is passed as a number of ms, which Next serialises as a 1970 date → cookies are discarded immediately. Use `maxAge` (seconds) instead.
+- `utilities/jwt.ts`: remove the hard-coded `JWT_SECRET` fallback; fail fast if the env var is missing.
+- Enroll page still renders dummy event lists; wire to `GET /api/enroll-event` next.
+
+### 2026-10-19 — Verify Email Frontend State Handling & Redirect to Enroll-Event
+
+**Done**
+- **OTP Verification Flow (`components/registration/OtpStepForm.tsx`)**:
+  - Connected `POST /api/registration/verify-email` response handler.
+  - **Success Handling (HTTP 200)**: Sets code slots to `'success'`, shows `"OTP verified successfully! Redirecting..."`, and redirects directly to `/register/enroll-event`.
+  - **Failure Handling**:
+    - **HTTP 404 (User Not Found)**: Displays `"User not found. Redirecting to registration..."` and navigates to `/register?email=...`.
+    - **HTTP 400 (OTP Expired)**: If `redirect` is flagged with `redirect_url`, displays `"OTP expired. Please request a new OTP."` and navigates back to `/register/check-email?email=...`.
+    - **HTTP 400 (Invalid Code)**: Sets code slots to `'error'` and shows inline feedback (`"Invalid OTP code. Please check and try again."`).
+    - **HTTP 500 & Network**: Shows graceful failure banner without breaking the slot interaction.
+  - **Email Parameter Fallback**: Added visual `"ENTER EMAIL →"` shortcut if the email query parameter is ever missing.
+- **Verification**:
+  - Validated parameter passing from `/register/check-email` to `/register/verify-email?email=...` and onward to `/register/enroll-event`.
+
 ### 2026-10-19 — Implement Special Registration Alert Email (`utilities/emails/special-qr.ts`)
 
 **Done**

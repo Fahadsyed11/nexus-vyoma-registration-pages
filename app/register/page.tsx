@@ -18,7 +18,7 @@ async function RegisterContent({ searchParams }: RegisterPageProps) {
   const params = searchParams ? await searchParams : {};
   const queryEmail = typeof params.email === 'string' ? params.email.trim() : '';
 
-  return <RegistrationFormStep verifiedEmail={queryEmail} />;
+  return <RegistrationFormStep key={queryEmail} verifiedEmail={queryEmail} />;
 }
 
 export default function RegisterPage(props: RegisterPageProps) {

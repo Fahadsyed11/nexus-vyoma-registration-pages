@@ -1,33 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-import mongoose from "mongoose";
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
 import { sendWelcomeEmail } from "@/utilities/emails/welcome-qr";
-import { signJWT, verifyJWT } from "@/utilities/jwt";
+import { signJWT } from "@/utilities/jwt";
 import { validateDto } from "@/dto/validate.dto-helper";
 import { verifyUserEmailDto } from "@/dto/(register)/verify-email.dto";
 
 export async function POST(request: NextRequest) {
     try {
-        const cookieStore = await cookies();
-        const userToken = verifyJWT(cookieStore.get("nv-session")?.value as string);
-        const tempSessionToken = verifyJWT(cookieStore.get("nv-session-temp")?.value as string);
-
-        if (userToken && tempSessionToken) {
-            return NextResponse.json({
-                message: "User already verified",
-                data: null,
-                error: null,
-                redirect: true,
-                redirect_url: "/enrollment-event"
-            }, { status: 400 });
-        } else if (userToken && !tempSessionToken || !userToken && tempSessionToken) {
-            cookieStore.delete("nv-session");
-        }
-
         // Add DTO validation Here
         const body = await request.json();
 
@@ -47,105 +30,79 @@ export async function POST(request: NextRequest) {
 
         await connectToDatabase();
 
-        const isDevBypass = process.env.NODE_ENV === "development" && (otp === "123456" || otp === "000000");
-        let otpRecord = await OtpVerification.findOne({ email, code: otp });
+        const otpRecord = await OtpVerification.findOne({ email, code: String(otp) }).sort({ time: -1 });
         const currentTime = new Date();
 
-        if (isDevBypass) {
-            if (!otpRecord) {
-                otpRecord = await OtpVerification.create({
-                    user_id: new mongoose.Types.ObjectId(),
-                    email,
-                    code: otp,
-                    time: currentTime.getTime(),
-                    is_verified: true,
-                });
-            } else {
-                otpRecord.is_verified = true;
-                await otpRecord.save();
-            }
-        } else {
-            if (!otpRecord || otpRecord.is_verified || otpRecord.code !== otp) {
-                return NextResponse.json({
-                    message: "Invalid OTP",
-                    data: null,
-                    error: null,
-                    redirect: false,
-                    redirect_url: null
-                }, { status: 400 });
-            }
+        if (!otpRecord || otpRecord.is_verified || otpRecord.code !== String(otp)) {
+            return NextResponse.json({
+                message: "Invalid OTP",
+                data: null,
+                error: null,
+                redirect: false,
+                redirect_url: null
+            }, { status: 400 });
+        }
 
-            if (currentTime.getTime() - otpRecord.time > 300000) {
-                return NextResponse.json({
-                    message: "OTP expired. Please request a new OTP.",
-                    data: null,
-                    error: null,
-                    redirect: true,
-                    redirect_url: "/check-email"
-                }, { status: 400 });
-            }
-
-            otpRecord.is_verified = true;
-            await otpRecord.save();
+        if (currentTime.getTime() - otpRecord.time > 300000) {
+            return NextResponse.json({
+                message: "OTP expired. Please request a new OTP.",
+                data: null,
+                error: null,
+                redirect: true,
+                redirect_url: "/check-email"
+            }, { status: 400 });
         }
 
         const user = await RegisterUser.findOne({ email });
 
-        // Check whether user has already completed registration
-        const isRegistered = Boolean(user && user.full_name && user.institution);
+        if (!user) {
+            return NextResponse.json({
+                message: "User not found",
+                data: null,
+                error: null,
+                redirect: true,
+                redirect_url: "/register"
+            }, { status: 404 });
+        }
 
-        // If user verifies for first time and is registered, send welcome email
-        if (user && user.is_verified === false && isRegistered) {
+        otpRecord.is_verified = true;
+        await otpRecord.save();
+
+        // If user verifies for first time, send him the welcome email
+        if (user && user.is_verified === false) {
             user.is_verified = true;
             await user.save();
+
+
+
             await sendWelcomeEmail(user._id, user.email, user.full_name);
         }
 
+
         // set the cookie for the user session for 2 hours
-        const sessionPayload = user
-            ? { user: { id: user._id, name: user.full_name, email: user.email }, email: user.email }
-            : { email, verified: true };
+        const cookieStore = await cookies();
+        const token = signJWT({ user: { id: user._id, name: user.full_name, email: user.email } }, { expiresIn: "2h" });
+        const tempToken = signJWT({ user: { id: user._id, name: user.full_name, email: user.email } }, { expiresIn: "115m" });
 
-        const token = signJWT(sessionPayload, { expiresIn: "2h" });
-        const tempToken = signJWT(sessionPayload, { expiresIn: "115m" });
+        // maxAge is in SECONDS. (A numeric `expires` is treated as a Unix-epoch ms date → 1970 → cookie dropped instantly.)
+        cookieStore.set("nv-session", token, { httpOnly: true, path: "/", sameSite: "strict", secure: process.env.NODE_ENV === "production", maxAge: 2 * 60 * 60 })
 
-        cookieStore.set("nv-session", token, {
-            httpOnly: true,
-            path: "/",
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 2 * 60 * 60,
-        });
-
-        cookieStore.set("nv-session-temp", tempToken, {
-            httpOnly: true,
-            path: "/",
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 1 * 60 * 60 + 55 * 60,
-        });
-
-        // Determine destination: existing completed registrants go to event enrollment, unregistered users go to registration form
-        const destination = isRegistered
-            ? "/register/enroll-event"
-            : `/register/form?email=${encodeURIComponent(email)}`;
+        // set temporary cookie for 1 hour 55 mins so if this expires then user will be redirected to check-email page to verify his email again
+        cookieStore.set("nv-session-temp", tempToken, { httpOnly: true, path: "/", sameSite: "strict", secure: process.env.NODE_ENV === "production", maxAge: 115 * 60 })
 
         return NextResponse.json({
             message: "OTP verified successfully",
+
             data: {
-                email,
-                isRegistered,
-                user: user
-                    ? {
-                          id: user._id,
-                          name: user.full_name,
-                          email: user.email,
-                      }
-                    : null,
+                user: {
+                    id: user._id,
+                    name: user.full_name,
+                    email: user.email,
+                },
             },
             error: null,
             redirect: true,
-            redirect_url: destination,
+            redirect_url: "/register/enroll-event"
         }, { status: 200 });
 
     } catch (error) {

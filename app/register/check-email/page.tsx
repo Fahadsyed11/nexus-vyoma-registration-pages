@@ -17,7 +17,7 @@ interface CheckEmailPageProps {
 async function CheckEmailContent({ searchParams }: CheckEmailPageProps) {
   const params = searchParams ? await searchParams : {};
   const initialEmail = typeof params.email === 'string' ? params.email : '';
-  return <EmailStepForm initialEmail={initialEmail} />;
+  return <EmailStepForm key={initialEmail} initialEmail={initialEmail} />;
 }
 
 export default function CheckEmailPage(props: CheckEmailPageProps) {
