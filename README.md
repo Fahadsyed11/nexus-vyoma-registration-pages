@@ -43,6 +43,27 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Update 3 Official Flagship Posters (Charcha, Jashn-E-Suroor, RPM Auto Fest)
+
+**Done**
+- **Assets (`public/brand/flagship/`)**:
+  - Ingested 3 official event posters provided in `Nexus-imgs/eve-posters/`:
+    - `charcha-the-talk.jpg` (CHARCHA - POWERED BY DE CAFE STUDIO)
+    - `jashn-e-suroor.jpg` (JASHN-E-SUROOR - QAWWALI NIGHT)
+    - `rpm-auto-fest.jpg` (RPM - AUTO FEST - CARS | DRIFT | CULTURE | COMMUNITY)
+- **Data Configuration (`lib/data/events.ts` & `lib/data/eventsCatalog.ts`)**:
+  - Updated `auto-show`: title to "RPM Auto Fest", tagline to "Cars | Drift | Culture | Community", image to `/brand/flagship/rpm-auto-fest.jpg`, aspect ratio to `1 / 1`.
+  - Updated `qawwali`: image to `/brand/flagship/jashn-e-suroor.jpg`, aspect ratio to `1 / 1`.
+  - Updated `charcha`: title to "Charcha · Powered by De Cafe Studio", tagline to "Powered by De Cafe Studio", image to `/brand/flagship/charcha-the-talk.jpg`, aspect ratio to `1 / 1`.
+  - Synced `eventsCatalog.ts` fallback catalog `imageUrl` for `rpm-auto-fest.jpg`.
+- **Pages Updated**:
+  - Homepage Flagship Events section (`FlagshipScrollDeck.tsx`) automatically reflects the updated posters and 1:1 aspect ratios via `OFFICIAL_FLAGSHIP_EVENTS`.
+  - Events Catalog page (`/events`) and dynamic event detail routes automatically serve the new posters via `getAllEventsCatalog()`.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Dev server HTTP 200 validated for `/` and `/events`.
+  - Zero git commits made per user instructions.
+
 ### 2026-10-19 — Arrange Stat Cards Side-by-Side in 3-Column Grid on Mobile View
 
 **Done**
