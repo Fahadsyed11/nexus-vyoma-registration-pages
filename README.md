@@ -43,6 +43,44 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Center Event Poster in the Middle on Mobile View
+
+**Done**
+- **Mobile Poster Alignment (`components/events/EventCard.tsx`)**:
+  - Added `self-center sm:self-auto mx-auto sm:mx-0` and set `w-full max-w-[340px] sm:max-w-none` on the poster thumbnail container.
+  - Eliminated the flex-start leftward offset on mobile screens; posters now center symmetrically right in the middle of each event card with equal left/right margins.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Dev server HTTP 200 validated at `http://localhost:3000/events`.
+  - Zero git commits made per user instructions.
+
+### 2026-10-19 — Render 100% Uncropped Event Posters with Ambient Zero-Bezel Backdrop
+
+**Done**
+- **Uncropped Poster & Ambient Backdrop (`components/events/EventCard.tsx`)**:
+  - Aligned thumbnail container with the 1:1 format of the official fest posters using `aspect-square` (`w-full max-w-[280px] xs:max-w-[320px] sm:max-w-none sm:w-36 md:w-40 aspect-square sm:h-36 md:h-40`).
+  - Restored `object-contain` on the foreground poster image so that 100% of event typography, dates, sponsor badges, and graphics remain fully visible with **zero cropping**.
+  - Added an ambient color-matched background layer (`object-cover blur-xl scale-125 opacity-35`) behind the poster to ensure zero stark black pillarbox bars/bezels appear across viewports.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Dev server HTTP 200 validated at `http://localhost:3000/events`.
+  - Zero git commits made per user instructions.
+
+### 2026-10-19 — Fix Event Card Posters (Zero Black Side Bezels) & Extend Scroll Area on /events
+
+**Done**
+- **Poster Fill Fix (`components/events/EventCard.tsx`)**:
+  - Replaced `object-contain` with `object-cover object-center` on the card poster image so posters completely fill the frame edge-to-edge without dark letterboxing or black side bezels ("vessels").
+  - Optimized the mobile banner height to `h-40 xs:h-44 sm:h-32 md:h-36` for cleaner proportions on phone screens.
+- **Dynamic Scroll Area Expansion (`components/events/EventsExplorer.tsx`)**:
+  - Attached a `filterAsideRef` to the desktop `<aside>` filter panel and dynamically measured its height via `ResizeObserver`.
+  - Replaced hardcoded `lg:max-h-[620px]` with `style={{ maxHeight: asideHeight ? `${asideHeight}px` : undefined }}` and an SSR fallback of `lg:max-h-[850px]`.
+  - The right-hand cards scroll container now extends to align cleanly with the bottom of the filter sidebar (around the last filter / Clear Filters button).
+- **Verification**:
+  - `npx tsc --noEmit` passed cleanly with 0 errors.
+  - Dev server HTTP 200 validated on `http://localhost:3000/events`.
+  - Zero git commits made per user instructions.
+
 ### 2026-10-19 — Update 3 Official Flagship Posters (Charcha, Jashn-E-Suroor, RPM Auto Fest)
 
 **Done**

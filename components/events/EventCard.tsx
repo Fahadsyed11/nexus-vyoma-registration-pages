@@ -27,16 +27,27 @@ export default function EventCard({ event }: EventCardProps) {
 
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 sm:gap-6">
         {/* Left: Event banner (falls back to index mark if no image or error) */}
-        <div className="relative overflow-hidden w-full sm:w-44 md:w-48 h-28 sm:h-32 md:h-36 flex-shrink-0 rounded-xl bg-[#141620] border border-white/[0.06] flex items-center justify-center transition-transform duration-200 group-hover:scale-[1.02]">
+        <div className="relative overflow-hidden w-full max-w-[340px] sm:max-w-none sm:w-36 md:w-40 aspect-square sm:h-36 md:h-40 flex-shrink-0 self-center sm:self-auto mx-auto sm:mx-0 rounded-xl bg-[#0c0d15] border border-white/[0.08] flex items-center justify-center transition-transform duration-200">
           {showImage ? (
-            <Image
-              src={event.imageUrl!}
-              alt={event.title}
-              fill
-              onError={() => setHasImageError(true)}
-              sizes="(max-width: 640px) 100vw, 192px"
-              className="object-contain"
-            />
+            <>
+              {/* Ambient color-matched backdrop — eliminates black side bezels */}
+              <Image
+                src={event.imageUrl!}
+                alt=""
+                fill
+                className="object-cover blur-xl scale-125 opacity-35 select-none pointer-events-none"
+                aria-hidden="true"
+              />
+              {/* Uncropped sharp poster — 100% visible, zero cropping */}
+              <Image
+                src={event.imageUrl!}
+                alt={event.title}
+                fill
+                onError={() => setHasImageError(true)}
+                sizes="(max-width: 640px) 100vw, 192px"
+                className="object-contain relative z-10 transition-transform duration-200 group-hover:scale-[1.02]"
+              />
+            </>
           ) : (
             <span className="font-display text-xl sm:text-2xl md:text-3xl font-black text-[#FF6A00] tracking-wider select-none">
               {event.mockId}
