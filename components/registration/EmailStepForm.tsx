@@ -16,6 +16,12 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
   const [error, setError] = useState<string | null>(null);
   const [showVerifyLink, setShowVerifyLink] = useState(false);
 
+  React.useEffect(() => {
+    if (initialEmail) {
+      setEmail(initialEmail);
+    }
+  }, [initialEmail]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);

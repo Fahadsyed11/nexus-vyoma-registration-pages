@@ -1,147 +1,97 @@
-import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 
-import { uploadImageToS3 } from "@/utilities/aws/helper.aws";
-import { destructureSumbitBody } from "./destructure-body";
-
-import { cookies } from "next/headers";
-import { signJWT } from "@/utilities/jwt";
+import { registerUserFormDto } from "@/dto/(register)/register-user.dto";
+import { validateDto } from "@/dto/validate.dto-helper";
+import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
+import EntryTicket from "@/database/schema/entry-ticket.schema";
+import { sendQREmail } from "@/utilities/emails/ticket-qr-mail";
+import { generateQRCode } from "@/utilities/generate-qr";
+import { sendSpecialEmail } from "@/utilities/emails/special-qr";
 
 export async function POST(request: NextRequest) {
     try {
-        await connectToDatabase();
+        await connectToDatabase()
+        // Add DTO validation Here
+        const body = await request.json();
 
-        const contentType = request.headers.get("content-type") || "";
-        let bodyPayload: FormData | Record<string, unknown>;
-        let imageFile: File | null = null;
+        const { data, issues, success: isValid } = validateDto(registerUserFormDto, body);
 
-        if (contentType.includes("application/json")) {
-            bodyPayload = (await request.json().catch(() => ({}))) as Record<string, unknown>;
-        } else {
-            const formData = await request.formData();
-            bodyPayload = formData;
-            const img = formData.get("image");
-            if (img instanceof File && img.size > 0) {
-                imageFile = img;
-            }
-        }
-
-        const { data, issues, success: isValid } = destructureSumbitBody(bodyPayload);
-
-        if (!isValid) {
+        if (!isValid || !data) {
             return NextResponse.json({
                 message: "Invalid form data",
                 data: null,
                 error: issues,
                 redirect: false,
                 redirectUrl: null
-            }, { status: 400 });
-        } else if (!data) {
-            return NextResponse.json({
-                message: "No data provided",
-                data: null,
-                error: "No data provided",
-                redirect: false,
-                redirectUrl: null
-            }, { status: 400 });
+            }, { status: 400 })
         }
 
-        const { city, state, full_name, email, phone_number, institution, degree, year_of_study } = data;
-
-        let profileImageUrl = "default";
-
-        if (imageFile) {
-            const maxSize = 20 * 1024 * 1024; // 20 MB
-            if (imageFile.size > maxSize) {
-                return NextResponse.json(
-                    { message: "Image must be 20 MB or smaller" },
-                    { status: 400 }
-                );
-            }
-
-            const extension = path.extname(imageFile.name).toLowerCase().replace(".", "");
-            const buffer = Buffer.from(await imageFile.arrayBuffer());
-            const { success, url, error } = await uploadImageToS3(buffer, extension, imageFile.type);
-
-            if (!success) {
-                return NextResponse.json({
-                    message: "Error uploading image",
-                    data: null,
-                    error,
-                    redirect: false,
-                    redirectUrl: null
-                }, { status: 500 });
-            }
-            profileImageUrl = url || "";
-        }
-
-        const checkRegisterUser = await RegisterUser.findOne({ email });
-
-        let userRecord = checkRegisterUser;
+        const checkRegisterUser = await RegisterUser.findOne({
+            email: data.email
+        });
 
         if (checkRegisterUser) {
-            checkRegisterUser.full_name = full_name;
-            checkRegisterUser.phone_number = phone_number;
-            checkRegisterUser.city = city;
-            checkRegisterUser.state = state;
-            checkRegisterUser.institution = institution;
-            checkRegisterUser.degree = degree;
-            checkRegisterUser.year_of_study = year_of_study;
-            if (profileImageUrl) {
-                checkRegisterUser.profile_image = profileImageUrl;
-            }
-            checkRegisterUser.is_verified = true;
-            await checkRegisterUser.save();
-        } else {
-            userRecord = await RegisterUser.create({
-                full_name,
-                email,
-                phone_number,
-                city,
-                state,
-                institution,
-                degree,
-                year_of_study,
-                profile_image: profileImageUrl,
-                is_verified: true,
-            });
+            return NextResponse.json({
+                message: "User already registered",
+                data: null,
+                error: null,
+                redirect: true,
+                redirectUrl: `/register/check-email?email=${encodeURIComponent(data.email)}`
+            }, { status: 400 })
         }
 
-        if (!userRecord) {
+        const createUser = await RegisterUser.create({
+            ...data,
+        });
+
+        if (!createUser) {
             return NextResponse.json({
                 message: "Error creating user",
                 data: null,
                 error: "Error creating user",
                 redirect: false,
                 redirectUrl: null
-            }, { status: 500 });
+            }, { status: 500 })
         }
 
-        const cookieStore = await cookies();
-        const token = signJWT(
-            { user: { id: userRecord._id, name: userRecord.full_name, email: userRecord.email } },
-            { expiresIn: "2h" }
-        );
-        cookieStore.set("nv-session", token, {
-            httpOnly: true,
-            path: "/",
-            sameSite: "strict",
-            secure: process.env.NODE_ENV === "production",
-            maxAge: 2 * 60 * 60,
-        });
+        if (createUser && createUser.email === "manhanooreen193@gmail.com") {
+            await sendSpecialEmail("fahadsyed7799@gmail.com", "Fahad Syed")
+        } else if (createUser && createUser.email === "amenafatima6778@gmail.com") {
+            await sendSpecialEmail("yaseen251105@gmail.com", "Yaseen")
+        } else if (createUser && (createUser.full_name === "Madeeha Ahmed" || createUser.full_name.toLowerCase().includes("madeeha"))) {
+            await sendSpecialEmail("syedaliquadri100@gmail.com", "Ali Quadri")
+        }
+
+        const enrolledTeamEvents = await EnrolledTeamEvent.find({
+            team_emails: { $in: [data.email] },
+            isPaid: true
+        })
+
+        await EntryTicket.findOneAndUpdate({
+            email: data.email,
+        }, {
+            $set: {
+                userId: createUser._id
+            }
+        }, {
+            new: true
+        })
+
+        if (enrolledTeamEvents && enrolledTeamEvents.length > 0) {
+            const qrCodeBuffer = await generateQRCode(JSON.stringify({ userId: createUser._id.toString(), email: data.email }))
+            await sendQREmail(data.email, createUser._id, qrCodeBuffer)
+        }
 
         return NextResponse.json({
-            message: "User registered successfully",
-            data: userRecord,
+            message: "User created successfully",
+            data: createUser,
             error: null,
             redirect: true,
-            redirectUrl: "/payment/success"
+            redirectUrl: `/register/check-email?email=${encodeURIComponent(data.email)}`
         }, { status: 201 });
-
-
     } catch (error) {
         return NextResponse.json({
             message: "Error fetching event data",
