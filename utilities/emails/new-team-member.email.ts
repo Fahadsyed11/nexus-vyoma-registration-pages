@@ -1,40 +1,33 @@
 import { sendEmailWithSES } from "../aws/helper.aws";
 import EmailSchema from "@/database/schema/email.schema";
 
-export async function sendEmailToPaymentFailed(
+export async function sendEmailToNotRegisteredTeamMember(
     to: string,
-    user_name: string,
-    transaction_id: string,
-    order_id: string,
-    amount: number
+    team_details: { team_name: string; team_leader_name: string; team_leader_email: string }
 ) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || "https://nexusvyoma.islec.edu.in";
-    const formattedAmount = Number(amount || 0).toLocaleString('en-IN');
-    const checkoutUrl = `${baseUrl}/register/checkout-event`;
+    const registerUrl = `${baseUrl}/register/check-email?email=${encodeURIComponent(to)}`;
 
-    const subject = `Payment Notice: Registration Incomplete for Nexus Vyoma 2026 [Order #${order_id}]`;
+    const subject = `Team Invitation: ${team_details.team_leader_name} added you to "${team_details.team_name}" — Nexus Vyoma 2026`;
 
-    const textContent = `NEXUS VYOMA 2026 — PAYMENT NOTICE
+    const textContent = `NEXUS VYOMA 2026 — TEAM INVITATION & ACTION REQUIRED
 
-Hello ${user_name},
+Hello,
 
-We noticed that your recent payment attempt for Nexus Vyoma 2026 could not be completed.
+Great news! ${team_details.team_leader_name} has registered the team "${team_details.team_name}" for Nexus Vyoma 2026 and added your email (${to}) as a team member.
 
-TRANSACTION SUMMARY:
-• Attendee: ${user_name}
-• Order ID: ${order_id}
-• Transaction Reference: ${transaction_id}
-• Amount: ₹${formattedAmount}
-• Status: Failed / Incomplete
+TEAM REGISTRATION DETAILS:
+• Team Name: ${team_details.team_name}
+• Team Leader: ${team_details.team_leader_name} (${team_details.team_leader_email})
+• Your Registered Email: ${to}
+• Fest Dates: 10 · 11 · 12 November 2026
+• Venue: ISL Engineering College, Hyderabad
 
-IMPORTANT NOTICE ON DEBITED FUNDS:
-If money was deducted from your bank account, card, or UPI app, it will typically be refunded automatically by your bank or payment provider within 3–5 business days.
+ACTION REQUIRED:
+To confirm your spot on the team roster and generate your official fest pass, you must complete your registration on the Nexus Vyoma portal using this email address:
+${registerUrl}
 
-RETRY YOUR REGISTRATION:
-Your selected events are temporarily held. You can complete your registration by visiting:
-${checkoutUrl}
-
-Need assistance? Contact our team via the portal or reply directly to this email.
+Questions about your team? You can reach your team leader directly at ${team_details.team_leader_email}.
 
 — Team Nexus Vyoma
 ISL Engineering College, Hyderabad
@@ -54,9 +47,9 @@ Ideas • People • Culture • Beyond`;
         <!-- Main Card Container -->
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width: 540px; background-color: #0B0E17; border: 1px solid #1F2636; border-radius: 20px; overflow: hidden; box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);">
           
-          <!-- Alert Accent Stripe: Crimson to Deep Orange -->
+          <!-- Fiery Brand Gradient Accent Stripe -->
           <tr>
-            <td height="4" style="background: linear-gradient(90deg, #DC2626 0%, #EF4444 50%, #FF6A00 100%); line-height: 4px; font-size: 4px;">&nbsp;</td>
+            <td height="4" style="background: linear-gradient(90deg, #FF6A00 0%, #FF3B2E 50%, #D8182B 100%); line-height: 4px; font-size: 4px;">&nbsp;</td>
           </tr>
 
           <!-- Header: Typographic Brand Identity -->
@@ -91,66 +84,70 @@ Ideas • People • Culture • Beyond`;
           <tr>
             <td style="padding: 28px 32px 24px 32px; text-align: left;">
               
-              <!-- Status Pill Badge -->
+              <!-- Badge: Team Invitation -->
               <div style="margin-bottom: 16px;">
-                <span style="display: inline-block; padding: 4px 12px; background-color: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #F87171; text-transform: uppercase;">
-                  &#9888; PAYMENT UNSUCCESSFUL
+                <span style="display: inline-block; padding: 4px 12px; background-color: rgba(255, 106, 0, 0.12); border: 1px solid rgba(255, 106, 0, 0.35); border-radius: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #FF6A00; text-transform: uppercase;">
+                  &#9733; TEAM INVITATION &bull; ACTION REQUIRED
                 </span>
               </div>
 
               <h1 style="margin: 0 0 14px 0; font-size: 22px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.3px; line-height: 1.3;">
-                We couldn't process your payment
+                You've been added to a team!
               </h1>
               
-              <p style="margin: 0 0 12px 0; font-size: 15px; line-height: 24px; color: #D1D5DB;">
-                Hello <strong style="color: #FFFFFF;">${user_name}</strong>,
+              <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 22px; color: #D1D5DB;">
+                Hello,
               </p>
               
               <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #9CA3AF;">
-                Your recent payment transaction for <strong style="color: #FFFFFF;">Nexus Vyoma 2026</strong> could not be completed by the payment gateway. Don't worry—your selected events are temporarily held so you can complete your registration.
+                <strong style="color: #FFFFFF;">${team_details.team_leader_name}</strong> has enrolled team <strong style="color: #FF6A00;">"${team_details.team_name}"</strong> in Nexus Vyoma 2026 and listed your email (<span style="color: #FFFFFF;">${to}</span>) on the team roster.
               </p>
 
-              <!-- Transaction Summary Card -->
+              <!-- Team Information Card -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 20px 0;">
                 <tr>
-                  <td style="background-color: #030407; border: 1px solid #1F2636; border-left: 3px solid #EF4444; border-radius: 12px; padding: 18px 20px;">
-                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #EF4444; text-transform: uppercase; margin-bottom: 12px;">
-                      TRANSACTION DETAILS
+                  <td style="background-color: #030407; border: 1px solid #1F2636; border-left: 3px solid #FF6A00; border-radius: 12px; padding: 18px 20px;">
+                    <div style="font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #FF6A00; text-transform: uppercase; margin-bottom: 12px;">
+                      TEAM REGISTRATION DETAILS
                     </div>
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="font-size: 13px;">
                       <tr>
-                        <td style="padding: 4px 0; color: #9CA3AF; width: 140px;">Attendee Name:</td>
-                        <td style="padding: 4px 0; font-weight: 600; color: #FFFFFF;">${user_name}</td>
+                        <td style="padding: 4px 0; color: #9CA3AF; width: 130px;">Team Name:</td>
+                        <td style="padding: 4px 0; font-weight: 600; color: #FFFFFF;">${team_details.team_name}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #9CA3AF;">Order ID:</td>
-                        <td style="padding: 4px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: #E5E7EB;">${order_id}</td>
+                        <td style="padding: 4px 0; color: #9CA3AF;">Team Leader:</td>
+                        <td style="padding: 4px 0; font-weight: 600; color: #FFFFFF;">${team_details.team_leader_name}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #9CA3AF;">Transaction Ref:</td>
-                        <td style="padding: 4px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: #9CA3AF; font-size: 12px;">${transaction_id}</td>
+                        <td style="padding: 4px 0; color: #9CA3AF;">Leader Contact:</td>
+                        <td style="padding: 4px 0; color: #E5E7EB; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px;">${team_details.team_leader_email}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #9CA3AF;">Amount:</td>
-                        <td style="padding: 4px 0; font-weight: 700; font-size: 15px; color: #FFFFFF;">&#8377;${formattedAmount}</td>
+                        <td style="padding: 4px 0; color: #9CA3AF;">Your Email:</td>
+                        <td style="padding: 4px 0; color: #E5E7EB; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 12px;">${to}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #9CA3AF;">Status:</td>
-                        <td style="padding: 4px 0; font-weight: 600; color: #EF4444;">Failed / Incomplete</td>
+                        <td style="padding: 4px 0; color: #9CA3AF;">Fest Dates:</td>
+                        <td style="padding: 4px 0; font-weight: 600; color: #FF6A00;">10 &bull; 11 &bull; 12 NOV 2026</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; color: #9CA3AF;">Venue:</td>
+                        <td style="padding: 4px 0; color: #E5E7EB;">ISL Engineering College, Hyderabad</td>
                       </tr>
                     </table>
                   </td>
                 </tr>
               </table>
 
-              <!-- Refund Reassurance Note -->
+              <!-- Notice Card -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 24px 0;">
                 <tr>
-                  <td style="background-color: rgba(251, 176, 59, 0.08); border: 1px solid rgba(251, 176, 59, 0.25); border-radius: 10px; padding: 14px 16px;">
+                  <td style="background-color: rgba(255, 106, 0, 0.08); border: 1px solid rgba(255, 106, 0, 0.25); border-radius: 10px; padding: 14px 16px;">
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                       <tr>
-                        <td style="font-size: 12px; line-height: 18px; color: #FBB03B;">
-                          <strong>Did money leave your account?</strong> If funds were debited from your card, net banking, or UPI app, they will automatically be refunded back to your source account within <strong>3&ndash;5 business days</strong> by your bank.
+                        <td style="font-size: 12px; line-height: 18px; color: #FDBA74;">
+                          <strong>Why is registration required?</strong> To receive your official digital event pass, verify attendee entry, and confirm eligibility on the competition roster, all team members must complete individual registration.
                         </td>
                       </tr>
                     </table>
@@ -162,15 +159,15 @@ Ideas • People • Culture • Beyond`;
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 20px 0;">
                 <tr>
                   <td align="center">
-                    <a href="${checkoutUrl}" target="_blank" style="display: inline-block; background: linear-gradient(90deg, #FF6A00 0%, #FF3B2E 100%); color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 14px 28px; border-radius: 12px; box-shadow: 0 4px 20px rgba(255, 106, 0, 0.35);">
-                      RETRY PAYMENT &amp; COMPLETE REGISTRATION &rarr;
+                    <a href="${registerUrl}" target="_blank" style="display: inline-block; background: linear-gradient(90deg, #FF6A00 0%, #FF3B2E 100%); color: #FFFFFF; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none; padding: 14px 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(255, 106, 0, 0.35);">
+                      COMPLETE YOUR REGISTRATION &rarr;
                     </a>
                   </td>
                 </tr>
               </table>
 
               <p style="margin: 16px 0 0 0; font-size: 12px; line-height: 18px; color: #6B7280; text-align: center;">
-                Need assistance with your registration or payment? Reply directly to this email or reach out to the Nexus Vyoma Helpdesk.
+                Need help or have questions regarding your team? You can reach your team leader directly or contact the Nexus Vyoma Helpdesk.
               </p>
             </td>
           </tr>
@@ -210,7 +207,7 @@ Ideas • People • Culture • Beyond`;
     // Save the email details to the database
     await EmailSchema.create({
         email: to,
-        type: "payment_failed",
+        type: "team_member_not_registered",
         message_id: messageId,
         subject,
     });

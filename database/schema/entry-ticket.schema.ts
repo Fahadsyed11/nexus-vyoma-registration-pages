@@ -40,6 +40,10 @@ const entryTicketSchema = new mongoose.Schema({
     isPaid: {
         type: Boolean,
         default: false
+    },
+    isEmailSent: {
+        type: Boolean,
+        default: false
     }
 }, { timestamps: true, overwriteModels: true });
 
