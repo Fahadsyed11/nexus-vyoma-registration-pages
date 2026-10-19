@@ -5,12 +5,12 @@ import EmailSchema from "@/database/schema/email.schema"
 
 export async function sendOTPEmail(user_id: string | null | undefined, to: string, user_name: string, otp: string) {
 
-    await connectToDatabase();
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nexusvyoma.com";
-    const logoUrl = `${baseUrl}/brand/nexus-wordmark-official.png`;
+  await connectToDatabase();
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nexusvyoma.islec.edu.in";
+  const logoUrl = `${baseUrl}/brand/nexus-wordmark-official.png`;
 
-    const subject = `${otp} is your Nexus Vyoma verification code`;
-    const textContent = `NEXUS VYOMA 2026 — VERIFICATION CODE
+  const subject = `${otp} is your Nexus Vyoma verification code`;
+  const textContent = `NEXUS VYOMA 2026 — VERIFICATION CODE
 
 Hello ${user_name},
 
@@ -24,7 +24,7 @@ If you did not request this verification, please safely ignore this email.
 ISL Engineering College, Hyderabad
 10 · 11 · 12 NOV 2026`;
 
-    const htmlContent = `
+  const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -134,33 +134,33 @@ ISL Engineering College, Hyderabad
 </html>
 `;
 
-    const { error, messageId, success } = await sendEmailWithSES(to, subject, htmlContent, textContent);
-    console.log("Email sent with messageId:", messageId, "success:", success, "error:", error)
+  const { error, messageId, success } = await sendEmailWithSES(to, subject, htmlContent, textContent);
+  console.log("Email sent with messageId:", messageId, "success:", success, "error:", error)
 
-    if (!success) {
-        return {
-            success: false,
-            error: error,
-            messageId: messageId,
-        }
-    }
-
-    console.log("Email sent successfully to:", to, "with messageId:", messageId, "for user_id:", user_id, "subject:", subject)
-
-    // Save the email details to the database
-    const emailDoc: Record<string, unknown> = {
-        email: to,
-        type: "otp_verification",
-        message_id: messageId,
-        user_id: user_id || new mongoose.Types.ObjectId(),
-        subject,
-    };
-
-    await EmailSchema.create(emailDoc);
-
+  if (!success) {
     return {
-        success: true,
-        error: null,
-        messageId: messageId,
+      success: false,
+      error: error,
+      messageId: messageId,
     }
+  }
+
+  console.log("Email sent successfully to:", to, "with messageId:", messageId, "for user_id:", user_id, "subject:", subject)
+
+  // Save the email details to the database
+  const emailDoc: Record<string, unknown> = {
+    email: to,
+    type: "otp_verification",
+    message_id: messageId,
+    user_id: user_id || new mongoose.Types.ObjectId(),
+    subject,
+  };
+
+  await EmailSchema.create(emailDoc);
+
+  return {
+    success: true,
+    error: null,
+    messageId: messageId,
+  }
 }
