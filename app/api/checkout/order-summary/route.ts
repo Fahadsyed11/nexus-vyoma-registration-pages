@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import mongoose from "mongoose";
 
-import { TokenData } from "../../(enrollement)/enroll-event/route";
+import { TokenData } from "../../enrollement/enroll-event/route";
 import { verifyJWT } from "@/utilities/jwt";
 import { connectToDatabase } from "@/database/db";
 

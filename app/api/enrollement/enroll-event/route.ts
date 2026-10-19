@@ -386,8 +386,8 @@ export async function POST(request: NextRequest) {
             const team_length = teamEmails.length + 1; // +1 for the team leader
 
             if (
-                event.min_team_size >= team_length ||
-                event.max_team_size <= team_length
+                event.min_team_size > team_length ||
+                event.max_team_size < team_length
             ) {
                 return NextResponse.json({
                     message: "Team size is not valid for this event",
@@ -402,7 +402,8 @@ export async function POST(request: NextRequest) {
                 event_id: eventId,
                 $or: [
                     { team_leader_register_user_id: teamLeaderId },
-                    { team_emails: { $in: teamEmails } }
+                    { team_emails: { $in: teamEmails } },
+                    { isPaid: false }
                 ]
             });
 
