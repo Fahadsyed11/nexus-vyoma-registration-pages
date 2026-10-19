@@ -43,6 +43,17 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Minimalist Refinement of About Section: Sizing, Spacing & Text Overlap Fix
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Minimalized overall proportions to eliminate bulky/bulgy look: reduced narrative paragraph font size to sleek editorial reading scale (`text-[14px] sm:text-[17px] md:text-[18px] lg:text-[19px]`), scaled stat cards to compact padding (`p-3.5 sm:p-4`), and reduced circular highlight badge diameter from `w-16 sm:w-20` down to `w-13 sm:w-16`.
+  - Fixed text-doubling / clipping artifact on `"Nexus Vyoma"` by removing nested `bg-clip-text` layers in `renderHighlight` and `highlightClassName`, rendering clean, crisp inline brand orange (`#FF6A00`) text.
+  - Further tightened vertical rhythm and margins across headers, stat cards, highlight badges, and brand footer pillars.
+- Strictly maintained constraints: untouched Navbar, untouched other pages, zero backend/route/schema changes.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Homepage `http://localhost:3000/` returned HTTP 200 OK.
+
+
 ### 2026-10-19 — Left-Align About Section Text, Compact Spacing & Pure Inline Color Highlights
 
 **Done**
