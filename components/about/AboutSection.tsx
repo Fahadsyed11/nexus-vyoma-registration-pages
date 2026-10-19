@@ -140,86 +140,102 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* 03 — 3 Sleek, Compact Stat Cards */}
+        {/* 03 — 3 Sleek Metallic Stat Cards (Exact Reference Match) */}
         <div
           ref={cardsRef}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3.5 w-full mt-5 sm:mt-6 z-20"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 w-full mt-6 sm:mt-7 z-20"
         >
           {/* Card 1: 5,000+ Footfall */}
-          <div className="stat-card relative flex flex-col items-center justify-center p-3.5 sm:p-4 rounded-xl bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-white/20 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-0.5 group">
-            <div className="text-white/80 group-hover:scale-105 transition-transform duration-200">
+          <div className="stat-card relative flex flex-col items-center justify-center py-5 px-3.5 sm:py-6 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-white/[0.015] border border-white/20 hover:border-white/35 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_24px_rgba(0,0,0,0.65)] transition-all duration-300 hover:-translate-y-0.5 group">
+            <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-current fill-none"
+                className="w-8 h-8 sm:w-9 sm:h-9 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
-                strokeWidth="1.4"
+                strokeWidth="1.6"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                {/* Center Person */}
+                <circle cx="12" cy="7" r="3" />
+                <path d="M6.5 21v-1.5a4.5 4.5 0 0 1 9 0V21" />
+                {/* Left Person */}
+                <circle cx="5" cy="10" r="2" />
+                <path d="M1.5 21v-1a3.5 3.5 0 0 1 5-2.8" />
+                {/* Right Person */}
+                <circle cx="19" cy="10" r="2" />
+                <path d="M17.5 17.2a3.5 3.5 0 0 1 5 2.8v1" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-2xl sm:text-3xl text-[#FF3B30] tracking-tight mt-2">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-3xl sm:text-4xl text-[#FF2525] tracking-tight mt-2.5">
               5,000+
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[9px] sm:text-[10px] font-semibold tracking-[0.16em] text-zinc-400 uppercase mt-0.5">
-              ESTIMATED FOOTFALL
+            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1.5 leading-snug">
+              ESTIMATED
+              <br />
+              FOOTFALL
             </span>
           </div>
 
           {/* Card 2: 3 Days */}
-          <div className="stat-card relative flex flex-col items-center justify-center p-3.5 sm:p-4 rounded-xl bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-white/20 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-0.5 group">
-            <div className="text-white/80 group-hover:scale-105 transition-transform duration-200">
+          <div className="stat-card relative flex flex-col items-center justify-center py-5 px-3.5 sm:py-6 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-white/[0.015] border border-white/20 hover:border-white/35 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_24px_rgba(0,0,0,0.65)] transition-all duration-300 hover:-translate-y-0.5 group">
+            <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-current fill-none"
+                className="w-8 h-8 sm:w-9 sm:h-9 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
-                strokeWidth="1.4"
+                strokeWidth="1.6"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <rect width="18" height="18" x="3" y="4" rx="2" />
-                <path d="M16 2v4" />
+                <rect width="18" height="17" x="3" y="4" rx="2.5" />
                 <path d="M8 2v4" />
-                <path d="M3 10h18" />
-                <path d="M8 14h.01" />
-                <path d="M12 14h.01" />
-                <path d="M16 14h.01" />
-                <path d="M8 18h.01" />
-                <path d="M12 18h.01" />
-                <path d="M16 18h.01" />
+                <path d="M16 2v4" />
+                <path d="M3 9h18" />
+                <circle cx="7.5" cy="12.5" r="0.75" fill="currentColor" />
+                <circle cx="12" cy="12.5" r="0.75" fill="currentColor" />
+                <circle cx="16.5" cy="12.5" r="0.75" fill="currentColor" />
+                <circle cx="7.5" cy="16" r="0.75" fill="currentColor" />
+                <circle cx="12" cy="16" r="0.75" fill="currentColor" />
+                <circle cx="16.5" cy="16" r="0.75" fill="currentColor" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-2xl sm:text-3xl text-[#FF6A00] tracking-tight mt-2">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-3xl sm:text-4xl text-[#FF6A00] tracking-tight mt-2.5">
               3
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[9px] sm:text-[10px] font-semibold tracking-[0.16em] text-zinc-400 uppercase mt-0.5">
-              DAYS OF CELEBRATION
+            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1.5 leading-snug">
+              DAYS OF
+              <br />
+              CELEBRATION
             </span>
           </div>
 
           {/* Card 3: Multiple Colleges */}
-          <div className="stat-card relative flex flex-col items-center justify-center p-3.5 sm:p-4 rounded-xl bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-white/20 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.5)] transition-all duration-300 hover:-translate-y-0.5 group">
-            <div className="text-white/80 group-hover:scale-105 transition-transform duration-200">
+          <div className="stat-card relative flex flex-col items-center justify-center py-5 px-3.5 sm:py-6 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-white/[0.015] border border-white/20 hover:border-white/35 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_24px_rgba(0,0,0,0.65)] transition-all duration-300 hover:-translate-y-0.5 group">
+            <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-6 h-6 sm:w-7 sm:h-7 text-white stroke-current fill-none"
+                className="w-8 h-8 sm:w-9 sm:h-9 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
-                strokeWidth="1.4"
+                strokeWidth="1.6"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                <circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                {/* Center Person */}
+                <circle cx="12" cy="7" r="3" />
+                <path d="M6.5 21v-1.5a4.5 4.5 0 0 1 9 0V21" />
+                {/* Left Person */}
+                <circle cx="5" cy="10" r="2" />
+                <path d="M1.5 21v-1a3.5 3.5 0 0 1 5-2.8" />
+                {/* Right Person */}
+                <circle cx="19" cy="10" r="2" />
+                <path d="M17.5 17.2a3.5 3.5 0 0 1 5 2.8v1" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-xl sm:text-2xl lg:text-3xl text-[#FFB800] tracking-tight mt-2">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-2xl sm:text-3xl lg:text-4xl text-[#FFB800] tracking-tight mt-2.5">
               MULTIPLE
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[9px] sm:text-[10px] font-semibold tracking-[0.12em] text-zinc-400 uppercase mt-0.5 text-center leading-tight">
-              COLLEGES ACROSS HYDERABAD
+            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1.5 leading-snug">
+              COLLEGES
+              <br />
+              ACROSS HYDERABAD
             </span>
           </div>
         </div>

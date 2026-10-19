@@ -43,6 +43,18 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Refine 3 Stat Cards to Match Reference Image (Icons, Styling & 2-Line Labels)
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Updated the 3 stat cards to match the user's reference design:
+    - **Card 1:** 3-people group icon, `5,000+` in vivid Red (`#FF2525`), and 2-line uppercase label `ESTIMATED`<br/>`FOOTFALL`.
+    - **Card 2:** Calendar grid icon with binder rings and date grid, `3` in bright brand Orange (`#FF6A00`), and 2-line uppercase label `DAYS OF`<br/>`CELEBRATION`.
+    - **Card 3:** 3-people group icon, `MULTIPLE` in radiant Gold/Amber (`#FFB800`), and 2-line uppercase label `COLLEGES`<br/>`ACROSS HYDERABAD`.
+  - Upgraded card container styling: deep dark metallic background with top specular highlight border (`rounded-2xl`, `border-white/20`, `shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_24px_rgba(0,0,0,0.65)]`).
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
 ### 2026-10-19 — Fix About Section Bugs: Navbar Overlap Clearance & Text Blurriness Elimination
 
 **Done**
