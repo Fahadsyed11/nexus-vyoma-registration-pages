@@ -145,10 +145,10 @@ export default function AboutSection() {
       ref={containerRef}
       className="relative w-full min-h-[70vh] sm:min-h-[75vh] flex flex-col items-center justify-center pt-24 pb-16 sm:pt-32 sm:pb-24 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 bg-transparent overflow-visible select-none"
     >
-      {/* 01 — Section Header: Gradient Accent Pill + ABOUT EVENT Title */}
+      {/* 01 — Section Header: Gradient Accent Pill + ABOUT EVENT Title (01 Display Font: Gondens/Condensed) */}
       <div className="w-full flex flex-col items-center text-center mb-8 sm:mb-10 px-4 relative z-20">
         <div className="w-14 sm:w-16 h-1 rounded-full bg-gradient-to-r from-[#FF6A00] to-[#FF207D] mb-4 sm:mb-5 shadow-[0_0_12px_rgba(255,106,0,0.5)]" />
-        <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black tracking-wider text-white uppercase flex items-center justify-center gap-2.5 sm:gap-3.5">
+        <h2 className="font-[family-name:var(--font-gondens)] text-3xl sm:text-5xl lg:text-6xl font-black tracking-wider text-white uppercase flex items-center justify-center gap-2.5 sm:gap-3.5">
           <span>ABOUT</span>
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFB800] via-[#FF6A00] to-[#FF207D] drop-shadow-[0_0_24px_rgba(255,106,0,0.3)]">
             EVENT
@@ -156,7 +156,7 @@ export default function AboutSection() {
         </h2>
       </div>
 
-      {/* 02 — Editorial Manifesto Paragraph with ScrollReveal & Watermark */}
+      {/* 02 — Editorial Manifesto Paragraph (03 UI Text Font: IBM Plex Sans, 02 Subheading Font for emphasis: Helvetica) */}
       <div className="w-full max-w-4xl mx-auto flex flex-col items-center text-center relative z-10">
         <div className="relative w-full">
           {/* Faint, Transparent Cosmic Nexus Emblem Logo Watermark (Behind Text) */}
@@ -186,8 +186,8 @@ export default function AboutSection() {
               wordAnimationEnd="bottom 45%"
               scrub={1}
               containerClassName="my-0 w-full"
-              textClassName="font-[family-name:var(--font-inter)] text-[16px] xs:text-[18px] sm:text-[22px] md:text-[26px] lg:text-[28px] font-light tracking-[-0.03em] [word-spacing:-0.05em] leading-[1.4] text-[#E4E4E7] select-none text-center not-italic"
-              highlightClassName="font-medium text-transparent bg-clip-text bg-gradient-to-r from-[#FFE0B2] via-[#FFD29D] to-[#FBB03B] drop-shadow-[0_0_8px_rgba(251,176,59,0.22)]"
+              textClassName="font-[family-name:var(--font-ibm-plex)] text-[16px] xs:text-[18px] sm:text-[21px] md:text-[25px] lg:text-[27px] font-normal tracking-[-0.01em] [word-spacing:0.02em] leading-[1.65] text-[#E4E4E7] select-none text-center not-italic"
+              highlightClassName="font-[family-name:var(--font-helvetica)] font-semibold text-transparent bg-clip-text bg-gradient-to-r from-[#FFE0B2] via-[#FFD29D] to-[#FBB03B] drop-shadow-[0_0_8px_rgba(251,176,59,0.22)]"
               renderHighlight={(term, words) => {
                 const cardData = ABOUT_HOVER_CARDS[term];
                 if (!cardData) return words;
@@ -200,7 +200,7 @@ export default function AboutSection() {
         </div>
       </div>
 
-      {/* 03 — 3 Stat / Metric Cards */}
+      {/* 03 — 3 Stat / Metric Cards (Numbers: 01 Display Font Gondens; Labels: 02 Subheading Font Helvetica) */}
       <div
         ref={cardsRef}
         className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-5 md:gap-6 w-full max-w-4xl mx-auto mt-12 sm:mt-16 z-20"
@@ -221,10 +221,10 @@ export default function AboutSection() {
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
           </div>
-          <span className="font-display font-black text-3xl sm:text-4xl text-[#FF3B30] tracking-tight mt-3">
+          <span className="font-[family-name:var(--font-gondens)] font-black text-4xl sm:text-5xl text-[#FF3B30] tracking-tight mt-3">
             5,000+
           </span>
-          <span className="font-mono text-[10px] sm:text-[11px] font-bold tracking-[0.22em] text-zinc-300 uppercase mt-1.5">
+          <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-zinc-300 uppercase mt-1.5">
             ESTIMATED FOOTFALL
           </span>
         </div>
@@ -251,10 +251,10 @@ export default function AboutSection() {
               <path d="M16 18h.01" />
             </svg>
           </div>
-          <span className="font-display font-black text-3xl sm:text-4xl text-[#FF6A00] tracking-tight mt-3">
+          <span className="font-[family-name:var(--font-gondens)] font-black text-4xl sm:text-5xl text-[#FF6A00] tracking-tight mt-3">
             3
           </span>
-          <span className="font-mono text-[10px] sm:text-[11px] font-bold tracking-[0.22em] text-zinc-300 uppercase mt-1.5">
+          <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-bold tracking-[0.2em] text-zinc-300 uppercase mt-1.5">
             DAYS OF CELEBRATION
           </span>
         </div>
@@ -275,24 +275,24 @@ export default function AboutSection() {
               <path d="M16 3.13a4 4 0 0 1 0 7.75" />
             </svg>
           </div>
-          <span className="font-display font-black text-2xl sm:text-3xl lg:text-4xl text-[#FFB800] tracking-tight mt-3">
+          <span className="font-[family-name:var(--font-gondens)] font-black text-3xl sm:text-4xl lg:text-5xl text-[#FFB800] tracking-tight mt-3">
             MULTIPLE
           </span>
-          <span className="font-mono text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-zinc-300 uppercase mt-1.5 text-center leading-tight">
+          <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-bold tracking-[0.16em] text-zinc-300 uppercase mt-1.5 text-center leading-tight">
             COLLEGES ACROSS HYDERABAD
           </span>
         </div>
       </div>
 
-      {/* 04 — EVENT HIGHLIGHTS Subheading + Divider */}
+      {/* 04 — EVENT HIGHLIGHTS Subheading + Divider (02 Subheading Font: Helvetica) */}
       <div className="w-full flex flex-col items-center text-center mt-14 sm:mt-20 mb-8 sm:mb-10 z-20">
-        <h3 className="font-mono text-xs sm:text-sm font-bold tracking-[0.32em] uppercase text-zinc-200">
+        <h3 className="font-[family-name:var(--font-helvetica)] text-xs sm:text-sm font-bold tracking-[0.3em] uppercase text-zinc-200">
           EVENT HIGHLIGHTS
         </h3>
         <div className="w-12 h-1 rounded-full bg-gradient-to-r from-[#FF6A00] to-[#FF207D] mt-3 shadow-[0_0_10px_rgba(255,106,0,0.5)]" />
       </div>
 
-      {/* 05 — 5 Circular Highlight Badges */}
+      {/* 05 — 5 Circular Highlight Badges (Labels: 02 Subheading Font Helvetica) */}
       <div
         ref={highlightsRef}
         className="flex flex-wrap items-start justify-center gap-6 sm:gap-8 md:gap-10 lg:gap-12 w-full max-w-5xl mx-auto z-20 px-2"
@@ -311,7 +311,7 @@ export default function AboutSection() {
               <circle cx="12" cy="12" r="3" />
             </svg>
           </div>
-          <span className="font-mono text-[10px] sm:text-xs font-semibold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
+          <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-xs font-bold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
             TECHNICAL
             <br />
             EVENTS
@@ -328,7 +328,7 @@ export default function AboutSection() {
               <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
             </svg>
           </div>
-          <span className="font-mono text-[10px] sm:text-xs font-semibold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
+          <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-xs font-bold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
             DJ NIGHT
           </span>
         </div>
@@ -348,7 +348,7 @@ export default function AboutSection() {
               <line x1="12" x2="12" y1="19" y2="22" />
             </svg>
           </div>
-          <span className="font-mono text-[10px] sm:text-xs font-semibold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
+          <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-xs font-bold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
             QAWWALI
             <br />
             NIGHT
@@ -371,7 +371,7 @@ export default function AboutSection() {
               <circle cx="17" cy="17" r="2" />
             </svg>
           </div>
-          <span className="font-mono text-[10px] sm:text-xs font-semibold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
+          <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-xs font-bold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
             AUTO FEST
           </span>
         </div>
@@ -393,7 +393,7 @@ export default function AboutSection() {
               <path d="M17 6h4v8h-4z" />
             </svg>
           </div>
-          <span className="font-mono text-[10px] sm:text-xs font-semibold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
+          <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-xs font-bold tracking-wider text-zinc-300 uppercase text-center mt-3 leading-tight group-hover:text-white transition-colors">
             FOOD FEST
             <br />
             <span className="text-zinc-400 text-[9px] sm:text-[10px] tracking-normal font-normal">
@@ -403,9 +403,9 @@ export default function AboutSection() {
         </div>
       </div>
 
-      {/* 06 — Bottom Brand Pillars: CULTURE | TECHNOLOGY | ENTERTAINMENT */}
+      {/* 06 — Bottom Brand Pillars: CULTURE | TECHNOLOGY | ENTERTAINMENT (02 Subheading Font: Helvetica) */}
       <div className="w-full flex flex-col items-center text-center mt-14 sm:mt-20 z-20">
-        <p className="font-mono text-xs sm:text-sm font-semibold tracking-[0.26em] text-zinc-300 uppercase">
+        <p className="font-[family-name:var(--font-helvetica)] text-xs sm:text-sm font-bold tracking-[0.26em] text-zinc-300 uppercase">
           CULTURE <span className="text-[#FF6A00] mx-2 sm:mx-3">|</span> TECHNOLOGY{' '}
           <span className="text-[#FF6A00] mx-2 sm:mx-3">|</span> ENTERTAINMENT
         </p>

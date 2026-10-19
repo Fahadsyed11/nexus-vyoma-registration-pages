@@ -43,6 +43,18 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Apply Brand Typography Hierarchy (Gondens, Helvetica, IBM Plex Sans) to About Section
+
+**Done**
+- `app/globals.css`: Imported Google Font `IBM Plex Sans` and defined CSS theme tokens `--font-gondens`, `--font-helvetica`, and `--font-ibm-plex`.
+- `components/about/AboutSection.tsx`: Applied the strict 3-tier hierarchy:
+  - **01 Display Font (Gondens / Condensed Display)**: `ABOUT EVENT` main heading and high-impact stat numbers (`5,000+`, `3`, `MULTIPLE`).
+  - **02 Subheading Font (Helvetica)**: `EVENT HIGHLIGHTS` subheader, stat card labels, circular badge labels, bottom tagline (`CULTURE | TECHNOLOGY | ENTERTAINMENT`), and highlighted keyword terms.
+  - **03 UI Text Font (IBM Plex Sans)**: The narrative manifesto paragraph and interactive UI description copy.
+- `components/about/AboutHoverCard.tsx`: Styled card titles with Helvetica and descriptions/actions with IBM Plex Sans.
+- Strictly adhered to constraints: untouched Navbar, untouched all other pages, zero backend, database, route, or schema files modified.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Verified `http://localhost:3000/` returning HTTP 200 OK.
+
 ### 2026-10-19 — Redesign About Section with Stat Cards & Event Highlights
 
 **Done**
