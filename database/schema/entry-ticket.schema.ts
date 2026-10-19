@@ -17,10 +17,16 @@ const entryTicketSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
+    email: {
+        type: String,
+        required: true,
+        lowercase: true,
+        trim: true,
+        index: true,
+    },
     transactionId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Transaction",
-        required: true
     },
     entries: {
         type: [entriesSchema],
@@ -28,6 +34,10 @@ const entryTicketSchema = new mongoose.Schema({
         default: []
     },
     isBanned: {
+        type: Boolean,
+        default: false
+    },
+    isPaid: {
         type: Boolean,
         default: false
     }
