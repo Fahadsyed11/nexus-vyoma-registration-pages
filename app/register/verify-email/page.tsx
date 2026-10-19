@@ -17,7 +17,8 @@ interface VerifyEmailPageProps {
 async function VerifyEmailContent({ searchParams }: VerifyEmailPageProps) {
   const params = searchParams ? await searchParams : {};
   const email = typeof params.email === 'string' ? params.email : '';
-  return <OtpStepForm email={email} />;
+  const sent = typeof params.sent === 'string' ? params.sent : '';
+  return <OtpStepForm key={`${email}-${sent}`} email={email} />;
 }
 
 export default function VerifyEmailPage(props: VerifyEmailPageProps) {

@@ -10,6 +10,18 @@ interface OtpStepFormProps {
   email: string;
 }
 
+/**
+ * Accept only same-origin relative paths from the API (blocks open redirects
+ * like `//evil.com` or `https://...`). Bare paths such as `/check-email` are
+ * normalised under the `/register` segment.
+ */
+function toSafeRegisterPath(url: unknown, fallback: string): string {
+  if (typeof url !== 'string' || !url.startsWith('/') || url.startsWith('//')) {
+    return fallback;
+  }
+  return url.startsWith('/register') ? url : `/register${url}`;
+}
+
 export default function OtpStepForm({ email }: OtpStepFormProps) {
   const router = useRouter();
   const [otp, setOtp] = useState('');
@@ -38,7 +50,7 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/register/verify-email', {
+      const res = await fetch('/api/registration/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: code }),
@@ -48,9 +60,13 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
 
       if (res.ok) {
         setStatus('success');
-        setMessage(data?.message || 'OTP verified successfully!');
-        const redirectUrl =
-          data?.redirect_url || `/register/form?email=${encodeURIComponent(email)}`;
+        setMessage(data?.message || 'OTP verified successfully! Redirecting...');
+        try {
+          localStorage.removeItem('nv_otp_sent_time');
+        } catch {
+          // ignore localStorage error
+        }
+        const redirectUrl = toSafeRegisterPath(data?.redirect_url, '/register/enroll-event');
         setTimeout(() => {
           router.push(redirectUrl);
         }, 800);
@@ -58,7 +74,33 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
       }
 
       setStatus('error');
-      setError(data?.message || 'Invalid or expired OTP. Please try again.');
+
+      // 404: User record not found in database
+      if (res.status === 404) {
+        setError(data?.message || 'User not found. Redirecting to registration...');
+        const target = toSafeRegisterPath(data?.redirect_url, '/register');
+        setTimeout(() => {
+          router.push(`${target}?email=${encodeURIComponent(email)}`);
+        }, 1200);
+        return false;
+      }
+
+      // 400: OTP expired or invalid
+      if (res.status === 400) {
+        if (data?.redirect && data?.redirect_url) {
+          setError(data?.message || 'OTP expired. Please request a new OTP.');
+          const target = toSafeRegisterPath(data.redirect_url, '/register/check-email');
+          setTimeout(() => {
+            router.push(`${target}?email=${encodeURIComponent(email)}`);
+          }, 1200);
+          return false;
+        }
+
+        setError(data?.message || 'Invalid OTP code. Please check and try again.');
+        return false;
+      }
+
+      setError(data?.message || 'Verification failed. Please try again.');
       return false;
     } catch {
       setStatus('error');
@@ -117,7 +159,7 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
     setResending(true);
 
     try {
-      const res = await fetch('/api/register/check-email', {
+      const res = await fetch('/api/registration/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -126,6 +168,9 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
       const data = await res.json().catch(() => null);
 
       if (res.ok) {
+        setOtp('');
+        setStatus('idle');
+        setError(null);
         setMessage(data?.message || 'A new verification code has been sent to your email.');
         try {
           localStorage.setItem('nv_otp_sent_time', String(Date.now()));
@@ -179,13 +224,20 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
           <RegistrationTitleRolling title="ENTER OTP" />
 
           {/* Email badge & edit link */}
-          {email && (
+          {email ? (
             <Link
               href={`/register/check-email?email=${encodeURIComponent(email)}`}
               className="font-mono text-[11px] sm:text-xs text-zinc-400 hover:text-white transition-colors underline underline-offset-4 tracking-wide"
               title="Change email"
             >
               EDIT EMAIL
+            </Link>
+          ) : (
+            <Link
+              href="/register/check-email"
+              className="font-mono text-[11px] sm:text-xs text-[#FF6A00] hover:underline underline-offset-4 tracking-wide"
+            >
+              ENTER EMAIL &rarr;
             </Link>
           )}
         </div>

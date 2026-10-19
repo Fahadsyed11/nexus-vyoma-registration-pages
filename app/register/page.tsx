@@ -16,10 +16,9 @@ interface RegisterPageProps {
 
 async function RegisterContent({ searchParams }: RegisterPageProps) {
   const params = searchParams ? await searchParams : {};
-  const queryEmail = typeof params.email === 'string' ? params.email.trim() : undefined;
-  const verifiedEmail = queryEmail || 'attendee@nexusvyoma.com';
+  const queryEmail = typeof params.email === 'string' ? params.email.trim() : '';
 
-  return <RegistrationFormStep verifiedEmail={verifiedEmail} />;
+  return <RegistrationFormStep key={queryEmail} verifiedEmail={queryEmail} />;
 }
 
 export default function RegisterPage(props: RegisterPageProps) {

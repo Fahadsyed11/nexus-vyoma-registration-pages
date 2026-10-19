@@ -192,15 +192,13 @@ function NavbarInner({ alwaysVisible = false }: NavbarProps = {}) {
               <Link
                 key={link.label}
                 href={link.href}
-                className={`text-xs sm:text-[13px] font-display font-normal tracking-[0.08em] transition-colors duration-200 relative group ${
-                  isActive ? 'text-[#FF6A00]' : 'text-zinc-300 hover:text-white'
-                }`}
+                className={`text-xs sm:text-[13px] font-display font-normal tracking-[0.08em] transition-colors duration-200 relative group ${isActive ? 'text-[#FF6A00]' : 'text-zinc-300 hover:text-white'
+                  }`}
               >
                 <span>{link.label}</span>
                 <span
-                  className={`absolute -bottom-1 left-0 right-0 h-[1.5px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] transition-transform duration-300 origin-left ${
-                    isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-                  }`}
+                  className={`absolute -bottom-1 left-0 right-0 h-[1.5px] bg-gradient-to-r from-[#FF6A00] to-[#FF207D] transition-transform duration-300 origin-left ${isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                    }`}
                 />
               </Link>
             );
@@ -209,7 +207,7 @@ function NavbarInner({ alwaysVisible = false }: NavbarProps = {}) {
 
         {/* RIGHT: SpecularButton CTA Action */}
         <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-3 z-10 flex-shrink-0">
-          <Link href="/register" className="inline-flex">
+          <Link href="/check-email" className="inline-flex">
             <SpecularButton
               size="sm"
               radius={999}
@@ -254,14 +252,12 @@ function NavbarInner({ alwaysVisible = false }: NavbarProps = {}) {
             className="md:hidden flex flex-col justify-center items-center w-9 h-9 xs:w-8 xs:h-8 rounded-full bg-white/10 border border-white/15 text-white focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00] touch-manipulation cursor-pointer"
           >
             <span
-              className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${
-                mobileMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-0.5'
-              }`}
+              className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? 'rotate-45 translate-y-1' : '-translate-y-0.5'
+                }`}
             />
             <span
-              className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${
-                mobileMenuOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-0.5'
-              }`}
+              className={`w-3.5 h-0.5 bg-white transition-all duration-300 ${mobileMenuOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-0.5'
+                }`}
             />
           </button>
         </div>
@@ -277,39 +273,38 @@ function NavbarInner({ alwaysVisible = false }: NavbarProps = {}) {
           />
           <div
             className="md:hidden fixed inset-x-4 top-16 z-50 pointer-events-auto rounded-3xl p-6 border border-white/10 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-200 font-sans"
-          style={{
-            backgroundColor: 'rgba(10, 15, 30, 0.95)',
-            backdropFilter: 'blur(24px) saturate(180%)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
-          }}
-        >
-          <div className="flex flex-col gap-3">
-            {navLinks.map((link) => {
-              const isActive =
-                pathname === link.href ||
-                (link.href !== '/' && pathname?.startsWith(link.href));
-              return (
-                <Link
-                  key={link.label}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-2xl transition-all flex items-center justify-between font-display font-normal tracking-[0.08em] ${
-                    isActive
-                      ? 'bg-[#FF6A00]/15 text-[#FF6A00] border border-[#FF6A00]/30'
-                      : 'bg-white/[0.03] hover:bg-white/[0.08] text-sm text-zinc-300 hover:text-white'
-                  }`}
-                >
-                  <span>{link.label}</span>
-                  <span className="text-[#FF6A00] text-xs">→</span>
-                </Link>
-              );
-            })}
-            <div className="pt-3 mt-1 border-t border-white/10 flex items-center justify-between text-xs text-zinc-400 font-mono">
-              <span>ISL ENGINEERING COLLEGE</span>
-              <span className="text-[#FF6A00]">HYDERABAD</span>
+            style={{
+              backgroundColor: 'rgba(10, 15, 30, 0.95)',
+              backdropFilter: 'blur(24px) saturate(180%)',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+            }}
+          >
+            <div className="flex flex-col gap-3">
+              {navLinks.map((link) => {
+                const isActive =
+                  pathname === link.href ||
+                  (link.href !== '/' && pathname?.startsWith(link.href));
+                return (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`px-4 py-3 rounded-2xl transition-all flex items-center justify-between font-display font-normal tracking-[0.08em] ${isActive
+                        ? 'bg-[#FF6A00]/15 text-[#FF6A00] border border-[#FF6A00]/30'
+                        : 'bg-white/[0.03] hover:bg-white/[0.08] text-sm text-zinc-300 hover:text-white'
+                      }`}
+                  >
+                    <span>{link.label}</span>
+                    <span className="text-[#FF6A00] text-xs">→</span>
+                  </Link>
+                );
+              })}
+              <div className="pt-3 mt-1 border-t border-white/10 flex items-center justify-between text-xs text-zinc-400 font-mono">
+                <span>ISL ENGINEERING COLLEGE</span>
+                <span className="text-[#FF6A00]">HYDERABAD</span>
+              </div>
             </div>
           </div>
-        </div>
         </>
       )}
     </header>

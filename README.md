@@ -43,6 +43,150 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Reset OTP Verification State on Resend / New Email Session
+
+**Done**
+- `EmailStepForm.tsx`: passed `sent=${now}` timestamp query parameter on redirect to `/register/verify-email`.
+- `app/register/verify-email/page.tsx`: added `key={`${email}-${sent}`}` to `OtpStepForm` so Next.js Cache Components cleanly remounts the form and resets all state (typed digits, slot status, error banners) when a new OTP is requested.
+- `OtpStepForm.tsx`: in `handleResend`, reset `otp` digits, `status` to idle, and cleared any prior errors upon a successful resend response.
+
+**Files changed**
+- `components/registration/EmailStepForm.tsx`
+- `app/register/verify-email/page.tsx`
+- `components/registration/OtpStepForm.tsx`
+
+### 2026-10-19 — Fix Session Cookies Not Persisting After OTP Verify
+
+**Done** (approved by owner)
+- `app/api/registration/verify-email/route.ts`: replaced numeric `expires` (serialised by Next as a 1970 date → cookies dropped instantly) with `maxAge` in seconds — `nv-session` 7200s, `nv-session-temp` 6900s.
+- Fixed temp JWT lifetime typo `"690000000Ms"` (~8 days) → `"115m"`.
+
+### 2026-10-19 — Registration Funnel Polish & Enroll-Event Session Guard
+
+**Done**
+- `EmailStepForm.tsx` / `RegistrationFormStep.tsx`: removed `setState`-in-effect email syncing; pages now pass `key={email}` to remount with fresh state (fixes `react-hooks/set-state-in-effect` lint errors).
+- `OtpStepForm.tsx`: added `toSafeRegisterPath()` so API `redirect_url` values are only followed if they are same-origin paths (open-redirect guard); clears `nv_otp_sent_time` on successful verification.
+- `app/register/enroll-event/page.tsx`: server-side session guard verifies `nv-session` + `nv-session-temp` JWTs and redirects to `/register/check-email` if missing/invalid; greeting name/email now come from the signed token (removed `?email=` / dummy fallback).
+
+**Files changed**
+- `components/registration/EmailStepForm.tsx`, `components/registration/RegistrationFormStep.tsx`, `components/registration/OtpStepForm.tsx`
+- `app/register/page.tsx`, `app/register/check-email/page.tsx`, `app/register/enroll-event/page.tsx`
+
+**Follow-ups (backend, needs owner approval)**
+- `app/api/registration/verify-email/route.ts` L87/L90: `expires` is passed as a number of ms, which Next serialises as a 1970 date → cookies are discarded immediately. Use `maxAge` (seconds) instead.
+- `utilities/jwt.ts`: remove the hard-coded `JWT_SECRET` fallback; fail fast if the env var is missing.
+- Enroll page still renders dummy event lists; wire to `GET /api/enroll-event` next.
+
+### 2026-10-19 — Verify Email Frontend State Handling & Redirect to Enroll-Event
+
+**Done**
+- **OTP Verification Flow (`components/registration/OtpStepForm.tsx`)**:
+  - Connected `POST /api/registration/verify-email` response handler.
+  - **Success Handling (HTTP 200)**: Sets code slots to `'success'`, shows `"OTP verified successfully! Redirecting..."`, and redirects directly to `/register/enroll-event`.
+  - **Failure Handling**:
+    - **HTTP 404 (User Not Found)**: Displays `"User not found. Redirecting to registration..."` and navigates to `/register?email=...`.
+    - **HTTP 400 (OTP Expired)**: If `redirect` is flagged with `redirect_url`, displays `"OTP expired. Please request a new OTP."` and navigates back to `/register/check-email?email=...`.
+    - **HTTP 400 (Invalid Code)**: Sets code slots to `'error'` and shows inline feedback (`"Invalid OTP code. Please check and try again."`).
+    - **HTTP 500 & Network**: Shows graceful failure banner without breaking the slot interaction.
+  - **Email Parameter Fallback**: Added visual `"ENTER EMAIL →"` shortcut if the email query parameter is ever missing.
+- **Verification**:
+  - Validated parameter passing from `/register/check-email` to `/register/verify-email?email=...` and onward to `/register/enroll-event`.
+
+### 2026-10-19 — Implement Special Registration Alert Email (`utilities/emails/special-qr.ts`)
+
+**Done**
+- **Special Alert Implementation (`utilities/emails/special-qr.ts`)**:
+  - Implemented `sendSpecialEmail(to, user_name, registrant_name?, registrant_email?)` to handle internal organizer notifications triggered in `submit-registration/route.ts`.
+  - Applied the dark brand theme with pure typographic branding (zero external image dependencies), alert pill badge, and event log box showing timestamp, recipient, and registrant details.
+  - Wired AWS SES email dispatch (`sendEmailWithSES`) and recorded email dispatch in `EmailSchema`.
+- **Verification**:
+  - Validated parameter compatibility and clean TypeScript compilation.
+
+### 2026-10-19 — Redesign Welcome Email & Switch Email Headers to Pure Typographic Identity
+
+**Done**
+- **Welcome Email Design (`utilities/emails/welcome-qr.ts`)**:
+  - **Subject Line**: `Welcome to Nexus Vyoma 2026, ${user_name}!`.
+  - **Text Content**: Full plain-text version with event dates, venue, attendee email, and portal link.
+  - **HTML Template**:
+    - **Header**: Pure typographic brand identity (`ISL ENGINEERING COLLEGE` pill + high-impact `NEXUS VYOMA` display typography) with zero external image dependencies, eliminating broken image boxes on Gmail, Apple Mail, and localhost testing.
+    - **Registration Details Card**: Deep dark card (`#030407` with `#1F2636` border and `#FF6A00` left accent) detailing attendee name, email, fest dates (`10 · 11 · 12 NOV 2026`), and venue.
+    - **CTA Button**: High-visibility radiant orange gradient button linking to `/events`.
+    - **Footer**: Fest dates, college location, and brand motto.
+- **OTP Email Header Upgrade (`utilities/emails/otp-qr.ts`)**:
+  - Replaced external `<img>` logo tag with the identical pure typographic brand identity, ensuring 100% reliable rendering without relying on external image servers.
+- **Verification**:
+  - Validated syntax, responsive table layout, and inline CSS formatting.
+
+### 2026-10-19 — Connect `/register` Form to `/api/registration/submit-registration`
+
+**Done**
+- **Form Submission & Success Redirection (`components/registration/RegistrationFormStep.tsx`)**:
+  - Connected `/register` submission handler to `POST /api/registration/submit-registration`.
+  - On HTTP 201 Success: displays `"Registration completed successfully! Redirecting..."` and redirects to `/register/check-email?email=${encodeURIComponent(output.email)}`.
+  - On HTTP 400 Failure (User Already Registered): displays inline feedback (`"This email is already registered. Redirecting to check email..."`) and navigates to `/register/check-email?email=...`.
+  - On Validation Errors: parses Valibot issues array from `data.error` and maps errors to each form field (`full_name`, `phone_number`, `institution`, etc.) while rendering the main `serverError` banner.
+- **Check-Email URL Query Sync (`components/registration/EmailStepForm.tsx`)**:
+  - Added reactive `useEffect` to ensure `initialEmail` passed via `searchParams` on navigation immediately populates the email input field and state.
+- **Verification**:
+  - Validated build integrity and component reactivity across `/register` and `/register/check-email`.
+
+### 2026-10-19 — Display 5-Minute OTP Cooldown Error (HTTP 429) on `/register/check-email`
+
+**Done**
+- **Cooldown Error Feedback (`components/registration/EmailStepForm.tsx`)**:
+  - Configured HTTP 429 response handler to immediately display the rate limit message returned by `/api/registration/check-email` (`"OTP already sent. Please check your email or wait for 5 minutes before requesting a new OTP."`) inline in the red alert box instead of executing an unexpected redirect.
+  - Added an inline shortcut link (`"Already have the code? Verify here →"`) pointing directly to `/register/verify-email?email=...` so users who already received the code can proceed immediately.
+- **Verification**:
+  - Validated error state handling and cleared state on input edit or form resubmit.
+
+### 2026-10-19 — Redesign Nexus Vyoma OTP Verification Email Template
+
+**Done**
+- **Brand-Aligned Email Design (`utilities/emails/otp-qr.ts`)**:
+  - **Subject Line**: Direct and actionable: `${otp} is your Nexus Vyoma verification code`.
+  - **Text Content**: Added a crisp, formatted plain-text fallback including event details, OTP, recipient email, and 5-minute expiry warning.
+  - **HTML Template**:
+    - **Header**: Official transparent flaming wordmark logo (`/brand/nexus-wordmark-official.png`) with college sub-caption and top fiery brand gradient accent stripe (`#FF6A00` &rarr; `#FF3B2E` &rarr; `#D8182B`).
+    - **Body**: Deep dark card container (`#0B0E17`), high-contrast typography, and personalized greeting.
+    - **OTP Slot**: High-contrast, glowing dark container with 38px monospace bold digits, 10px tracking, and warm orange halo effect.
+    - **Footer**: Includes fest dates (`10 · 11 · 12 NOV 2026`), college location, and brand motto (*Ideas • People • Culture • Beyond*).
+- **Verification**:
+  - Validated syntax and table-based HTML email rendering across webmail client standards.
+
+### 2026-10-19 — Redirect Unregistered Email to `/register?email=...` & Prefill Email Field
+
+**Done**
+- **Direct 404 Query Param Redirect (`components/registration/EmailStepForm.tsx`)**:
+  - Configured `res.status === 404` handler to redirect directly to `/register?email=${encodeURIComponent(trimmed)}`.
+- **Query Param Ingestion & Field Prefill (`app/register/page.tsx`, `components/registration/RegistrationFormStep.tsx`)**:
+  - `app/register/page.tsx`: Ingested `searchParams.email`, removed the dummy placeholder `'attendee@nexusvyoma.com'`, and forwarded the user's actual email (or empty string) to `RegistrationFormStep`.
+  - `components/registration/RegistrationFormStep.tsx`: Bound the Email Address input directly to `formData.email`, kept in sync with the incoming `verifiedEmail` prop, and dynamically set `readOnly={Boolean(verifiedEmail)}` so prefilled emails are locked and displayed immediately.
+  - Zero external fetches, database queries, or extra logic added to the registration page.
+- **Verification**:
+  - Tested `curl -s "http://localhost:3000/register?email=newattendee%40test.com"` and verified `value="newattendee@test.com"` is prefilled in the server-rendered HTML.
+
+### 2026-10-19 — Connect `/register/check-email` to `/api/registration/check-email`
+
+**Done**
+- **Connected Frontend to Canonical Route (`components/registration/EmailStepForm.tsx`)**:
+  - Pointed the check-email form submit call to `POST /api/registration/check-email`.
+  - Added robust response handling:
+    - **HTTP 200 (Found & OTP Sent)**: Records OTP dispatched timestamp in `localStorage` and routes the user to `/register/verify-email?email=${encodeURIComponent(trimmed)}`.
+    - **HTTP 404 (Email Not Found)**: Automatically redirects to `/register?email=${encodeURIComponent(trimmed)}` (or the server-provided `redirect_url`) to continue initial registration.
+    - **HTTP 429 (Cooldown Rate Limit)**: Redirects to `/register/verify-email?email=${encodeURIComponent(trimmed)}&recent=1` informing the user that the code was recently sent.
+    - **HTTP 400 (Validation Failure)**: Surfaces specific field/body validation issues directly inline in the alert container.
+    - **HTTP 500 & Network Errors**: Gracefully displays fallback error messages.
+- **Synced Resend & Verification Endpoints (`components/registration/OtpStepForm.tsx`, `components/registration/RegistrationFormStep.tsx`, `components/registration/EventEnrollmentView.tsx`)**:
+  - Updated resend OTP trigger in `OtpStepForm.tsx` to call `/api/registration/check-email`.
+  - Updated verify OTP call in `OtpStepForm.tsx` to call `/api/registration/verify-email`.
+  - Updated registration form submit in `RegistrationFormStep.tsx` to call `/api/registration/submit-registration`.
+  - Updated event enrollment submit in `EventEnrollmentView.tsx` to call `/api/enroll-event`.
+- **Verification**:
+  - Tested `/api/registration/check-email` with invalid email format (returns HTTP 400 with validation issues).
+  - Tested `/api/registration/check-email` with unregistered email (returns HTTP 404 with `{"message":"User not found","data":null,"error":null,"redirect":true,"redirect_url":"/register"}`).
+  - Validated frontend redirects and component syntax.
+
 ### 2026-10-19 — Center Event Poster in the Middle on Mobile View
 
 **Done**

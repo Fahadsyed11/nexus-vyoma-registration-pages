@@ -42,7 +42,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
   const [formData, setFormData] = useState<FormState>({
     full_name: '',
     phone_number: '',
-    email: verifiedEmail,
+    email: verifiedEmail || '',
     institution: '',
     year_of_study: '',
     degree: '',
@@ -50,14 +50,17 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
     city: '',
   });
 
+  // Email is seeded from `verifiedEmail` in the initial state above.
+  // The parent page passes `key={verifiedEmail}` so a new query param remounts
+  // this component with fresh state (no setState-in-effect needed).
+
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [serverSuccess, setServerSuccess] = useState<string | null>(null);
 
   const handleChange = (field: keyof FormState, value: string) => {
-    // Preserve verified email lock
-    if (field === 'email') return;
+    if (field === 'email' && verifiedEmail) return;
 
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (fieldErrors[field]) {
@@ -73,7 +76,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
   const validateForm = (): { isValid: boolean; output?: RegisterUserFormOutput } => {
     const payload: RegisterUserFormInput = {
       ...formData,
-      email: verifiedEmail,
+      email: formData.email.trim() || verifiedEmail,
     };
 
     const result = v.safeParse(registerUserFormDto, payload);
@@ -109,7 +112,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
     setLoading(true);
 
     try {
-      const res = await fetch('/api/register/submit-registration', {
+      const res = await fetch('/api/registration/submit-registration', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(output),
@@ -118,14 +121,30 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
       const data = await res.json().catch(() => null);
 
       if (res.ok) {
-        setServerSuccess(data?.message || 'Registration completed successfully!');
-        const targetUrl = data?.redirectUrl || data?.redirect_url || '/payment/success';
+        setServerSuccess(data?.message || 'Registration completed successfully! Redirecting...');
+        const targetUrl =
+          data?.redirectUrl ||
+          data?.redirect_url ||
+          `/register/check-email?email=${encodeURIComponent(output.email)}`;
         setTimeout(() => {
           router.push(targetUrl);
         }, 800);
         return;
       }
 
+      // Handle user already registered case
+      if (res.status === 400 && data?.message?.toLowerCase().includes('already registered')) {
+        setServerError('This email is already registered. Redirecting to check email...');
+        const redirectUrl =
+          data?.redirectUrl ||
+          `/register/check-email?email=${encodeURIComponent(output.email)}`;
+        setTimeout(() => {
+          router.push(redirectUrl);
+        }, 1200);
+        return;
+      }
+
+      // Handle field-level validation errors from Valibot issues
       if (data?.error && Array.isArray(data.error)) {
         const serverFieldErrors: FieldErrors = {};
         for (const issue of data.error) {
@@ -139,7 +158,7 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
         }
       }
 
-      setServerError(data?.message || 'Failed to submit registration. Please check your inputs.');
+      setServerError(data?.message || 'Failed to submit registration. Please check the fields below.');
     } catch {
       setServerError('Network error occurred. Please check your connection and try again.');
     } finally {
@@ -258,12 +277,17 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
                 id="email"
                 name="email"
                 type="email"
-                value={verifiedEmail}
-                readOnly
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                readOnly={Boolean(verifiedEmail)}
                 placeholder="Email Address"
-                tabIndex={-1}
-                aria-readonly="true"
-                className="w-full bg-[#030407]/60 text-zinc-300 placeholder-zinc-500 font-sans text-sm sm:text-base px-4 py-3 sm:py-3.5 rounded-xl border border-white/[0.12] cursor-not-allowed select-none transition-all duration-200"
+                tabIndex={verifiedEmail ? -1 : 0}
+                aria-readonly={Boolean(verifiedEmail)}
+                className={`w-full font-sans text-sm sm:text-base px-4 py-3 sm:py-3.5 rounded-xl border transition-all duration-200 ${
+                  verifiedEmail
+                    ? 'bg-[#030407]/60 text-zinc-300 placeholder-zinc-500 border-white/[0.12] cursor-not-allowed select-none'
+                    : 'bg-[#030407]/90 text-white placeholder-zinc-500 border-white/[0.18] focus:border-[#FF6A00] focus:outline-none focus:ring-2 focus:ring-[#FF6A00]/50'
+                }`}
               />
               {fieldErrors.email && (
                 <p id="email-error" className="text-xs text-red-400 font-mono tracking-wide px-1">

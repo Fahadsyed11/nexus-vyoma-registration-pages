@@ -1,11 +1,36 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import Navbar from '@/components/navbar/Navbar';
 import FooterSection from '@/components/footer/FooterSection';
 import EventEnrollmentView, {
   SerializedEvent,
   SerializedEnrolledEvent,
 } from '@/components/registration/EventEnrollmentView';
+import { verifyJWT } from '@/utilities/jwt';
+
+interface SessionTokenData {
+  user?: { id?: string; name?: string; email?: string };
+}
+
+/** Read + verify both session cookies set by /api/registration/verify-email. */
+async function getVerifiedSessionUser() {
+  const cookieStore = await cookies();
+  const userToken = cookieStore.get('nv-session')?.value;
+  const tempToken = cookieStore.get('nv-session-temp')?.value;
+  if (!userToken || !tempToken) return null;
+
+  const userData = verifyJWT(userToken) as SessionTokenData | null;
+  const tempData = verifyJWT(tempToken) as SessionTokenData | null;
+  if (!userData?.user?.email || !tempData?.user?.email) return null;
+  if (userData.user.email !== tempData.user.email) return null;
+
+  return {
+    name: userData.user.name || 'Attendee',
+    email: userData.user.email,
+  };
+}
 
 export const metadata: Metadata = {
   title: 'Event Enrolment | Nexus Vyoma 2026',
@@ -13,9 +38,6 @@ export const metadata: Metadata = {
     'Enroll in individual and team events, competitions, and workshops for Nexus Vyoma 2026 at ISL Engineering College, Hyderabad.',
 };
 
-interface EnrollEventPageProps {
-  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
-}
 
 const DUMMY_AVAILABLE_EVENTS: SerializedEvent[] = [
   {
@@ -89,11 +111,15 @@ const DUMMY_AVAILABLE_EVENTS: SerializedEvent[] = [
   },
 ];
 
-async function EnrollEventContent({ searchParams }: EnrollEventPageProps) {
-  const params = searchParams ? await searchParams : {};
-  const queryEmail = typeof params.email === 'string' ? params.email.trim() : undefined;
-  const userEmail = queryEmail || 'attendee@nexusvyoma.com';
-  const userName = 'Attendee';
+async function EnrollEventContent() {
+  // Server-side session guard: unauthenticated visitors never see this page.
+  const sessionUser = await getVerifiedSessionUser();
+  if (!sessionUser) {
+    redirect('/register/check-email');
+  }
+
+  const userEmail = sessionUser.email;
+  const userName = sessionUser.name;
 
   const availableEvents = DUMMY_AVAILABLE_EVENTS;
   let individualEnrolled: SerializedEnrolledEvent[] = [];
@@ -206,7 +232,7 @@ async function EnrollEventContent({ searchParams }: EnrollEventPageProps) {
   );
 }
 
-export default function EnrollEventPage(props: EnrollEventPageProps) {
+export default function EnrollEventPage() {
   return (
     <div className="relative min-h-screen flex flex-col bg-[#000000] text-white selection:bg-[#FF6A00] selection:text-white overflow-x-hidden">
       {/* 01 — Mirror-Glass Navbar */}
@@ -224,7 +250,7 @@ export default function EnrollEventPage(props: EnrollEventPageProps) {
             </div>
           }
         >
-          <EnrollEventContent {...props} />
+          <EnrollEventContent />
         </Suspense>
       </main>
 

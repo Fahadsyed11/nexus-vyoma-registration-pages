@@ -264,7 +264,7 @@ export default function EventEnrollmentView({
     setSubmitting(true);
 
     try {
-      const res = await fetch('/api/register/enroll-event', {
+      const res = await fetch('/api/enroll-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
