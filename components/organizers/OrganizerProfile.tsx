@@ -11,6 +11,7 @@ export interface OrganizerProfileProps {
     instagram?: string;
     linkedin?: string;
   };
+  priority?: boolean;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export default function OrganizerProfile({
   size = 'md',
   description,
   socials,
+  priority = false,
   className = '',
 }: OrganizerProfileProps) {
   // Uniform sizing ensuring all organizer portraits have identical dimensions
@@ -62,6 +64,8 @@ export default function OrganizerProfile({
             src={imageUrl}
             alt={name}
             fill
+            priority={priority}
+            loading={priority ? 'eager' : undefined}
             sizes="(max-width: 768px) 120px, 150px"
             className="object-cover transition-all duration-700 ease-out group-hover:scale-105 [filter:grayscale(100%)_contrast(1.05)_brightness(0.95)] group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]"
           />

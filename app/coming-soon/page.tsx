@@ -24,7 +24,10 @@ export default function ComingSoonPage() {
       <Navbar alwaysVisible />
 
       {/* 03 — Unboxed Centered Content Section */}
-      <main className="flex-1 min-h-screen flex flex-col items-center justify-center w-full px-4 sm:px-6 z-10 text-center select-none pt-24 sm:pt-28 pb-16">
+      <main
+        suppressHydrationWarning
+        className="flex-1 min-h-screen flex flex-col items-center justify-center w-full px-4 sm:px-6 z-10 text-center select-none pt-24 sm:pt-28 pb-16"
+      >
         <div className="flex flex-col items-center justify-center w-full max-w-[560px] mx-auto my-auto space-y-6">
           {/* Subtle Orange Pulsing Pill */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#FF6A00]/30 bg-[#FF6A00]/10 backdrop-blur-md">

@@ -43,6 +43,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Fix Template GSAP Hydration Mismatch & Image LCP Warning
+
+**Done**
+- `app/contact/page.tsx`: Added `suppressHydrationWarning` to the `<main>` element to prevent React hydration mismatch caused by `app/template.tsx` GSAP page-transition animation targeting `<main>`.
+- `app/events/page.tsx`, `app/coming-soon/page.tsx`, `app/under-construction/page.tsx`: Added `suppressHydrationWarning` to their respective `<main>` elements to prevent the same mismatch on navigation.
+- `components/organizers/OrganizerProfile.tsx` & `components/organizers/OrganizersSection.tsx`: Added `priority` and `loading="eager"` support for above-the-fold patron images to resolve the Next.js Largest Contentful Paint (LCP) warning.
+- Verified: `npx tsc --noEmit` passed cleanly with 0 errors. Zero backend, database, route, or schema files touched.
+
 ### 2026-10-18 — Environment-Aware Organizers Gatekeeper in `proxy.ts`
 
 **Done**
