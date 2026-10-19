@@ -70,7 +70,7 @@ export const EVENTS_CATALOG: CatalogEvent[] = [
     participationType: 'Team',
     feeText: '₹250',
     prizePool: '₹40,000',
-    imageUrl: '/brand/flagship/rpm-gear-up.webp',
+    imageUrl: '/brand/flagship/rpm-auto-fest.jpg',
     isFlagship: true,
     statusNote: 'Official Flagship Event',
   },

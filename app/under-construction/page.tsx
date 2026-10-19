@@ -25,7 +25,10 @@ export default function UnderConstructionPage() {
       <Navbar alwaysVisible />
 
       {/* 03 — Unboxed Centered Content Section (Directly on PatternWaves canvas) */}
-      <main className="flex-1 min-h-screen flex flex-col items-center justify-center w-full px-4 z-10 text-center select-none">
+      <main
+        suppressHydrationWarning
+        className="flex-1 min-h-screen flex flex-col items-center justify-center w-full px-4 z-10 text-center select-none"
+      >
         <div className="flex flex-col items-center justify-center w-full max-w-[480px] sm:max-w-[560px] mx-auto my-auto">
           {/* Compact, minimal white-outline crane construction animation */}
           <GrayscaleCraneAnimation />

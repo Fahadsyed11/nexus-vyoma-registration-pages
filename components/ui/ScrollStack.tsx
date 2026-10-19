@@ -246,12 +246,12 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
-        touchMultiplier: 2,
+        touchMultiplier: 0.9,
         infinite: false,
         wheelMultiplier: 1,
         lerp: 0.1,
         syncTouch: true,
-        syncTouchLerp: 0.075,
+        syncTouchLerp: 0.1,
       });
 
       lenis.on('scroll', handleScroll);
@@ -276,13 +276,14 @@ export const ScrollStack: React.FC<ScrollStackProps> = ({
         duration: 1.2,
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         smoothWheel: true,
-        touchMultiplier: 2,
+        touchMultiplier: 0.9,
         infinite: false,
         wheelMultiplier: 1,
         lerp: 0.1,
         syncTouch: true,
-        syncTouchLerp: 0.075,
+        syncTouchLerp: 0.1,
       });
+
 
       lenis.on('scroll', handleScroll);
 

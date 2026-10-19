@@ -88,25 +88,25 @@ export default function AboutHoverCard({
 
         {/* Micro-Badge / Category Identifier */}
         <span className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-medium tracking-wider uppercase text-[#FBB03B] bg-[#FBB03B]/10 border border-[#FBB03B]/20">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-[family-name:var(--font-helvetica)] font-semibold tracking-wider uppercase text-[#FBB03B] bg-[#FBB03B]/10 border border-[#FBB03B]/20">
             {data.badge}
           </span>
         </span>
 
-        {/* Card Title */}
-        <span className="block font-sans text-sm font-semibold text-white tracking-normal mb-1">
+        {/* Card Title (02 Subheading Font: Helvetica) */}
+        <span className="block font-[family-name:var(--font-helvetica)] text-sm font-bold text-white tracking-normal mb-1">
           {data.title}
         </span>
 
-        {/* Description */}
-        <span className="block font-sans text-xs text-zinc-400 font-normal leading-relaxed mb-3">
+        {/* Description (03 UI Text Font: IBM Plex Sans) */}
+        <span className="block font-[family-name:var(--font-ibm-plex)] text-xs text-zinc-300 font-normal leading-relaxed mb-3">
           {data.description}
         </span>
 
-        {/* Action Link (Barba-friendly smooth destination link) */}
+        {/* Action Link (03 UI Text Font: IBM Plex Sans) */}
         <Link
           href={data.href}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-orange-200 hover:text-white transition-colors group/link"
+          className="inline-flex items-center gap-1.5 text-xs font-[family-name:var(--font-ibm-plex)] font-semibold text-orange-200 hover:text-white transition-colors group/link"
           onClick={() => setIsOpen(false)}
         >
           <span>{data.actionText}</span>

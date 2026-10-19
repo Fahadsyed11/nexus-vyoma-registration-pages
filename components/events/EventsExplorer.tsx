@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import type { CatalogEvent } from '@/lib/data/eventsCatalog';
 import EventCard from './EventCard';
@@ -24,6 +24,39 @@ export default function EventsExplorer({ events }: EventsExplorerProps) {
   const [selectedDates, setSelectedDates] = useState<string[]>([]);
   const [flagshipOnly, setFlagshipOnly] = useState<boolean>(false);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState<boolean>(false);
+
+  const filterAsideRef = useRef<HTMLElement>(null);
+  const [asideHeight, setAsideHeight] = useState<number | null>(null);
+
+  useEffect(() => {
+    const el = filterAsideRef.current;
+    if (!el) return;
+
+    const updateHeight = () => {
+      if (window.innerWidth >= 1024) {
+        const height = el.offsetHeight;
+        if (height > 0) {
+          setAsideHeight(height);
+        }
+      } else {
+        setAsideHeight(null);
+      }
+    };
+
+    updateHeight();
+
+    const ro = new ResizeObserver(() => {
+      updateHeight();
+    });
+    ro.observe(el);
+
+    window.addEventListener('resize', updateHeight);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', updateHeight);
+    };
+  }, []);
 
   // Category options come straight from the event documents.
   const CATEGORIES = useMemo(
@@ -335,7 +368,10 @@ export default function EventsExplorer({ events }: EventsExplorerProps) {
       {/* ============================================================ */}
       {/* DESKTOP-ONLY COLUMN: Stationary Filter Panel (Unchanged)     */}
       {/* ============================================================ */}
-      <aside className="hidden lg:flex lg:col-span-4 w-full flex-col gap-6 lg:sticky lg:top-24">
+      <aside
+        ref={filterAsideRef}
+        className="hidden lg:flex lg:col-span-4 w-full flex-col gap-6 lg:sticky lg:top-24"
+      >
         {/* Title & Filter Subtitle */}
         <div>
           <EventsTitleRolling />
@@ -355,7 +391,8 @@ export default function EventsExplorer({ events }: EventsExplorerProps) {
         className="lg:col-span-8 w-full flex flex-col"
       >
         <div
-          className="w-full flex flex-col gap-4 sm:gap-5 lg:overflow-y-auto lg:max-h-[620px] lg:pr-3 [scrollbar-width:thin] [scrollbar-color:#2a2d3d_transparent] focus:outline-none"
+          className="w-full flex flex-col gap-4 sm:gap-5 lg:overflow-y-auto lg:max-h-[850px] lg:pr-3 [scrollbar-width:thin] [scrollbar-color:#2a2d3d_transparent] focus:outline-none"
+          style={asideHeight ? { maxHeight: `${asideHeight}px` } : undefined}
           tabIndex={0}
         >
           {filteredEvents.length > 0 ? (

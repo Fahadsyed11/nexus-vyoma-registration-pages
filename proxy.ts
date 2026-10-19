@@ -50,7 +50,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 3. Frontend organizers pages -> Redirect to /under-construction
+  // 3. Frontend organizers pages: Allow on localhost, gatekeep to /under-construction on deploy
   const isOrganizersPage =
     pathname === '/organizers' ||
     pathname.startsWith('/organizers/') ||
@@ -62,6 +62,25 @@ export function proxy(request: NextRequest) {
     pathname.startsWith('/organisers/');
 
   if (isOrganizersPage) {
+    const host = request.headers.get('host') || '';
+    const hostname = request.nextUrl.hostname;
+    const isLocalhost =
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname.endsWith('.local') ||
+      host.startsWith('localhost:') ||
+      host.startsWith('127.0.0.1:');
+
+    if (isLocalhost) {
+      // On localhost, allow previewing the organizers page.
+      // Normalize alternate spellings to /organizers
+      if (pathname === '/organiser' || pathname === '/organizer' || pathname === '/organisers') {
+        return NextResponse.redirect(new URL('/organizers', request.url));
+      }
+      return NextResponse.next();
+    }
+
+    // On deployment, redirect to under-construction
     return NextResponse.redirect(new URL('/under-construction', request.url));
   }
 

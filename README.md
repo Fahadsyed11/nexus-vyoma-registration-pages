@@ -43,6 +43,207 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Center Event Poster in the Middle on Mobile View
+
+**Done**
+- **Mobile Poster Alignment (`components/events/EventCard.tsx`)**:
+  - Added `self-center sm:self-auto mx-auto sm:mx-0` and set `w-full max-w-[340px] sm:max-w-none` on the poster thumbnail container.
+  - Eliminated the flex-start leftward offset on mobile screens; posters now center symmetrically right in the middle of each event card with equal left/right margins.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Dev server HTTP 200 validated at `http://localhost:3000/events`.
+  - Zero git commits made per user instructions.
+
+### 2026-10-19 — Render 100% Uncropped Event Posters with Ambient Zero-Bezel Backdrop
+
+**Done**
+- **Uncropped Poster & Ambient Backdrop (`components/events/EventCard.tsx`)**:
+  - Aligned thumbnail container with the 1:1 format of the official fest posters using `aspect-square` (`w-full max-w-[280px] xs:max-w-[320px] sm:max-w-none sm:w-36 md:w-40 aspect-square sm:h-36 md:h-40`).
+  - Restored `object-contain` on the foreground poster image so that 100% of event typography, dates, sponsor badges, and graphics remain fully visible with **zero cropping**.
+  - Added an ambient color-matched background layer (`object-cover blur-xl scale-125 opacity-35`) behind the poster to ensure zero stark black pillarbox bars/bezels appear across viewports.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Dev server HTTP 200 validated at `http://localhost:3000/events`.
+  - Zero git commits made per user instructions.
+
+### 2026-10-19 — Fix Event Card Posters (Zero Black Side Bezels) & Extend Scroll Area on /events
+
+**Done**
+- **Poster Fill Fix (`components/events/EventCard.tsx`)**:
+  - Replaced `object-contain` with `object-cover object-center` on the card poster image so posters completely fill the frame edge-to-edge without dark letterboxing or black side bezels ("vessels").
+  - Optimized the mobile banner height to `h-40 xs:h-44 sm:h-32 md:h-36` for cleaner proportions on phone screens.
+- **Dynamic Scroll Area Expansion (`components/events/EventsExplorer.tsx`)**:
+  - Attached a `filterAsideRef` to the desktop `<aside>` filter panel and dynamically measured its height via `ResizeObserver`.
+  - Replaced hardcoded `lg:max-h-[620px]` with `style={{ maxHeight: asideHeight ? `${asideHeight}px` : undefined }}` and an SSR fallback of `lg:max-h-[850px]`.
+  - The right-hand cards scroll container now extends to align cleanly with the bottom of the filter sidebar (around the last filter / Clear Filters button).
+- **Verification**:
+  - `npx tsc --noEmit` passed cleanly with 0 errors.
+  - Dev server HTTP 200 validated on `http://localhost:3000/events`.
+  - Zero git commits made per user instructions.
+
+### 2026-10-19 — Update 3 Official Flagship Posters (Charcha, Jashn-E-Suroor, RPM Auto Fest)
+
+**Done**
+- **Assets (`public/brand/flagship/`)**:
+  - Ingested 3 official event posters provided in `Nexus-imgs/eve-posters/`:
+    - `charcha-the-talk.jpg` (CHARCHA - POWERED BY DE CAFE STUDIO)
+    - `jashn-e-suroor.jpg` (JASHN-E-SUROOR - QAWWALI NIGHT)
+    - `rpm-auto-fest.jpg` (RPM - AUTO FEST - CARS | DRIFT | CULTURE | COMMUNITY)
+- **Data Configuration (`lib/data/events.ts` & `lib/data/eventsCatalog.ts`)**:
+  - Updated `auto-show`: title to "RPM Auto Fest", tagline to "Cars | Drift | Culture | Community", image to `/brand/flagship/rpm-auto-fest.jpg`, aspect ratio to `1 / 1`.
+  - Updated `qawwali`: image to `/brand/flagship/jashn-e-suroor.jpg`, aspect ratio to `1 / 1`.
+  - Updated `charcha`: title to "Charcha · Powered by De Cafe Studio", tagline to "Powered by De Cafe Studio", image to `/brand/flagship/charcha-the-talk.jpg`, aspect ratio to `1 / 1`.
+  - Synced `eventsCatalog.ts` fallback catalog `imageUrl` for `rpm-auto-fest.jpg`.
+- **Pages Updated**:
+  - Homepage Flagship Events section (`FlagshipScrollDeck.tsx`) automatically reflects the updated posters and 1:1 aspect ratios via `OFFICIAL_FLAGSHIP_EVENTS`.
+  - Events Catalog page (`/events`) and dynamic event detail routes automatically serve the new posters via `getAllEventsCatalog()`.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Dev server HTTP 200 validated for `/` and `/events`.
+  - Zero git commits made per user instructions.
+
+### 2026-10-19 — Arrange Stat Cards Side-by-Side in 3-Column Grid on Mobile View
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Converted the stat cards container from stacked (`grid-cols-1 sm:grid-cols-3`) to a unified 3-column row across all screen sizes (`grid grid-cols-3 gap-2 xs:gap-2.5 sm:gap-4 lg:gap-5`).
+  - Optimized mobile proportions to fit small phone viewports (360px–400px) cleanly with zero horizontal scroll:
+    - Reduced mobile card padding to `py-3 px-1.5 xs:py-3.5 xs:px-2`.
+    - Scaled icons down to `w-5 h-5 xs:w-6 xs:h-6` on mobile.
+    - Scaled stat numbers (`text-base xs:text-xl` on mobile) and 2-line labels (`text-[7px] xs:text-[8px]`, `leading-tight`).
+    - Preserved subtle ambient red, orange, and amber card glows and hover elevations.
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
+### 2026-10-19 — Decrease Mobile Scroll Speed & Soften Touch Momentum
+
+**Done**
+- `components/ui/ScrollStack.tsx`:
+  - Resolved hypersensitive, overly fast mobile scroll: adjusted Lenis `touchMultiplier` down from `2` (200% touch speed multiplier) to `0.9` (natural, cushioned swipe speed) and tuned `syncTouchLerp` to `0.1` for both window and container scrollers.
+- `components/about/AboutSection.tsx`:
+  - Extended `ScrollReveal` parameters: increased `scrub` from `1.0` to `1.4` and extended animation span from `bottom 50%` to `bottom 25%`, ensuring word-by-word reveal progresses at a calm, readable pace during mobile swipes.
+- `components/hero/HeroNavbarTransition.tsx`:
+  - Softened mobile waypoint transition: increased `mobileTl` scrub damping from `0.8` to `1.4` and extended trigger range to `end: 'bottom 10%'`.
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
+### 2026-10-19 — Expand About Section Width, Minimalize Card Glows & Add Staggered Scroll Reveal
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Expanded section container from `max-w-4xl` to `max-w-6xl xl:max-w-7xl` with extended responsive padding (`px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20`), allowing the narrative manifesto text to stretch out towards the page corners in an expansive, comfortable editorial layout.
+  - Minimalized stat card footprint (`py-4 px-3 sm:py-5 sm:px-4`, `w-7 sm:w-8` icons, refined line heights) and added subtle, matching color ambient glows:
+    - **Card 1:** Soft Red glow (`shadow-[0_0_25px_-5px_rgba(255,37,37,0.18)]`, `hover:border-[#FF2525]/45`).
+    - **Card 2:** Soft Orange glow (`shadow-[0_0_25px_-5px_rgba(255,106,0,0.18)]`, `hover:border-[#FF6A00]/45`).
+    - **Card 3:** Soft Amber glow (`shadow-[0_0_25px_-5px_rgba(255,184,0,0.18)]`, `hover:border-[#FFB800]/45`).
+  - Added safe, staggered scroll reveal animation on stat cards using `once: true` and `clearProps: 'all'` (`opacity: 0 &rarr; 1`, `y: 22 &rarr; 0`, `scale: 0.98 &rarr; 1`, `duration: 0.55s`) so cards animate smoothly into view and permanently retain 100% natural DOM visibility.
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
+### 2026-10-19 — Fix Invisible Stat Cards & Circular Badges in About Section
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Resolved the bug where cards were invisible: removed the blocking `gsap.from(cards, { opacity: 0, scrollTrigger: { ... reverse } })` and `gsap.from(badges, { opacity: 0 })` tweens from `useGSAP` which were stamping inline `opacity: 0` onto the elements upon page load.
+  - Cards and highlight badges now remain at natural `opacity: 1` at all times, rendering immediately and reliably across all screen sizes and scroll offsets.
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
+### 2026-10-19 — Refine 3 Stat Cards to Match Reference Image (Icons, Styling & 2-Line Labels)
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Updated the 3 stat cards to match the user's reference design:
+    - **Card 1:** 3-people group icon, `5,000+` in vivid Red (`#FF2525`), and 2-line uppercase label `ESTIMATED`<br/>`FOOTFALL`.
+    - **Card 2:** Calendar grid icon with binder rings and date grid, `3` in bright brand Orange (`#FF6A00`), and 2-line uppercase label `DAYS OF`<br/>`CELEBRATION`.
+    - **Card 3:** 3-people group icon, `MULTIPLE` in radiant Gold/Amber (`#FFB800`), and 2-line uppercase label `COLLEGES`<br/>`ACROSS HYDERABAD`.
+  - Upgraded card container styling: deep dark metallic background with top specular highlight border (`rounded-2xl`, `border-white/20`, `shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_24px_rgba(0,0,0,0.65)]`).
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
+### 2026-10-19 — Fix About Section Bugs: Navbar Overlap Clearance & Text Blurriness Elimination
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Resolved fixed navbar collision with "ABOUT EVENT" title by adding generous vertical clearance (`pt-24 sm:pt-32 pb-10 sm:pb-14`) and anchor scroll offset (`scroll-mt-28`), ensuring the floating mirror-glass navbar never obscures section headings.
+  - Adjusted `ScrollReveal` configuration (`baseOpacity={0.4}`, `wordAnimationStart="top 85%"`, `wordAnimationEnd="bottom 60%"`) for high-contrast, effortless progressive readability without fading into darkness.
+- `components/ui/ScrollReveal.tsx`:
+  - Stripped all `filter: blur(...)` GSAP animations from text reveal logic to ensure 100% crisp typography during all scroll states.
+  - Removed unnecessary base rotation when `baseRotation === 0` to prevent GPU subpixel anti-aliasing distortion.
+- `components/ui/ScrollReveal.css`:
+  - Removed `will-change: opacity, filter` and `will-change: transform, opacity` which trigger low-resolution layer rasterization in WebKit and Chromium.
+  - Added `-webkit-font-smoothing: antialiased`, `-moz-osx-font-smoothing: grayscale`, and `text-rendering: optimizeLegibility`.
+- Verified: `npx tsc --noEmit` passed with 0 errors; HTTP 200 on `http://localhost:3000/`.
+
+
+### 2026-10-19 — Minimalist Refinement of About Section: Sizing, Spacing & Text Overlap Fix
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Minimalized overall proportions to eliminate bulky/bulgy look: reduced narrative paragraph font size to sleek editorial reading scale (`text-[14px] sm:text-[17px] md:text-[18px] lg:text-[19px]`), scaled stat cards to compact padding (`p-3.5 sm:p-4`), and reduced circular highlight badge diameter from `w-16 sm:w-20` down to `w-13 sm:w-16`.
+  - Fixed text-doubling / clipping artifact on `"Nexus Vyoma"` by removing nested `bg-clip-text` layers in `renderHighlight` and `highlightClassName`, rendering clean, crisp inline brand orange (`#FF6A00`) text.
+  - Further tightened vertical rhythm and margins across headers, stat cards, highlight badges, and brand footer pillars.
+- Strictly maintained constraints: untouched Navbar, untouched other pages, zero backend/route/schema changes.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Homepage `http://localhost:3000/` returned HTTP 200 OK.
+
+
+### 2026-10-19 — Left-Align About Section Text, Compact Spacing & Pure Inline Color Highlights
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Left-aligned the entire section header and editorial narrative manifesto paragraph (`items-start text-left`).
+  - Removed `AboutHoverCard` popover boxes, cursor changes, and dashed underlines, switching to clean inline gradient-colored typography (`#FFB800` &rarr; `#FF6A00` &rarr; `#FF207D`) on highlighted keywords.
+  - Significantly tightened vertical gaps across the entire section: reduced top/bottom section padding, tightened header-to-body margins, text-to-cards margins, cards-to-highlights margins, and highlight-to-tagline margins.
+- Strictly adhered to constraints: untouched Navbar, untouched other pages, zero backend, database, route, or schema files modified.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Verified `http://localhost:3000/` returning HTTP 200 OK.
+
+### 2026-10-19 — Apply Brand Typography Hierarchy (Gondens, Helvetica, IBM Plex Sans) to About Section
+
+**Done**
+- `app/globals.css`: Imported Google Font `IBM Plex Sans` and defined CSS theme tokens `--font-gondens`, `--font-helvetica`, and `--font-ibm-plex`.
+- `components/about/AboutSection.tsx`: Applied the strict 3-tier hierarchy:
+  - **01 Display Font (Gondens / Condensed Display)**: `ABOUT EVENT` main heading and high-impact stat numbers (`5,000+`, `3`, `MULTIPLE`).
+  - **02 Subheading Font (Helvetica)**: `EVENT HIGHLIGHTS` subheader, stat card labels, circular badge labels, bottom tagline (`CULTURE | TECHNOLOGY | ENTERTAINMENT`), and highlighted keyword terms.
+  - **03 UI Text Font (IBM Plex Sans)**: The narrative manifesto paragraph and interactive UI description copy.
+- `components/about/AboutHoverCard.tsx`: Styled card titles with Helvetica and descriptions/actions with IBM Plex Sans.
+- Strictly adhered to constraints: untouched Navbar, untouched all other pages, zero backend, database, route, or schema files modified.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Verified `http://localhost:3000/` returning HTTP 200 OK.
+
+### 2026-10-19 — Redesign About Section with Stat Cards & Event Highlights
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Updated title to `ABOUT EVENT` with gradient text effect and top accent pill.
+  - Implemented exact reference paragraph copy with `ScrollReveal` scrub and interactive hover card overlays (`technical`, `entertainment`, `food fest`, `talent`, `innovation`, `culture`, `community`).
+  - Added 3 metric stat cards (`5,000+ ESTIMATED FOOTFALL`, `3 DAYS OF CELEBRATION`, `MULTIPLE COLLEGES ACROSS HYDERABAD`) with frosted glass styling, custom vector icons, and scroll-stagger reveals.
+  - Added `EVENT HIGHLIGHTS` subheader and 5 circular badges with vector silhouettes: Technical Events, DJ Night, Qawwali Night, Auto Fest, and Food Fest (All 3 Days).
+  - Added bottom brand pillars `CULTURE | TECHNOLOGY | ENTERTAINMENT` with gradient divider pill.
+- Verified: `npx tsc --noEmit` passed cleanly with 0 errors. Verified `http://localhost:3000/` returning HTTP 200 OK. Zero backend, database, route, or schema files touched.
+
+### 2026-10-19 — Add Remote Image Patterns for OneDrive & Resilient Fallback
+
+**Done**
+- `next.config.ts`: Configured `images.remotePatterns` to allow `1drv.ms`, `**.1drv.ms`, `onedrive.live.com`, `**.live.com`, `**.sharepoint.com`, and `**.amazonaws.com` so cloud-hosted event images load through Next.js image optimization without runtime host rejection errors.
+- `components/events/EventCard.tsx` & `components/events/EventDetailsView.tsx`: Added client-side `hasImageError` state with `onError` fallback handling so any invalid or expired external link falls back to the branded placeholder rather than throwing unhandled runtime exceptions.
+- Verified: `npx tsc --noEmit` passed with 0 errors. Verified `http://localhost:3000/events` returning HTTP 200 OK. Zero backend, database, route, or schema files touched.
+
+### 2026-10-19 — Fix Template GSAP Hydration Mismatch & Image LCP Warning
+
+**Done**
+- `app/contact/page.tsx`: Added `suppressHydrationWarning` to the `<main>` element to prevent React hydration mismatch caused by `app/template.tsx` GSAP page-transition animation targeting `<main>`.
+- `app/events/page.tsx`, `app/coming-soon/page.tsx`, `app/under-construction/page.tsx`: Added `suppressHydrationWarning` to their respective `<main>` elements to prevent the same mismatch on navigation.
+- `components/organizers/OrganizerProfile.tsx` & `components/organizers/OrganizersSection.tsx`: Added `priority` and `loading="eager"` support for above-the-fold patron images to resolve the Next.js Largest Contentful Paint (LCP) warning.
+- Verified: `npx tsc --noEmit` passed cleanly with 0 errors. Zero backend, database, route, or schema files touched.
+
+### 2026-10-18 — Environment-Aware Organizers Gatekeeper in `proxy.ts`
+
+**Done**
+- `proxy.ts`: Updated `isOrganizersPage` gatekeeper logic to be environment-aware.
+  - On localhost/development: Allows direct access to `/organizers` so the team can preview and restructure the page locally; redirects alternate spellings (`/organiser`, `/organizer`) directly to `/organizers`.
+  - On deployment/production domains: Preserves the gatekeeper redirecting all organizer URLs to `/under-construction`.
+- Verified via NextRequest simulation and live dev server (`curl http://localhost:3000/organizers` &rarr; HTTP 200 OK; external host &rarr; HTTP 307 Redirect to `/under-construction`).
+- Strictly adhered to constraints: zero backend, database, route.ts, helper, or schema files touched.
+
 ### 2026-10-18 — Gatekeep Organizers Routes to Under-Construction in `proxy.ts`
 
 **Done**

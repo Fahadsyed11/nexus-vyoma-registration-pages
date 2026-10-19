@@ -22,7 +22,10 @@ export default function ContactPage() {
       <Navbar alwaysVisible />
 
       {/* 02 — Main Contact Section Container */}
-      <main className="flex-1 flex flex-col items-center justify-center w-full px-2.5 sm:px-4 md:px-6 pt-20 sm:pt-24 pb-12 sm:pb-16 z-10">
+      <main
+        suppressHydrationWarning
+        className="flex-1 flex flex-col items-center justify-center w-full px-2.5 sm:px-4 md:px-6 pt-20 sm:pt-24 pb-12 sm:pb-16 z-10"
+      >
         <ContactSection />
       </main>
 

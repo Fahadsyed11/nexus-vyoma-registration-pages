@@ -12,6 +12,8 @@ interface EventDetailsViewProps {
 
 export default function EventDetailsView({ event }: EventDetailsViewProps) {
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [hasImageError, setHasImageError] = useState(false);
+  const showImage = Boolean(event.imageUrl && !hasImageError);
 
   const handleGrabSeatClick = (e: React.MouseEvent) => {
     if (!event.registrationUrl) {
@@ -75,14 +77,15 @@ export default function EventDetailsView({ event }: EventDetailsViewProps) {
         {/* ---------------------------------------------------------- */}
         <div className="w-full lg:col-span-5 flex flex-col">
           {/* Event Image Box */}
-          <div className={`relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-[#10121b] border border-white/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-center ${event.imageUrl ? '' : 'aspect-[16/10]'}`}>
-            {event.imageUrl ? (
+          <div className={`relative w-full rounded-xl sm:rounded-2xl overflow-hidden bg-[#10121b] border border-white/[0.08] shadow-[0_12px_36px_rgba(0,0,0,0.65)] flex items-center justify-center ${showImage ? '' : 'aspect-[16/10]'}`}>
+            {showImage ? (
               <Image
-                src={event.imageUrl}
+                src={event.imageUrl!}
                 alt={event.title}
                 width={0}
                 height={0}
                 priority
+                onError={() => setHasImageError(true)}
                 className="block w-full h-auto"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 45vw, 550px"
               />
