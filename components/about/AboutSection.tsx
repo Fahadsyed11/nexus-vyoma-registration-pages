@@ -37,41 +37,6 @@ export default function AboutSection() {
           y: 30,
         });
       }
-
-      // 2. Stat cards subtle staggered reveal
-      if (cardsRef.current) {
-        const cards = cardsRef.current.querySelectorAll('.stat-card');
-        gsap.from(cards, {
-          scrollTrigger: {
-            trigger: cardsRef.current,
-            start: 'top 88%',
-            toggleActions: 'play none none reverse',
-          },
-          y: 18,
-          opacity: 0,
-          duration: 0.45,
-          stagger: 0.08,
-          ease: 'power2.out',
-        });
-      }
-
-      // 3. Circular highlight badges staggered entrance
-      if (highlightsRef.current) {
-        const badges = highlightsRef.current.querySelectorAll('.highlight-badge');
-        gsap.from(badges, {
-          scrollTrigger: {
-            trigger: highlightsRef.current,
-            start: 'top 88%',
-            toggleActions: 'play none none reverse',
-          },
-          scale: 0.92,
-          y: 14,
-          opacity: 0,
-          duration: 0.4,
-          stagger: 0.05,
-          ease: 'power2.out',
-        });
-      }
     },
     { scope: containerRef }
   );
@@ -82,7 +47,7 @@ export default function AboutSection() {
   return (
     <section
       id="about"
-      ref={containerRef}
+      ref={containerRef}  
       className="relative w-full flex flex-col items-center justify-center pt-24 pb-10 sm:pt-32 sm:pb-14 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 bg-transparent overflow-visible select-none scroll-mt-28"
     >
       <div className="w-full max-w-4xl mx-auto flex flex-col items-start">

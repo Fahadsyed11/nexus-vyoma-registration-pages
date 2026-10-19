@@ -43,6 +43,15 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Fix Invisible Stat Cards & Circular Badges in About Section
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Resolved the bug where cards were invisible: removed the blocking `gsap.from(cards, { opacity: 0, scrollTrigger: { ... reverse } })` and `gsap.from(badges, { opacity: 0 })` tweens from `useGSAP` which were stamping inline `opacity: 0` onto the elements upon page load.
+  - Cards and highlight badges now remain at natural `opacity: 1` at all times, rendering immediately and reliably across all screen sizes and scroll offsets.
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
 ### 2026-10-19 — Refine 3 Stat Cards to Match Reference Image (Icons, Styling & 2-Line Labels)
 
 **Done**
