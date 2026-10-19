@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { connection } from 'next/server';
 import Navbar from '@/components/navbar/Navbar';
 import FooterSection from '@/components/footer/FooterSection';
 import EventEnrollmentView, {
@@ -38,196 +39,209 @@ export const metadata: Metadata = {
     'Enroll in individual and team events, competitions, and workshops for Nexus Vyoma 2026 at ISL Engineering College, Hyderabad.',
 };
 
+// ---------------------------------------------------------------------------
+// Mappers: Mongoose doc -> Serialized shape expected by EventEnrollmentView
+// ---------------------------------------------------------------------------
 
-const DUMMY_AVAILABLE_EVENTS: SerializedEvent[] = [
-  {
-    _id: 'dummy-avail-ind-1',
-    title: 'Fastest Finger First (Typing)',
-    short_description: 'High-speed blind typing contest testing WPM speed, precision, and accuracy.',
-    venue: 'Lab 02, Block B',
-    date_time: '10 Nov 2026 • 01:00 PM',
-    entry_fee: 50,
-    participants_type: 'individual',
-    category: 'Technical',
-  },
-  {
-    _id: 'dummy-avail-ind-2',
-    title: 'Auto CAD Master Challenge',
-    short_description: '2D & 3D precision mechanical drafting and structural modeling showdown.',
-    venue: 'CADD Center, Mech Block',
-    date_time: '11 Nov 2026 • 11:00 AM',
-    entry_fee: 150,
-    participants_type: 'individual',
-    category: 'Design',
-  },
-  {
-    _id: 'dummy-avail-ind-3',
-    title: 'Beatboxing & Solo Rap Arena',
-    short_description: 'Live microphone freestyle cipher and rhythm battles.',
-    venue: 'Open Stage Arena',
-    date_time: '11 Nov 2026 • 05:00 PM',
-    entry_fee: 0,
-    participants_type: 'individual',
-    category: 'Cultural',
-  },
-  {
-    _id: 'dummy-avail-team-1',
-    title: 'Robo Wars (Heavyweight)',
-    short_description: 'Combat robotics battle in bulletproof enclosed steel pit arena.',
-    venue: 'Central Quadrangle Arena',
-    date_time: '12 Nov 2026 • 02:00 PM',
-    entry_fee: 600,
-    participants_type: 'team',
-    team_size: 4,
-    min_team_size: 2,
-    max_team_size: 4,
-    category: 'Robotics',
-  },
-  {
-    _id: 'dummy-avail-team-2',
-    title: 'Battle of the Bands',
-    short_description: 'Live musical ensemble face-off across rock, fusion, and metal genres.',
-    venue: 'Main Festival Stage',
-    date_time: '12 Nov 2026 • 06:30 PM',
-    entry_fee: 800,
-    participants_type: 'team',
-    team_size: 5,
-    min_team_size: 3,
-    max_team_size: 6,
-    category: 'Cultural',
-  },
-  {
-    _id: 'dummy-avail-team-3',
-    title: 'Project Expo & Shark Tank',
-    short_description: 'Working hardware/software startup ideas pitched to venture capitalists.',
-    venue: 'Innovation Hub',
-    date_time: '10 Nov 2026 • 10:00 AM',
-    entry_fee: 300,
-    participants_type: 'team',
-    team_size: 3,
-    min_team_size: 2,
-    max_team_size: 4,
-    category: 'Innovation',
-  },
-];
+function mapEvent(e: Record<string, unknown>): SerializedEvent {
+  return {
+    _id: String(e._id),
+    title: String(e.title ?? ''),
+    short_description: e.short_description ? String(e.short_description) : undefined,
+    long_description: e.long_description ? String(e.long_description) : undefined,
+    venue: e.venue ? String(e.venue) : undefined,
+    date_time: e.date_time ? String(e.date_time) : undefined,
+    image_url: e.image_url ? String(e.image_url) : undefined,
+    entry_fee: typeof e.entry_fee === 'number' ? e.entry_fee : undefined,
+    participants_type: (e.participants_type as 'individual' | 'team') ?? undefined,
+    team_size: typeof e.team_size === 'number' ? e.team_size : undefined,
+    min_team_size: typeof e.min_team_size === 'number' ? e.min_team_size : undefined,
+    max_team_size: typeof e.max_team_size === 'number' ? e.max_team_size : undefined,
+    category: e.category ? String(e.category) : undefined,
+  };
+}
+
+function mapEnrolledIndividual(
+  doc: Record<string, unknown>,
+  eventsMap: Map<string, SerializedEvent>,
+): SerializedEnrolledEvent {
+  const eventId = String(doc.event_id);
+  const eventDetails = eventsMap.get(eventId) ?? null;
+  return {
+    _id: String(doc._id),
+    event_id: eventId,
+    event_title: eventDetails?.title ?? 'Unknown Event',
+    participation_type: 'individual',
+    event_details: eventDetails,
+  };
+}
+
+function mapEnrolledTeam(
+  doc: Record<string, unknown>,
+  eventsMap: Map<string, SerializedEvent>,
+  leaderEmail: string,
+): SerializedEnrolledEvent {
+  const eventId = String(doc.event_id);
+  const eventDetails = eventsMap.get(eventId) ?? null;
+  const teamEmails = Array.isArray(doc.team_emails)
+    ? (doc.team_emails as string[])
+    : [];
+  return {
+    _id: String(doc._id),
+    event_id: eventId,
+    event_title: eventDetails?.title ?? 'Unknown Event',
+    participation_type: 'team',
+    team_name: doc.team_name ? String(doc.team_name) : null,
+    team_leader_email: leaderEmail,
+    team_size: typeof doc.team_length === 'number' ? doc.team_length : teamEmails.length + 1,
+    team_members: teamEmails,
+    event_details: eventDetails,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Server-side data fetcher
+// ---------------------------------------------------------------------------
+
+async function fetchEnrollmentData(cookieHeader: string) {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') ?? 'http://localhost:3000';
+
+  const [enrollRes, paidRes, eventsRes] = await Promise.all([
+    // pending reservations + available events (auth required)
+    fetch(`${baseUrl}/api/enrollement/enroll-event`, {
+      method: 'GET',
+      headers: { cookie: cookieHeader },
+      cache: 'no-store',
+    }),
+    // paid enrolled events (auth required)
+    fetch(`${baseUrl}/api/enrollement/enrolled-event`, {
+      method: 'GET',
+      headers: { cookie: cookieHeader },
+      cache: 'no-store',
+    }),
+    // all events for event_details lookup
+    fetch(`${baseUrl}/api/event`, {
+      method: 'GET',
+      cache: 'no-store',
+    }),
+  ]);
+
+  const enrollJson = await enrollRes.json().catch(() => null);
+  const paidJson   = await paidRes.json().catch(() => null);
+  const eventsJson = await eventsRes.json().catch(() => null);
+
+  return { enrollJson, enrollStatus: enrollRes.status, paidJson, eventsJson };
+}
+
+// ---------------------------------------------------------------------------
+// Main async server component
+// ---------------------------------------------------------------------------
 
 async function EnrollEventContent() {
-  // Server-side session guard: unauthenticated visitors never see this page.
+  await connection();
+  // Server-side session guard.
   const sessionUser = await getVerifiedSessionUser();
   if (!sessionUser) {
     redirect('/register/check-email');
   }
 
-  const userEmail = sessionUser.email;
-  const userName = sessionUser.name;
+  // Forward cookies so the API route can verify the session.
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map((c) => `${c.name}=${c.value}`)
+    .join('; ');
 
-  const availableEvents = DUMMY_AVAILABLE_EVENTS;
-  let individualEnrolled: SerializedEnrolledEvent[] = [];
-  let teamEnrolled: SerializedEnrolledEvent[] = [];
+  const { enrollJson, enrollStatus, paidJson, eventsJson } = await fetchEnrollmentData(cookieHeader);
 
-  // Place dummy enrolled events if user has none, to match wireframe presentation
-  if (individualEnrolled.length === 0) {
-    individualEnrolled = [
-      {
-        _id: 'dummy-ind-1',
-        event_title: 'Robo Race GP',
-        event_id: 'dummy-ind-1',
-        participation_type: 'individual',
-        event_details: {
-          _id: 'dummy-ind-1',
-          title: 'Robo Race GP',
-          short_description: 'High-speed autonomous and RC robot circuit race on asphalt track.',
-          venue: 'Mech Quadrangle Track',
-          date_time: '10 Nov 2026 • 11:30 AM',
-          entry_fee: 150,
-          participants_type: 'individual',
-        },
-      },
-      {
-        _id: 'dummy-ind-2',
-        event_title: 'Code Sprint Battle',
-        event_id: 'dummy-ind-2',
-        participation_type: 'individual',
-        event_details: {
-          _id: 'dummy-ind-2',
-          title: 'Code Sprint Battle',
-          short_description: 'Fast-paced algorithmic programming challenges with live leaderboard.',
-          venue: 'Computer Center Lab 3',
-          date_time: '11 Nov 2026 • 02:00 PM',
-          entry_fee: 100,
-          participants_type: 'individual',
-        },
-      },
-      {
-        _id: 'dummy-ind-3',
-        event_title: 'Anime Cosplay Showcase',
-        event_id: 'dummy-ind-3',
-        participation_type: 'individual',
-        event_details: {
-          _id: 'dummy-ind-3',
-          title: 'Anime Cosplay Showcase',
-          short_description: 'Costume craftsmanship, character stage walk, and performance showcase.',
-          venue: 'Main Open Auditorium',
-          date_time: '12 Nov 2026 • 04:30 PM',
-          entry_fee: 0,
-          participants_type: 'individual',
-        },
-      },
-    ];
+  // Honour redirect responses from the API (e.g. expired token).
+  if (enrollJson?.redirect && enrollJson?.redirectUrl) {
+    redirect(enrollJson.redirectUrl as string);
   }
 
-  if (teamEnrolled.length === 0) {
-    teamEnrolled = [
-      {
-        _id: 'dummy-team-1',
-        event_title: 'Nexus Web3 Hackathon',
-        event_id: 'dummy-team-1',
-        participation_type: 'team',
-        team_name: 'CyberDragons',
-        team_leader_email: userEmail,
-        team_size: 4,
-        team_members: ['sarah.k@islec.edu.in', 'rohit.m@islec.edu.in', 'zayd.a@islec.edu.in'],
-        event_details: {
-          _id: 'dummy-team-1',
-          title: 'Nexus Web3 Hackathon',
-          short_description: '36-hour sprint building decentralized applications, smart contracts, and AI agents.',
-          venue: 'Seminar Hall A',
-          date_time: '10 Nov 2026 • 09:30 AM',
-          entry_fee: 500,
-          participants_type: 'team',
-          team_size: 4,
-        },
-      },
-      {
-        _id: 'dummy-team-2',
-        event_title: 'Valorant Championship',
-        event_id: 'dummy-team-2',
-        participation_type: 'team',
-        team_name: 'Shadow Protocol',
-        team_leader_email: userEmail,
-        team_size: 5,
-        team_members: ['clutch.god@islec.edu.in', 'sage.rev@islec.edu.in', 'omen.tp@islec.edu.in', 'jett.dash@islec.edu.in'],
-        event_details: {
-          _id: 'dummy-team-2',
-          title: 'Valorant Championship',
-          short_description: '5v5 tactical shooter knockout tournament with high-refresh arena setup.',
-          venue: 'E-Sports Arena (Auditorium)',
-          date_time: '11 Nov 2026 • 03:00 PM',
-          entry_fee: 400,
-          participants_type: 'team',
-          team_size: 5,
-        },
-      },
-    ];
+  // Hard failure — send user back to the start.
+  if (enrollStatus !== 200 || !enrollJson?.data) {
+    redirect('/register/check-email');
   }
+
+  const { data } = enrollJson as {
+    data: {
+      user: { id: string; name: string; email: string };
+      availableEvents: {
+        individualEvents: Record<string, unknown>[];
+        teamEvents: Record<string, unknown>[];
+      };
+      enrollUserEvents: {
+        individualEvents: Record<string, unknown>[];
+        teamEvents: Record<string, unknown>[];
+      };
+    };
+  };
+
+  // Build a lookup map of ALL events for populating event_details on enrolled docs.
+  // Falls back to available events from the enroll route if /api/event fails.
+  const allRawEvents: Record<string, unknown>[] = Array.isArray(eventsJson?.data)
+    ? (eventsJson.data as Record<string, unknown>[])
+    : [
+        ...data.availableEvents.individualEvents,
+        ...data.availableEvents.teamEvents,
+      ];
+
+  const eventsMap = new Map<string, SerializedEvent>(
+    allRawEvents.map((e) => {
+      const mapped = mapEvent(e);
+      return [mapped._id, mapped];
+    }),
+  );
+
+  // Available events (user has NOT enrolled yet).
+  const availableEvents: SerializedEvent[] = [
+    ...data.availableEvents.individualEvents.map(mapEvent),
+    ...data.availableEvents.teamEvents.map(mapEvent),
+  ];
+
+  // --- Pending (isPaid: false, reservation active) enrolled events ---
+  const individualPending: SerializedEnrolledEvent[] =
+    data.enrollUserEvents.individualEvents.map((doc) =>
+      mapEnrolledIndividual(doc, eventsMap),
+    );
+
+  const teamPending: SerializedEnrolledEvent[] =
+    data.enrollUserEvents.teamEvents.map((doc) =>
+      mapEnrolledTeam(doc, eventsMap, data.user.email),
+    );
+
+  // --- Paid (isPaid: true) enrolled events — from /api/enrollement/enrolled-event ---
+  const paidData = (paidJson?.data as {
+    paidEvents?: {
+      individualEvents: Record<string, unknown>[];
+      teamEvents: Record<string, unknown>[];
+    };
+  } | null);
+
+  const individualPaid: SerializedEnrolledEvent[] =
+    (paidData?.paidEvents?.individualEvents ?? []).map((doc) =>
+      mapEnrolledIndividual(doc, eventsMap),
+    );
+
+  const teamPaid: SerializedEnrolledEvent[] =
+    (paidData?.paidEvents?.teamEvents ?? []).map((doc) =>
+      mapEnrolledTeam(doc, eventsMap, data.user.email),
+    );
+
+  const userName = data.user.name || sessionUser.name;
+  const userEmail = data.user.email || sessionUser.email;
 
   return (
     <EventEnrollmentView
       userName={userName}
       userEmail={userEmail}
       availableEvents={availableEvents}
-      initialIndividualEnrolled={individualEnrolled}
-      initialTeamEnrolled={teamEnrolled}
+      initialIndividualEnrolled={individualPaid}
+      initialTeamEnrolled={teamPaid}
+      initialIndividualPending={individualPending}
+      initialTeamPending={teamPending}
     />
   );
 }

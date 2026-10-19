@@ -43,6 +43,51 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Fix Subtotal ReferenceError & Next.js Blocking Prerender
+
+**Done**
+- Fixed `ReferenceError: subtotal is not defined` in `CheckoutEventView.tsx` by defining `subtotal` as the sum of `individualTotal` and `teamTotal`.
+- Resolved Next.js blocking prerender insight (`Date.now()` called during JWT verification during static generation) by adding `await connection()` from `next/server` inside `EnrollEventContent` and `CheckoutEventContent` within their `<Suspense>` boundaries.
+
+**Files changed**
+- `components/registration/CheckoutEventView.tsx`
+- `app/register/enroll-event/page.tsx`
+- `app/register/checkout-event/page.tsx`
+
+### 2026-10-19 — Fix Team Member Cap & Enrollment 404
+
+**Done**
+- `addMemberField`: now caps additions at `max_team_size - 1` (leader takes 1 slot). Button turns grey and says "Max members reached" when at the ceiling.
+- `removeMemberField`: now floors removals at `min_team_size - 1`. Remove button is disabled/grey when at the floor.
+- Added live `(min–max required)` hint next to the member count label so users know the range.
+- Front-end validation in `handleProceedToCheckout` now checks that the number of filled member emails meets `min_team_size - 1` before hitting the network.
+- **Fixed enrollment 404**: the backend route expects `{ eventId }` (one event per call), but the client was sending `{ selectedIndividualEventIds, selectedTeamEvents }`. Rewrote `handleProceedToCheckout` to loop and POST **one call per event** with the correct payload shape (`{ eventId }` for individual, `{ eventId, teamName, teamEmails }` for team).
+
+**Files changed**
+- `components/registration/EventEnrollmentView.tsx`
+
+### 2026-10-19 — Connect `register/enroll-event` to Real Backend APIs
+
+**Done**
+- Removed all dummy/placeholder data from `app/register/enroll-event/page.tsx`.
+- `EnrollEventContent` (Server Component) now calls `GET /api/enrollement/enroll-event` and `GET /api/event` in parallel (using the forwarded session cookies).
+- Added `mapEvent`, `mapEnrolledIndividual`, and `mapEnrolledTeam` helpers to convert raw Mongoose documents into the `SerializedEvent` / `SerializedEnrolledEvent` shapes that `EventEnrollmentView` expects.
+- Enrolled events show **pending-reservation only** (unpaid + active reservation), sourced from `enrollUserEvents` in the API response.
+- `event_details` on enrolled events is populated via a lookup map built from the full events list; falls back to `availableEvents` if `/api/event` fails.
+- API `redirect: true` responses are honoured with `next/navigation` `redirect()`.
+- Fixed the POST URL in `EventEnrollmentView.tsx` from `/api/enroll-event` (broken) to `/api/enrollement/enroll-event` (correct).
+- TypeScript check passes with zero errors (`npx tsc --noEmit`).
+
+**Files changed**
+- `app/register/enroll-event/page.tsx`
+- `components/registration/EventEnrollmentView.tsx`
+
+**Follow-ups / known issues in route.ts (not changed)**
+- Token cross-check gap (tempData email vs userData email not compared).
+- Raw error objects leaked in catch blocks.
+- Team size boundary bug: `>=`/`<=` should be `>`/`<`.
+- `transaction_id` leaks on team paid events (missing `.select`).
+
 ### 2026-10-19 — Reset OTP Verification State on Resend / New Email Session
 
 **Done**
