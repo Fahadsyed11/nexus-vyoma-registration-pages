@@ -129,7 +129,7 @@ export default function RegisterCTASection() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 sm:gap-4 w-full sm:w-auto pt-2">
             {/* Primary Button: Join the Experience */}
             <Link
-              href="/register"
+              href="/check-email"
               className="group relative overflow-hidden inline-flex items-center justify-between gap-5 pl-7 sm:pl-8 pr-2.5 py-2.5 sm:py-3 rounded-full bg-[#0A0A0C] text-white border border-white/20 hover:border-[#FF3B2E]/80 shadow-[0_10px_30px_rgba(0,0,0,0.6)] hover:shadow-[0_15px_40px_rgba(255,59,46,0.35)] transition-all duration-300 select-none"
             >
               {/* Radial Expanding #FF3B2E Circle Layer (Expands outward from arrow badge to cover entire pill) */}

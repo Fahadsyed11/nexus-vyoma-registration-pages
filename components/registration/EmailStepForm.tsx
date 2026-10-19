@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import RegistrationTitleRolling from './RegistrationTitleRolling';
 
@@ -13,10 +14,12 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
   const [email, setEmail] = useState(initialEmail);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showVerifyLink, setShowVerifyLink] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setShowVerifyLink(false);
 
     const trimmed = email.trim();
     if (!trimmed) {
@@ -33,7 +36,7 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
     setLoading(true);
 
     try {
-      const res = await fetch('/api/register/check-email', {
+      const res = await fetch('/api/registration/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: trimmed }),
@@ -42,7 +45,7 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
       const data = await res.json().catch(() => null);
 
       if (res.ok) {
-        // 200: OTP sent successfully
+        // 200: Email found & OTP sent successfully -> redirect to verify-email
         try {
           localStorage.setItem('nv_otp_sent_time', String(Date.now()));
         } catch {
@@ -52,14 +55,28 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
         return;
       }
 
-      if (res.status === 429) {
-        // 429: OTP was already sent within 5 minutes, proceed to verify
-        router.push(`/register/verify-email?email=${encodeURIComponent(trimmed)}&recent=1`);
+      if (res.status === 404) {
+        // 404: Email not found -> redirect to "/register" page with email query param
+        router.push(`/register?email=${encodeURIComponent(trimmed)}`);
         return;
       }
 
-      if (res.status === 404) {
-        setError(data?.message || 'Email not found in registered attendees. Please complete registration first.');
+      if (res.status === 429) {
+        // 429: 5-minute cooldown active -> show that error
+        setError(
+          data?.message ||
+          'OTP already sent. Please check your email or wait for 5 minutes before requesting a new OTP.'
+        );
+        setShowVerifyLink(true);
+        return;
+      }
+
+      if (res.status === 400) {
+        const errorDetail =
+          data?.error?.[0]?.message ||
+          data?.message ||
+          'Invalid email address provided.';
+        setError(errorDetail);
         return;
       }
 
@@ -100,6 +117,7 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
               onChange={(e) => {
                 setEmail(e.target.value);
                 if (error) setError(null);
+                if (showVerifyLink) setShowVerifyLink(false);
               }}
               placeholder="example@islec.edu.in"
               disabled={loading}
@@ -112,15 +130,25 @@ export default function EmailStepForm({ initialEmail = '' }: EmailStepFormProps)
           {/* Validation / API Error Feedback */}
           {error && (
             <div
-              className="text-xs sm:text-sm text-red-400 font-mono tracking-wide px-1 pt-1 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200"
+              className="text-xs sm:text-sm text-red-400 font-mono tracking-wide px-1 pt-1 flex flex-col gap-1.5 animate-in fade-in slide-in-from-top-1 duration-200"
               role="alert"
             >
-              <svg className="w-4 h-4 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
-              <span>{error}</span>
+              <div className="flex items-start gap-1.5">
+                <svg className="w-4 h-4 flex-shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{error}</span>
+              </div>
+              {showVerifyLink && (
+                <Link
+                  href={`/register/verify-email?email=${encodeURIComponent(email.trim())}`}
+                  className="inline-flex items-center gap-1 text-[#FF6A00] hover:text-[#FF8833] underline underline-offset-4 text-xs font-mono pl-5 transition-colors"
+                >
+                  Already have the code? Verify here &rarr;
+                </Link>
+              )}
             </div>
           )}
         </form>

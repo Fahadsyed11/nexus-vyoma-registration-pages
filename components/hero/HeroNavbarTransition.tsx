@@ -574,7 +574,7 @@ export default function HeroNavbarTransition() {
 
           {/* RIGHT: SpecularButton CTA Action */}
           <div className="flex items-center gap-1.5 xs:gap-2.5 sm:gap-3 z-10 flex-shrink-0">
-            <Link href="/register" className="inline-flex">
+            <Link href="/check-email" className="inline-flex">
               <SpecularButton
                 size="sm"
                 radius={999}

@@ -38,7 +38,7 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
     setLoading(true);
 
     try {
-      const res = await fetch('/api/register/verify-email', {
+      const res = await fetch('/api/registration/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, otp: code }),
@@ -117,7 +117,7 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
     setResending(true);
 
     try {
-      const res = await fetch('/api/register/check-email', {
+      const res = await fetch('/api/registration/check-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
