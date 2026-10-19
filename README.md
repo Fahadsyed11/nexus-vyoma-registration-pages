@@ -43,6 +43,19 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Expand About Section Width, Minimalize Card Glows & Add Staggered Scroll Reveal
+
+**Done**
+- `components/about/AboutSection.tsx`:
+  - Expanded section container from `max-w-4xl` to `max-w-6xl xl:max-w-7xl` with extended responsive padding (`px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20`), allowing the narrative manifesto text to stretch out towards the page corners in an expansive, comfortable editorial layout.
+  - Minimalized stat card footprint (`py-4 px-3 sm:py-5 sm:px-4`, `w-7 sm:w-8` icons, refined line heights) and added subtle, matching color ambient glows:
+    - **Card 1:** Soft Red glow (`shadow-[0_0_25px_-5px_rgba(255,37,37,0.18)]`, `hover:border-[#FF2525]/45`).
+    - **Card 2:** Soft Orange glow (`shadow-[0_0_25px_-5px_rgba(255,106,0,0.18)]`, `hover:border-[#FF6A00]/45`).
+    - **Card 3:** Soft Amber glow (`shadow-[0_0_25px_-5px_rgba(255,184,0,0.18)]`, `hover:border-[#FFB800]/45`).
+  - Added safe, staggered scroll reveal animation on stat cards using `once: true` and `clearProps: 'all'` (`opacity: 0 &rarr; 1`, `y: 22 &rarr; 0`, `scale: 0.98 &rarr; 1`, `duration: 0.55s`) so cards animate smoothly into view and permanently retain 100% natural DOM visibility.
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
 ### 2026-10-19 — Fix Invisible Stat Cards & Circular Badges in About Section
 
 **Done**

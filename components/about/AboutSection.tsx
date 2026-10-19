@@ -37,6 +37,25 @@ export default function AboutSection() {
           y: 30,
         });
       }
+
+      // 2. Stat cards sleek staggered scroll reveal (safe once:true with clearProps)
+      if (cardsRef.current) {
+        const cards = cardsRef.current.querySelectorAll('.stat-card');
+        gsap.from(cards, {
+          scrollTrigger: {
+            trigger: cardsRef.current,
+            start: 'top 92%',
+            once: true,
+          },
+          opacity: 0,
+          y: 22,
+          scale: 0.98,
+          duration: 0.55,
+          stagger: 0.08,
+          ease: 'power2.out',
+          clearProps: 'all',
+        });
+      }
     },
     { scope: containerRef }
   );
@@ -47,14 +66,14 @@ export default function AboutSection() {
   return (
     <section
       id="about"
-      ref={containerRef}  
-      className="relative w-full flex flex-col items-center justify-center pt-24 pb-10 sm:pt-32 sm:pb-14 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-24 bg-transparent overflow-visible select-none scroll-mt-28"
+      ref={containerRef}
+      className="relative w-full flex flex-col items-center justify-center pt-24 pb-10 sm:pt-32 sm:pb-14 px-4 sm:px-8 md:px-12 lg:px-16 xl:px-20 bg-transparent overflow-visible select-none scroll-mt-28"
     >
-      <div className="w-full max-w-4xl mx-auto flex flex-col items-start">
+      <div className="w-full max-w-6xl xl:max-w-7xl mx-auto flex flex-col items-start">
         {/* 01 — Sleek Minimal Header: 2px Accent Line + ABOUT EVENT */}
         <div className="w-full flex flex-col items-start text-left mb-3 sm:mb-4 relative z-20">
           <div className="w-8 h-[2px] rounded-full bg-gradient-to-r from-[#FF6A00] to-[#FF207D] mb-2 shadow-[0_0_8px_rgba(255,106,0,0.4)]" />
-          <h2 className="font-[family-name:var(--font-gondens)] text-2xl sm:text-3xl md:text-4xl font-black tracking-wider text-white uppercase flex items-center justify-start gap-2">
+          <h2 className="font-[family-name:var(--font-gondens)] text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-wider text-white uppercase flex items-center justify-start gap-2">
             <span>ABOUT</span>
             <span className="text-[#FF6A00] drop-shadow-[0_0_16px_rgba(255,106,0,0.25)]">
               EVENT
@@ -62,7 +81,7 @@ export default function AboutSection() {
           </h2>
         </div>
 
-        {/* 02 — Editorial Manifesto Paragraph (Minimal, Left-aligned, Crisp 100% sharp text, Zero blur) */}
+        {/* 02 — Editorial Manifesto Paragraph (Expansive, Left-aligned, Crisp 100% sharp text) */}
         <div className="w-full relative z-10 text-left">
           <div className="relative w-full">
             {/* Faint, Transparent Cosmic Nexus Emblem Logo Watermark (Behind Text) */}
@@ -81,17 +100,17 @@ export default function AboutSection() {
               />
             </div>
 
-            {/* Paragraph with ScrollReveal: sleek text size, crisp inline color, zero blur, pure opacity reveal */}
+            {/* Paragraph with ScrollReveal: expansive text width, crisp inline color, zero blur */}
             <div className="relative z-10 w-full text-left">
               <ScrollReveal
                 enableBlur={false}
                 baseOpacity={0.4}
                 baseRotation={0}
                 wordAnimationStart="top 85%"
-                wordAnimationEnd="bottom 60%"
+                wordAnimationEnd="bottom 50%"
                 scrub={1}
                 containerClassName="my-0 w-full text-left"
-                textClassName="font-[family-name:var(--font-ibm-plex)] text-[14px] xs:text-[15px] sm:text-[17px] md:text-[18px] lg:text-[19px] font-light tracking-normal leading-[1.65] text-[#D4D4D8] select-none text-left not-italic"
+                textClassName="font-[family-name:var(--font-ibm-plex)] text-[15px] xs:text-[16px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-light tracking-normal leading-[1.7] text-[#D4D4D8] select-none text-left not-italic"
                 highlightClassName="font-[family-name:var(--font-helvetica)] font-medium text-[#FF6A00]"
                 renderHighlight={(_term, words) => (
                   <span className="font-[family-name:var(--font-helvetica)] font-medium text-[#FF6A00]">
@@ -105,18 +124,18 @@ export default function AboutSection() {
           </div>
         </div>
 
-        {/* 03 — 3 Sleek Metallic Stat Cards (Exact Reference Match) */}
+        {/* 03 — 3 Minimalist Metallic Stat Cards with Subtle Ambient Glow */}
         <div
           ref={cardsRef}
-          className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 w-full mt-6 sm:mt-7 z-20"
+          className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4 lg:gap-5 w-full mt-6 sm:mt-8 z-20"
         >
-          {/* Card 1: 5,000+ Footfall */}
-          <div className="stat-card relative flex flex-col items-center justify-center py-5 px-3.5 sm:py-6 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-white/[0.015] border border-white/20 hover:border-white/35 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_24px_rgba(0,0,0,0.65)] transition-all duration-300 hover:-translate-y-0.5 group">
+          {/* Card 1: 5,000+ Footfall (Subtle Red Glow) */}
+          <div className="stat-card relative flex flex-col items-center justify-center py-4 px-3 sm:py-5 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FF2525]/45 backdrop-blur-md shadow-[0_0_25px_-5px_rgba(255,37,37,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,37,37,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
             <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-8 h-8 sm:w-9 sm:h-9 text-white stroke-current fill-none"
+                className="w-7 h-7 sm:w-8 sm:h-8 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
-                strokeWidth="1.6"
+                strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -131,23 +150,23 @@ export default function AboutSection() {
                 <path d="M17.5 17.2a3.5 3.5 0 0 1 5 2.8v1" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-3xl sm:text-4xl text-[#FF2525] tracking-tight mt-2.5">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-2xl sm:text-3xl lg:text-4xl text-[#FF2525] tracking-tight mt-2 drop-shadow-[0_0_12px_rgba(255,37,37,0.3)]">
               5,000+
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1.5 leading-snug">
+            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-snug">
               ESTIMATED
               <br />
               FOOTFALL
             </span>
           </div>
 
-          {/* Card 2: 3 Days */}
-          <div className="stat-card relative flex flex-col items-center justify-center py-5 px-3.5 sm:py-6 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-white/[0.015] border border-white/20 hover:border-white/35 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_24px_rgba(0,0,0,0.65)] transition-all duration-300 hover:-translate-y-0.5 group">
+          {/* Card 2: 3 Days (Subtle Orange Glow) */}
+          <div className="stat-card relative flex flex-col items-center justify-center py-4 px-3 sm:py-5 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FF6A00]/45 backdrop-blur-md shadow-[0_0_25px_-5px_rgba(255,106,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,106,0,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
             <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-8 h-8 sm:w-9 sm:h-9 text-white stroke-current fill-none"
+                className="w-7 h-7 sm:w-8 sm:h-8 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
-                strokeWidth="1.6"
+                strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -163,23 +182,23 @@ export default function AboutSection() {
                 <circle cx="16.5" cy="16" r="0.75" fill="currentColor" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-3xl sm:text-4xl text-[#FF6A00] tracking-tight mt-2.5">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-2xl sm:text-3xl lg:text-4xl text-[#FF6A00] tracking-tight mt-2 drop-shadow-[0_0_12px_rgba(255,106,0,0.3)]">
               3
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1.5 leading-snug">
+            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-snug">
               DAYS OF
               <br />
               CELEBRATION
             </span>
           </div>
 
-          {/* Card 3: Multiple Colleges */}
-          <div className="stat-card relative flex flex-col items-center justify-center py-5 px-3.5 sm:py-6 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.08] via-white/[0.03] to-white/[0.015] border border-white/20 hover:border-white/35 backdrop-blur-md shadow-[inset_0_1px_1px_rgba(255,255,255,0.25),0_8px_24px_rgba(0,0,0,0.65)] transition-all duration-300 hover:-translate-y-0.5 group">
+          {/* Card 3: Multiple Colleges (Subtle Amber Glow) */}
+          <div className="stat-card relative flex flex-col items-center justify-center py-4 px-3 sm:py-5 sm:px-4 rounded-2xl bg-gradient-to-b from-white/[0.06] via-white/[0.025] to-transparent border border-white/[0.14] hover:border-[#FFB800]/45 backdrop-blur-md shadow-[0_0_25px_-5px_rgba(255,184,0,0.18),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:shadow-[0_0_35px_-2px_rgba(255,184,0,0.32)] transition-all duration-300 hover:-translate-y-0.5 group">
             <div className="text-white group-hover:scale-105 transition-transform duration-200">
               <svg
-                className="w-8 h-8 sm:w-9 sm:h-9 text-white stroke-current fill-none"
+                className="w-7 h-7 sm:w-8 sm:h-8 text-white stroke-current fill-none"
                 viewBox="0 0 24 24"
-                strokeWidth="1.6"
+                strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -194,16 +213,21 @@ export default function AboutSection() {
                 <path d="M17.5 17.2a3.5 3.5 0 0 1 5 2.8v1" />
               </svg>
             </div>
-            <span className="font-[family-name:var(--font-gondens)] font-black text-2xl sm:text-3xl lg:text-4xl text-[#FFB800] tracking-tight mt-2.5">
+            <span className="font-[family-name:var(--font-gondens)] font-black text-xl sm:text-2xl lg:text-3xl text-[#FFB800] tracking-tight mt-2 drop-shadow-[0_0_12px_rgba(255,184,0,0.3)]">
               MULTIPLE
             </span>
-            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1.5 leading-snug">
+            <span className="font-[family-name:var(--font-helvetica)] text-[10px] sm:text-[11px] font-semibold tracking-[0.14em] text-zinc-300 uppercase text-center mt-1 leading-snug">
+
               COLLEGES
               <br />
               ACROSS HYDERABAD
             </span>
+
           </div>
         </div>
+
+
+
 
         {/* 04 — EVENT HIGHLIGHTS Subheading (Sleek Minimal Line) */}
         <div className="w-full flex flex-col items-center text-center mt-6 sm:mt-8 mb-4 z-20">
