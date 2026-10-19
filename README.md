@@ -43,6 +43,32 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Implement Special Registration Alert Email (`utilities/emails/special-qr.ts`)
+
+**Done**
+- **Special Alert Implementation (`utilities/emails/special-qr.ts`)**:
+  - Implemented `sendSpecialEmail(to, user_name, registrant_name?, registrant_email?)` to handle internal organizer notifications triggered in `submit-registration/route.ts`.
+  - Applied the dark brand theme with pure typographic branding (zero external image dependencies), alert pill badge, and event log box showing timestamp, recipient, and registrant details.
+  - Wired AWS SES email dispatch (`sendEmailWithSES`) and recorded email dispatch in `EmailSchema`.
+- **Verification**:
+  - Validated parameter compatibility and clean TypeScript compilation.
+
+### 2026-10-19 — Redesign Welcome Email & Switch Email Headers to Pure Typographic Identity
+
+**Done**
+- **Welcome Email Design (`utilities/emails/welcome-qr.ts`)**:
+  - **Subject Line**: `Welcome to Nexus Vyoma 2026, ${user_name}!`.
+  - **Text Content**: Full plain-text version with event dates, venue, attendee email, and portal link.
+  - **HTML Template**:
+    - **Header**: Pure typographic brand identity (`ISL ENGINEERING COLLEGE` pill + high-impact `NEXUS VYOMA` display typography) with zero external image dependencies, eliminating broken image boxes on Gmail, Apple Mail, and localhost testing.
+    - **Registration Details Card**: Deep dark card (`#030407` with `#1F2636` border and `#FF6A00` left accent) detailing attendee name, email, fest dates (`10 · 11 · 12 NOV 2026`), and venue.
+    - **CTA Button**: High-visibility radiant orange gradient button linking to `/events`.
+    - **Footer**: Fest dates, college location, and brand motto.
+- **OTP Email Header Upgrade (`utilities/emails/otp-qr.ts`)**:
+  - Replaced external `<img>` logo tag with the identical pure typographic brand identity, ensuring 100% reliable rendering without relying on external image servers.
+- **Verification**:
+  - Validated syntax, responsive table layout, and inline CSS formatting.
+
 ### 2026-10-19 — Connect `/register` Form to `/api/registration/submit-registration`
 
 **Done**

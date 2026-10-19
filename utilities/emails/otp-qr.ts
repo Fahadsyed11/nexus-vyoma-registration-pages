@@ -44,15 +44,24 @@ ISL Engineering College, Hyderabad
             <td height="4" style="background: linear-gradient(90deg, #FF6A00 0%, #FF3B2E 50%, #D8182B 100%); line-height: 4px; font-size: 4px;">&nbsp;</td>
           </tr>
 
-          <!-- Header / Brand Logo -->
+          <!-- Header: Pure Typographic Brand Identity (Zero external image dependencies) -->
           <tr>
             <td align="center" style="padding: 36px 32px 24px 32px;">
-              <a href="${baseUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
-                <img src="${logoUrl}" alt="NEXUS VYOMA" width="210" style="display: block; width: 210px; max-width: 100%; height: auto; border: 0; margin: 0 auto;" />
-              </a>
-              <div style="font-size: 11px; font-weight: 600; letter-spacing: 3px; color: #FF6A00; text-transform: uppercase; margin-top: 12px;">
-                ISL Engineering College, Hyderabad
-              </div>
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" style="margin: 0 auto;">
+                <tr>
+                  <td align="center">
+                    <div style="display: inline-block; padding: 5px 14px; background-color: rgba(255, 106, 0, 0.12); border: 1px solid rgba(255, 106, 0, 0.35); border-radius: 999px; margin-bottom: 12px;">
+                      <span style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 2.5px; color: #FF6A00; text-transform: uppercase;">ISL ENGINEERING COLLEGE</span>
+                    </div>
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 28px; font-weight: 900; letter-spacing: 4px; color: #FFFFFF; text-transform: uppercase; line-height: 1.1;">
+                      NEXUS <span style="color: #FF6A00;">VYOMA</span>
+                    </div>
+                    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 3px; color: #9CA3AF; text-transform: uppercase; margin-top: 6px;">
+                      A THREE-DAY INTER-COLLEGE FEST
+                    </div>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
 
