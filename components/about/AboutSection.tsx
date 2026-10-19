@@ -107,8 +107,8 @@ export default function AboutSection() {
                 baseOpacity={0.4}
                 baseRotation={0}
                 wordAnimationStart="top 85%"
-                wordAnimationEnd="bottom 50%"
-                scrub={1}
+                wordAnimationEnd="bottom 25%"
+                scrub={1.4}
                 containerClassName="my-0 w-full text-left"
                 textClassName="font-[family-name:var(--font-ibm-plex)] text-[15px] xs:text-[16px] sm:text-[18px] md:text-[20px] lg:text-[22px] font-light tracking-normal leading-[1.7] text-[#D4D4D8] select-none text-left not-italic"
                 highlightClassName="font-[family-name:var(--font-helvetica)] font-medium text-[#FF6A00]"

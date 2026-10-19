@@ -43,6 +43,18 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-19 — Decrease Mobile Scroll Speed & Soften Touch Momentum
+
+**Done**
+- `components/ui/ScrollStack.tsx`:
+  - Resolved hypersensitive, overly fast mobile scroll: adjusted Lenis `touchMultiplier` down from `2` (200% touch speed multiplier) to `0.9` (natural, cushioned swipe speed) and tuned `syncTouchLerp` to `0.1` for both window and container scrollers.
+- `components/about/AboutSection.tsx`:
+  - Extended `ScrollReveal` parameters: increased `scrub` from `1.0` to `1.4` and extended animation span from `bottom 50%` to `bottom 25%`, ensuring word-by-word reveal progresses at a calm, readable pace during mobile swipes.
+- `components/hero/HeroNavbarTransition.tsx`:
+  - Softened mobile waypoint transition: increased `mobileTl` scrub damping from `0.8` to `1.4` and extended trigger range to `end: 'bottom 10%'`.
+- Verified: `npx tsc --noEmit` passed with 0 errors; dev server active at `http://localhost:3000/`.
+
+
 ### 2026-10-19 — Expand About Section Width, Minimalize Card Glows & Add Staggered Scroll Reveal
 
 **Done**

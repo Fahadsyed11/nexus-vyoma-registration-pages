@@ -350,8 +350,8 @@ export default function HeroNavbarTransition() {
             scrollTrigger: {
               trigger: heroContainerRef.current,
               start: 'top top',
-              end: 'bottom 25%',
-              scrub: 0.8,
+              end: 'bottom 10%',
+              scrub: 1.4,
               invalidateOnRefresh: true,
             },
           });
