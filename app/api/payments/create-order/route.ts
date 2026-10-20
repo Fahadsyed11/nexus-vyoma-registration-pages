@@ -104,6 +104,9 @@ export async function POST() {
 
         const entryTicketAmountNum = parseInt(entryTicketAmount || "299");
 
+        userEntryTicket.orderId = orderId;
+        await userEntryTicket.save();
+
         const cashfreeRequest = {
             order_amount: entryTicketAmountNum,
             order_currency: "INR",

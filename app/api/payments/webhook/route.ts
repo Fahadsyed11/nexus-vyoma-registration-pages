@@ -14,6 +14,8 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
 
+        console.log("Received Cashfree Webhook:", body);
+
         const orderId = body.data?.order?.order_id;
         const customerId = body.data?.customer_details?.customer_id;
         const customerEmail = body.data?.customer_details?.customer_email;
@@ -22,205 +24,27 @@ export async function POST(request: NextRequest) {
         const paymentAmount = body.data?.payment?.payment_amount;
         const orderAmount = body.data?.order?.order_amount;
 
-        if (!orderId || !customerId || !customerEmail) {
-            return NextResponse.json(
-                { message: "Missing required webhook data" },
-                { status: 400 }
-            );
-        }
+        if (orderId && orderId.startsWith("NVET_")) {
+            const entryTicket = await EntryTicket.findOne({ orderId: orderId })
 
-        const transaction = await Transaction.findOne({
-            orderId,
-            userId: customerId,
-            totalAmount: orderAmount,
-        });
-
-        if (!transaction) {
-            await sendEmailToPaymentFailed(
-                customerEmail,
-                customerName || "",
-                "",
-                orderId,
-                paymentAmount
-            );
-
-            return NextResponse.json({
-                message: "Transaction not found",
-            });
-        }
-
-        if (paymentStatus === "PENDING") {
-            return NextResponse.json({
-                message: "Payment is pending",
-            });
-        }
-
-        if (paymentStatus === "FAILED") {
-            transaction.status = "failed";
-            await transaction.save();
-
-            await sendEmailToPaymentFailed(
-                customerEmail,
-                customerName || "",
-                "",
-                orderId,
-                paymentAmount
-            );
-
-            if (transaction.entryTicketId) {
-                await EntryTicket.findByIdAndDelete(
-                    transaction.entryTicketId
-                );
+            if (!entryTicket) {
+                console.error(`Entry ticket not found for orderId: ${orderId}`);
+                // TODO: Email user about the issue 
+                return NextResponse.json({ message: "Entry ticket not found for the given orderId" }, { status: 404 });
             }
 
-            return NextResponse.json({
-                message: "Payment failed",
-            });
-        }
+            if (paymentStatus === "SUCCESS") {
+                entryTicket.isPaid = true;
+                entryTicket.paymentId = body.data?.payment?.payment_id || null;
+                await entryTicket.save();
 
-        if (paymentStatus !== "SUCCESS") {
-            return NextResponse.json({
-                message: "Webhook received; payment status ignored",
-            });
-        }
-
-        // Mark individual enrollments as paid.
-        for (const enrollmentId of transaction.enrolledIndividualEvents || []) {
-            await EnrolledIndividualEvent.findByIdAndUpdate(
-                enrollmentId,
-                {
-                    $set: {
-                        isPaid: true,
-                        transaction_id: transaction._id,
-                    },
-                }
-            );
-        }
-
-        // Mark team enrollments as paid and collect all team members.
-        const teamMemberEmails = new Set<string>();
-
-        for (const enrollmentId of transaction.enrolledTeamEvents || []) {
-            const enrolledTeamEvent =
-                await EnrolledTeamEvent.findByIdAndUpdate(
-                    enrollmentId,
-                    {
-                        $set: {
-                            isPaid: true,
-                            transaction_id: transaction._id,
-                        },
-                    },
-                    { new: true }
+                return NextResponse.json({ message: "Payment verified and entry ticket updated successfully" }, { status: 200 });
+            } else if (paymentStatus === "FAILED" || paymentStatus === "CANCELLED") {
+                // TODO: Email user about the failed payment
+                return NextResponse.json(
+                    { message: "Payment failed or cancelled" },
+                    { status: 400 }
                 );
-
-            if (!enrolledTeamEvent) continue;
-
-            const leaderUser = await RegisterUser.findById(
-                enrolledTeamEvent.team_leader_register_user_id
-            );
-
-            for (const rawEmail of enrolledTeamEvent.team_emails || []) {
-                const email = rawEmail.trim().toLowerCase();
-
-                if (!email) continue;
-
-                // Avoid duplicate tickets/emails if a person appears
-                // in multiple team enrollments in this transaction.
-                teamMemberEmails.add(email);
-
-                const user = await RegisterUser.findOne({ email });
-
-                if (!user) {
-                    await sendEmailToNotRegisteredTeamMember(email, {
-                        team_leader_name:
-                            leaderUser?.full_name || "Team Leader",
-                        team_name: enrolledTeamEvent.team_name,
-                        team_leader_email: leaderUser?.email,
-                    });
-                }
-            }
-        }
-
-        transaction.status = "success";
-        await transaction.save();
-
-        // The payer receives a ticket too. Each registered teammate
-        // receives their own ticket and QR code.
-        const payer = await RegisterUser.findById(customerId);
-
-        const recipients = new Map<
-            string,
-            { userId: string; email: string; name: string }
-        >();
-
-        if (payer) {
-            recipients.set(customerEmail.toLowerCase(), {
-                userId: payer._id.toString(),
-                email: customerEmail.toLowerCase(),
-                name: customerName || payer.full_name || "Participant",
-            });
-        }
-
-        for (const email of teamMemberEmails) {
-            const user = await RegisterUser.findOne({ email });
-
-            if (!user) continue;
-
-            recipients.set(email, {
-                userId: user._id.toString(),
-                email,
-                name: user.full_name || "Participant",
-            });
-        }
-
-        for (const recipient of recipients.values()) {
-            // Upsert one ticket per participant per transaction.
-            // The schema's unique userId + transactionId index
-            // protects against duplicate ticket records.
-            const ticket = await EntryTicket.findOneAndUpdate(
-                {
-                    userId: recipient.userId,
-                    transactionId: transaction._id,
-                },
-                {
-                    $setOnInsert: {
-                        userId: recipient.userId,
-                        email: recipient.email,
-                        transactionId: transaction._id,
-                        entries: [],
-                        isBanned: false,
-                        isEmailSent: false,
-                    },
-                    $set: {
-                        isPaid: true,
-                        email: recipient.email,
-                    },
-                },
-                {
-                    new: true,
-                    upsert: true,
-                    setDefaultsOnInsert: true,
-                }
-            );
-
-            if (!ticket.isEmailSent) {
-                const qrCodeBuffer = await generateQRCode(
-                    JSON.stringify({
-                        userId: recipient.userId,
-                        email: recipient.email,
-                    })
-                );
-
-                await sendQREmail(
-                    recipient.email,
-                    recipient.name,
-                    qrCodeBuffer
-                );
-
-                // Set this only after the email succeeds.
-                await EntryTicket.findByIdAndUpdate(ticket._id, {
-                    $set: { isEmailSent: true },
-                });
             }
         }
 
