@@ -1,10 +1,5 @@
-
-import EnrolledIndividualEvent from "@/database/schema/enrolled-individual-event.schema";
-import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
 import EntryTicket from "@/database/schema/entry-ticket.schema";
-import RegisterUser from "@/database/schema/register-user.schema";
 import Transaction from "@/database/schema/transaction.schema";
-import { sendEmailToNotRegisteredTeamMember } from "@/utilities/emails/new-team-member.email";
 import { sendEmailToPaymentFailed } from "@/utilities/emails/payment-failed.email";
 import { sendQREmail } from "@/utilities/emails/ticket-qr-mail";
 import { generateQRCode } from "@/utilities/generate-qr";
@@ -27,7 +22,7 @@ export async function POST(request: NextRequest) {
 
             if (!entryTicket) {
                 console.error(`Entry ticket not found for orderId: ${orderId}`);
-                // TODO: Email user about the issue 
+                await sendEmailToPaymentFailed(customerEmail, customerName, orderId, orderAmount, "Entry ticket not found for the given orderId")
                 return NextResponse.json({ message: "Entry ticket not found for the given orderId" }, { status: 404 });
             }
 
@@ -35,15 +30,17 @@ export async function POST(request: NextRequest) {
                 if (entryTicket && entryTicket.isPaid) {
                     const qr_code = await generateQRCode({ userId: entryTicket.userId, userEmail: customerEmail })
                     await sendQREmail(customerEmail, customerName, qr_code)
+
+                    return NextResponse.json({ message: "Payment verified and entry ticket updated successfully" }, { status: 200 });
                 }
-                
+
                 entryTicket.isPaid = true;
                 entryTicket.paymentId = body.data?.payment?.payment_id || null;
                 await entryTicket.save();
 
                 return NextResponse.json({ message: "Payment verified and entry ticket updated successfully" }, { status: 200 });
             } else if (paymentStatus === "FAILED" || paymentStatus === "CANCELLED") {
-                // TODO: Email user about the failed payment
+                await sendEmailToPaymentFailed(customerEmail, customerName, orderId, orderAmount, "Payment failed or cancelled")
                 return NextResponse.json(
                     { message: "Payment failed or cancelled" },
                     { status: 400 }
@@ -51,6 +48,37 @@ export async function POST(request: NextRequest) {
             }
         }
 
+        if (orderId && orderId.startsWith("NV_")) {
+            const transaction_id = orderId.split("_")[1];
+            const transaction = await Transaction.findById(transaction_id);
+
+            if (!transaction) {
+                await sendEmailToPaymentFailed(customerEmail, customerName, orderId, orderAmount, "Transaction not found for the given orderId")
+                return NextResponse.json({ message: "Transaction not found for the given orderId" }, { status: 404 });
+            }
+
+            if (paymentStatus === "SUCCESS") {
+                if (transaction.status === "completed") {
+                    return NextResponse.json({ message: "Payment already processed for this transaction" }, { status: 200 });
+                }
+
+                transaction.status = "completed";
+                transaction.paymentId = body.data?.payment?.payment_id
+                await transaction.save();
+
+            } else if (paymentStatus === "FAILED" || paymentStatus === "CANCELLED") {
+                await sendEmailToPaymentFailed(customerEmail, customerName, orderId, orderAmount, "Payment failed or cancelled")
+
+                transaction.status = "failed";
+                transaction.paymentId = body.data?.payment?.payment_id
+                await transaction.save();
+
+                return NextResponse.json(
+                    { message: "Payment failed or cancelled" },
+                    { status: 400 }
+                );
+            }
+        }
         return NextResponse.json({
             message: "Payment verified and tickets processed",
         });
