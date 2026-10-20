@@ -66,7 +66,7 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
         } catch {
           // ignore localStorage error
         }
-        const redirectUrl = toSafeRegisterPath(data?.redirect_url, '/register/enroll-event');
+        const redirectUrl = toSafeRegisterPath(data?.redirect_url, '/register/entry-ticket');
         setTimeout(() => {
           router.push(redirectUrl);
         }, 800);

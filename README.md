@@ -43,6 +43,42 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-20 — Cashfree Modal Checkout & In-App Status Navigation (Zero route.ts Changes)
+
+**Done**
+- `components/tickets/EntryTicketView.tsx`:
+  - Updated Cashfree checkout to open in modal mode (`redirectTarget: '_modal'`), matching the proven pattern in `CheckoutEventView.tsx`.
+  - On checkout completion, queries `/api/payments/return?order_id=...` as a background API fetch, allowing the existing backend route to perform order verification without top-level browser navigation.
+  - Transitions to `/payment/success?order_id=...` directly via Next.js client router (`router.push`), eliminating browser protocol mismatch on Safari (`https://localhost:3000`) and avoiding any changes to `route.ts`.
+- `app/payment/success/page.tsx` & `components/payment/StatusCard.tsx`:
+  - Display actual transaction and order identifiers without hardcoded placeholders.
+  - Tailored action button for 3-day entry ticket pass to navigate directly to event enrollment (`/register/enroll-event`).
+
+**Files changed**
+- `components/tickets/EntryTicketView.tsx`
+- `app/payment/success/page.tsx`
+- `components/payment/StatusCard.tsx`
+- `README.md`
+
+### 2026-10-20 — Entry Ticket Checkout, Auto-Redirect, and Cashfree Payment Integration
+
+**Done**
+- `components/registration/OtpStepForm.tsx`: ensured safe fallback redirect destination is `/register/entry-ticket`.
+- `app/register/entry-ticket/page.tsx`: added server-side purchased check that redirects to `/register/enroll-event` if already bought; replaced empty suspense fallback with a brand loading indicator to eliminate suspense hanging.
+- `components/tickets/EntryTicketView.tsx`:
+  - Added on-load verification calling `GET /api/entry-ticket` to automatically redirect users to `/register/enroll-event` if already purchased.
+  - Replaced the slide button with a dedicated one-click disable Pay Button (`PAY ₹299 • GET 3-DAY PASS →`).
+  - Integrated `POST /api/payments/create-order` to fetch the Cashfree payment session ID.
+  - Added safe dynamic injection of Cashfree JS SDK v3 without causing Suspense or continuous loading loops, seamlessly launching Cashfree checkout.
+- `components/registration/EventEnrollmentView.tsx`: added `initialIndividualPending` and `initialTeamPending` props to `EventEnrollmentViewProps` to resolve type contract mismatch.
+
+**Files changed**
+- `app/register/entry-ticket/page.tsx`
+- `components/tickets/EntryTicketView.tsx`
+- `components/registration/OtpStepForm.tsx`
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
 ### 2026-10-19 — Reset OTP Verification State on Resend / New Email Session
 
 **Done**

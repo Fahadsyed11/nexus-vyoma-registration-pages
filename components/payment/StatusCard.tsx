@@ -24,8 +24,8 @@ export interface StatusCardProps {
 
 export default function StatusCard({
   status,
-  transactionId = 'TXN_NV26_894120',
-  orderId = 'ORD_NV26_54910',
+  transactionId,
+  orderId,
   teamName,
   teamMembers,
 }: StatusCardProps) {
@@ -135,59 +135,65 @@ export default function StatusCard({
           </h1>
 
           {/* Order Details: Transaction ID, Order ID, Team Details (Pure Typography, No capsules) */}
-          <div className="flex flex-col items-center gap-2.5 sm:gap-3 mb-6 font-mono text-sm sm:text-base">
-            {/* Transaction ID */}
-            <div className="flex items-center gap-2 text-zinc-300">
-              <span className="text-zinc-500 uppercase tracking-wider text-xs sm:text-sm">Transaction ID:</span>
-              <span className="text-white font-medium tracking-wide">{transactionId}</span>
-              <button
-                type="button"
-                onClick={() => handleCopy(transactionId, 'txn')}
-                className="ml-1 text-zinc-500 hover:text-white transition-colors"
-                title="Copy Transaction ID"
-                aria-label="Copy Transaction ID"
-              >
-                {copiedField === 'txn' ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
+          {(transactionId || orderId || teamName || teamMembers) && (
+            <div className="flex flex-col items-center gap-2.5 sm:gap-3 mb-6 font-mono text-sm sm:text-base">
+              {/* Transaction ID */}
+              {transactionId && (
+                <div className="flex items-center gap-2 text-zinc-300">
+                  <span className="text-zinc-500 uppercase tracking-wider text-xs sm:text-sm">Transaction ID:</span>
+                  <span className="text-white font-medium tracking-wide">{transactionId}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(transactionId, 'txn')}
+                    className="ml-1 text-zinc-500 hover:text-white transition-colors"
+                    title="Copy Transaction ID"
+                    aria-label="Copy Transaction ID"
+                  >
+                    {copiedField === 'txn' ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              )}
 
-            {/* Order ID */}
-            <div className="flex items-center gap-2 text-zinc-300">
-              <span className="text-zinc-500 uppercase tracking-wider text-xs sm:text-sm">Order ID:</span>
-              <span className="text-white font-medium tracking-wide">{orderId}</span>
-              <button
-                type="button"
-                onClick={() => handleCopy(orderId, 'ord')}
-                className="ml-1 text-zinc-500 hover:text-white transition-colors"
-                title="Copy Order ID"
-                aria-label="Copy Order ID"
-              >
-                {copiedField === 'ord' ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
+              {/* Order ID */}
+              {orderId && (
+                <div className="flex items-center gap-2 text-zinc-300">
+                  <span className="text-zinc-500 uppercase tracking-wider text-xs sm:text-sm">Order ID:</span>
+                  <span className="text-white font-medium tracking-wide">{orderId}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopy(orderId, 'ord')}
+                    className="ml-1 text-zinc-500 hover:text-white transition-colors"
+                    title="Copy Order ID"
+                    aria-label="Copy Order ID"
+                  >
+                    {copiedField === 'ord' ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              )}
 
-            {/* Team Details (if any) */}
-            {teamName && (
-              <div className="flex items-center gap-2 text-zinc-300">
-                <span className="text-zinc-500 uppercase tracking-wider text-xs sm:text-sm">Team:</span>
-                <span className="text-white font-medium">{teamName}</span>
-              </div>
-            )}
-            {teamMembers && (
-              <div className="flex items-center gap-2 text-zinc-300">
-                <span className="text-zinc-500 uppercase tracking-wider text-xs sm:text-sm">Members:</span>
-                <span className="text-white font-medium">{teamMembers}</span>
-              </div>
-            )}
-          </div>
+              {/* Team Details (if any) */}
+              {teamName && (
+                <div className="flex items-center gap-2 text-zinc-300">
+                  <span className="text-zinc-500 uppercase tracking-wider text-xs sm:text-sm">Team:</span>
+                  <span className="text-white font-medium">{teamName}</span>
+                </div>
+              )}
+              {teamMembers && (
+                <div className="flex items-center gap-2 text-zinc-300">
+                  <span className="text-zinc-500 uppercase tracking-wider text-xs sm:text-sm">Members:</span>
+                  <span className="text-white font-medium">{teamMembers}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* NOTE: Pure Typography - No capsule, no container box */}
           <p className="text-xs sm:text-sm md:text-base font-mono text-emerald-400 tracking-wide mb-8 drop-shadow-[0_1px_8px_rgba(0,0,0,0.8)]">
@@ -195,13 +201,31 @@ export default function StatusCard({
             The QR code will be sent to your email soon
           </p>
 
-          <Link
-            href="/events"
-            className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-semibold text-sm text-black bg-[#FF6A00] hover:bg-[#ff7b1a] shadow-[0_0_30px_rgba(255,106,0,0.4)] transition-all duration-200 active:scale-[0.98]"
-          >
-            <span>Explore Events</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {orderId?.startsWith('NVET_') ? (
+            <div className="flex flex-col items-center gap-4">
+              <Link
+                href="/register/enroll-event"
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-semibold text-sm text-black bg-[#FF6A00] hover:bg-[#ff7b1a] shadow-[0_0_30px_rgba(255,106,0,0.4)] transition-all duration-200 active:scale-[0.98]"
+              >
+                <span>Proceed to Enroll Events</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/events"
+                className="text-xs sm:text-sm font-mono tracking-wider text-zinc-400 hover:text-white underline underline-offset-8 transition-colors"
+              >
+                Explore Events Catalog &rarr;
+              </Link>
+            </div>
+          ) : (
+            <Link
+              href="/events"
+              className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-semibold text-sm text-black bg-[#FF6A00] hover:bg-[#ff7b1a] shadow-[0_0_30px_rgba(255,106,0,0.4)] transition-all duration-200 active:scale-[0.98]"
+            >
+              <span>Explore Events</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
         </>
       )}
 

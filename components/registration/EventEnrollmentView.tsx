@@ -38,6 +38,8 @@ interface EventEnrollmentViewProps {
   availableEvents: SerializedEvent[];
   initialIndividualEnrolled: SerializedEnrolledEvent[];
   initialTeamEnrolled: SerializedEnrolledEvent[];
+  initialIndividualPending?: SerializedEnrolledEvent[];
+  initialTeamPending?: SerializedEnrolledEvent[];
 }
 
 export interface VerifiedMember {
@@ -89,8 +91,8 @@ export default function EventEnrollmentView({
   const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
 
   // Pending (unpaid) enrolled events — mutable so we can remove on delete
-  const [pendingIndividual, setPendingIndividual] = useState<SerializedEnrolledEvent[]>(initialIndividualPending);
-  const [pendingTeam, setPendingTeam] = useState<SerializedEnrolledEvent[]>(initialTeamPending);
+  const [pendingIndividual, setPendingIndividual] = useState<SerializedEnrolledEvent[]>(initialIndividualPending || []);
+  const [pendingTeam, setPendingTeam] = useState<SerializedEnrolledEvent[]>(initialTeamPending || []);
 
   // ID of the enrollment currently being deleted (for loading state)
   const [deletingEnrollId, setDeletingEnrollId] = useState<string | null>(null);
