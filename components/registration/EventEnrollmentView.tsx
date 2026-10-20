@@ -59,6 +59,8 @@ export default function EventEnrollmentView({
   availableEvents,
   initialIndividualEnrolled,
   initialTeamEnrolled,
+  initialIndividualPending,
+  initialTeamPending,
 }: EventEnrollmentViewProps) {
   const router = useRouter();
 
@@ -85,6 +87,13 @@ export default function EventEnrollmentView({
   const [submitting, setSubmitting] = useState(false);
   const [feedbackError, setFeedbackError] = useState<string | null>(null);
   const [feedbackSuccess, setFeedbackSuccess] = useState<string | null>(null);
+
+  // Pending (unpaid) enrolled events — mutable so we can remove on delete
+  const [pendingIndividual, setPendingIndividual] = useState<SerializedEnrolledEvent[]>(initialIndividualPending);
+  const [pendingTeam, setPendingTeam] = useState<SerializedEnrolledEvent[]>(initialTeamPending);
+
+  // ID of the enrollment currently being deleted (for loading state)
+  const [deletingEnrollId, setDeletingEnrollId] = useState<string | null>(null);
 
   // Horizontal scroll & drag controls for Individual Enrolled Events
   const individualScrollRef = useRef<HTMLDivElement>(null);
@@ -147,10 +156,12 @@ export default function EventEnrollmentView({
     };
   }, []);
 
-  // Filter available events excluding already enrolled & already selected
+  // Filter available events excluding already enrolled (paid OR pending) & already selected
   const alreadyEnrolledIds = new Set([
     ...initialIndividualEnrolled.map((e) => e.event_id),
     ...initialTeamEnrolled.map((e) => e.event_id),
+    ...pendingIndividual.map((e) => e.event_id),
+    ...pendingTeam.map((e) => e.event_id),
   ]);
 
   const eligibleIndividualEvents = availableEvents.filter(
@@ -339,17 +350,56 @@ export default function EventEnrollmentView({
 
   const totalSelectedCount = selectedIndividualIds.length + selectedTeamEvents.length;
 
+  // Delete a pending (unpaid) enrollment
+  const handleDeleteEnrolled = async (
+    enrolledEventId: string,
+    eventId: string,
+    type: 'individual' | 'team',
+  ) => {
+    setDeletingEnrollId(enrolledEventId);
+    try {
+      const res = await fetch('/api/enrollement/enroll-event', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enrolledEventId, eventId }),
+      });
+      const data = await res.json().catch(() => null);
+      if (res.ok) {
+        if (type === 'individual') {
+          setPendingIndividual((prev) => prev.filter((e) => e._id !== enrolledEventId));
+        } else {
+          setPendingTeam((prev) => prev.filter((e) => e._id !== enrolledEventId));
+        }
+      } else {
+        setFeedbackError(data?.message || 'Failed to remove enrollment.');
+      }
+    } catch {
+      setFeedbackError('Network error while removing enrollment.');
+    } finally {
+      setDeletingEnrollId(null);
+    }
+  };
+
   // Checkout submission
+  // The backend route handles ONE event per POST call, so we make sequential requests.
   const handleProceedToCheckout = async () => {
     setFeedbackError(null);
     setFeedbackSuccess(null);
 
-    if (totalSelectedCount === 0) {
-      setFeedbackError('Please select at least one event before proceeding to checkout.');
+    // Allow checkout if either new events are selected OR existing pending reservations exist
+    const hasPendingReservations = pendingIndividual.length > 0 || pendingTeam.length > 0;
+    if (totalSelectedCount === 0 && !hasPendingReservations) {
+      setFeedbackError('Please select at least one event, or you have no pending reservations to check out.');
       return;
     }
 
-    // Validate team selections
+    // If user has pending reservations but hasn't selected new events, go straight to checkout
+    if (totalSelectedCount === 0 && hasPendingReservations) {
+      router.push('/register/checkout-event');
+      return;
+    }
+
+    // Validate team selections before hitting the network
     for (const teamItem of selectedTeamEvents) {
       const eventObj = availableEvents.find((e) => e._id === teamItem.eventId);
       if (!teamItem.teamName.trim()) {
@@ -368,25 +418,45 @@ export default function EventEnrollmentView({
     setSubmitting(true);
 
     try {
-      const res = await fetch('/api/enroll-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          selectedIndividualEventIds: selectedIndividualIds,
-          selectedTeamEvents: selectedTeamEvents,
-        }),
-      });
-
-      const data = await res.json().catch(() => null);
-
-      if (res.ok) {
-        setFeedbackSuccess('Enrolment recorded successfully! Redirecting to checkout...');
-        setTimeout(() => {
-          router.push('/register/checkout-event');
-        }, 1000);
-      } else {
-        setFeedbackError(data?.message || 'Failed to process event enrolment.');
+      // --- Individual events: one POST per event ---
+      for (const eventId of selectedIndividualIds) {
+        const res = await fetch('/api/enrollement/enroll-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ eventId }),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok && res.status !== 200) {
+          setFeedbackError(data?.message || 'Failed to enroll in an individual event.');
+          setSubmitting(false);
+          return;
+        }
       }
+
+      // --- Team events: one POST per event ---
+      for (const teamItem of selectedTeamEvents) {
+        const teamEmails = teamItem.teamMembers.filter((m) => m.trim() !== '');
+        const res = await fetch('/api/enrollement/enroll-event', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            eventId: teamItem.eventId,
+            teamName: teamItem.teamName.trim(),
+            teamEmails,
+          }),
+        });
+        const data = await res.json().catch(() => null);
+        if (!res.ok && res.status !== 200) {
+          setFeedbackError(data?.message || 'Failed to enroll your team in an event.');
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      setFeedbackSuccess('Enrolment recorded successfully! Redirecting to checkout...');
+      setTimeout(() => {
+        router.push('/register/checkout-event');
+      }, 1000);
     } catch {
       setFeedbackError('A network error occurred. Please check your connection and try again.');
     } finally {

@@ -17,17 +17,6 @@ const entryTicketSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    email: {
-        type: String,
-        required: true,
-        lowercase: true,
-        trim: true,
-        index: true,
-    },
-    transactionId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Transaction",
-    },
     entries: {
         type: [entriesSchema],
         required: true,
@@ -40,10 +29,16 @@ const entryTicketSchema = new mongoose.Schema({
     isPaid: {
         type: Boolean,
         default: false
-    }
+    },
+    paymentId: {
+        type: String,
+        default: null
+    },
+    orderId: {
+        type: String,
+        default: null
+    },
 }, { timestamps: true, overwriteModels: true });
-
-entryTicketSchema.index({ userId: 1, transactionId: 1 }, { unique: true });
 
 const EntryTicket = mongoose.models.EntryTicket || mongoose.model("EntryTicket", entryTicketSchema);
 

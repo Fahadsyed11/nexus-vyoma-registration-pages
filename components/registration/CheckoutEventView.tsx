@@ -40,6 +40,13 @@ export interface UnpaidTeamEvent {
   team_leader_email?: string;
   team_size: number;
   team_members: string[];
+  /** Entry-ticket charge per other member (from order-summary API). */
+  memberEntryTickets?: {
+    email: string;
+    entryTicketPrice: number;
+    isRegistered: boolean;
+    requiresRegistration: boolean;
+  }[];
 }
 
 export interface CheckoutEventViewProps {
@@ -51,6 +58,70 @@ export interface CheckoutEventViewProps {
   userProfileImage?: string;
   unpaidIndividualEvents: UnpaidIndividualEvent[];
   unpaidTeamEvents: UnpaidTeamEvent[];
+  /** Entry-ticket status for the current user (from order-summary API). */
+  entryTicketDetails: { isPurchased: boolean; price: number };
+  /** Server-authoritative pricing — never recompute totals on the client. */
+  serverPricing: {
+    totalTeamEventsPrice: number;
+    totalIndividualEventsPrice: number;
+    totalEntryTicketPrice: number;
+    grandTotal: number;
+  };
+}
+
+interface CashfreeCheckoutResult {
+  error?: { message?: string; code?: string };
+  redirect?: boolean;
+  paymentDetails?: unknown;
+}
+
+interface CashfreeInstance {
+  checkout: (options: {
+    paymentSessionId: string;
+    redirectTarget?: '_modal' | '_self' | '_top';
+  }) => Promise<CashfreeCheckoutResult>;
+}
+
+declare global {
+  interface Window {
+    Cashfree?: (options: { mode: 'sandbox' | 'production' }) => CashfreeInstance;
+  }
+}
+
+async function loadCashfreeSDK(): Promise<CashfreeInstance> {
+  const mode =
+    process.env.NEXT_PUBLIC_CASHFREE_MODE === 'production' ? 'production' : 'sandbox';
+
+  if (typeof window !== 'undefined' && window.Cashfree) {
+    return window.Cashfree({ mode });
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    if (typeof window === 'undefined') return reject(new Error('Window not available'));
+
+    if (window.Cashfree) return resolve();
+
+    const existing = document.querySelector('script[src*="cashfree.js"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', () => reject(new Error('Failed to load Cashfree SDK')));
+      if (window.Cashfree) resolve();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Cashfree SDK'));
+    document.body.appendChild(script);
+  });
+
+  if (!window.Cashfree) {
+    throw new Error('Cashfree SDK is not available');
+  }
+
+  return window.Cashfree({ mode });
 }
 
 export default function CheckoutEventView({
@@ -61,6 +132,8 @@ export default function CheckoutEventView({
   userDegree,
   unpaidIndividualEvents,
   unpaidTeamEvents,
+  entryTicketDetails,
+  serverPricing,
 }: CheckoutEventViewProps) {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -71,15 +144,12 @@ export default function CheckoutEventView({
     setExpandedTeamRows((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // Compute itemized entry fees (team entry fee is per person: entry_fee * team_size)
-  const individualTotal = unpaidIndividualEvents.reduce((acc, ev) => acc + (Number(ev.entry_fee) || 0), 0);
-  const teamTotal = unpaidTeamEvents.reduce(
-    (acc, ev) => acc + (Number(ev.entry_fee) || 0) * (Number(ev.team_size) || 1),
-    0
-  );
-  const subtotal = individualTotal + teamTotal;
-  const serviceCharge = 0; // Existing backend defines no service charge
-  const total = subtotal + serviceCharge;
+  // Server is the source of truth — client never recomputes amounts
+  const individualTotal   = serverPricing.totalIndividualEventsPrice;
+  const teamTotal         = serverPricing.totalTeamEventsPrice;
+  const entryTicketTotal  = serverPricing.totalEntryTicketPrice;
+  const total             = serverPricing.grandTotal;
+  const subtotal          = individualTotal + teamTotal;
 
   const totalEventsCount = unpaidIndividualEvents.length + unpaidTeamEvents.length;
 
@@ -87,15 +157,59 @@ export default function CheckoutEventView({
     setErrorMessage(null);
 
     if (totalEventsCount === 0) {
-      setErrorMessage('No unpaid events available for checkout.');
-      throw new Error('No unpaid events available for checkout.');
+      const msg = 'No unpaid events available for checkout.';
+      setErrorMessage(msg);
+      throw new Error(msg);
     }
 
     setIsProcessing(true);
 
     try {
-      // Transition delay while sliding completes and trigger redirect
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      // 1. Request Cashfree order session from server
+      const res = await fetch('/api/payments/create-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const resJson = await res.json().catch(() => null);
+
+      // Handle redirect instructions (e.g. unauthenticated / expired session)
+      if (resJson?.redirect && resJson?.redirectUrl) {
+        router.push(resJson.redirectUrl);
+        return false;
+      }
+
+      if (!res.ok || !resJson?.data?.payment_session_id) {
+        const errorMsg =
+          resJson?.message || resJson?.error || 'Unable to initiate payment. Please try again.';
+        setErrorMessage(errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      const paymentSessionId = resJson.data.payment_session_id as string;
+
+      // 2. Initialize Cashfree v3 SDK
+      const cashfree = await loadCashfreeSDK();
+
+      // 3. Open Cashfree modal checkout popup
+      const checkoutResult = await cashfree.checkout({
+        paymentSessionId,
+        redirectTarget: '_modal',
+      });
+
+      if (checkoutResult?.error) {
+        const cancelMsg = checkoutResult.error.message || 'Payment was cancelled or failed.';
+        setErrorMessage(cancelMsg);
+        throw new Error(cancelMsg);
+      }
+
+      if (checkoutResult?.paymentDetails) {
+        router.push('/payment/success');
+        return true;
+      }
+
       return true;
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Processing failed';
@@ -309,8 +423,7 @@ export default function CheckoutEventView({
                         <span>{ev.date_time || 'Schedule TBA'}</span>
                         <span className="hidden sm:inline text-zinc-600">•</span>
                         <span className="text-xs font-sans font-medium text-emerald-400">
-                          {ev.entry_fee ? `₹${ev.entry_fee} / person` : 'FREE'}
-                          {ev.entry_fee && ev.team_size > 1 ? ` (₹${ev.entry_fee * ev.team_size} total)` : ''}
+                          {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
                         </span>
                       </div>
                     </div>
@@ -364,7 +477,7 @@ export default function CheckoutEventView({
                           <div>
                             <span className="text-zinc-500 uppercase tracking-wider text-[11px]">TOTAL TEAM FEE: </span>
                             <span className="text-emerald-400 font-sans font-medium">
-                              {ev.entry_fee ? `₹${ev.entry_fee * (ev.team_size || 1)}` : 'FREE'}
+                              {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
                             </span>
                           </div>
                         </div>
@@ -373,23 +486,36 @@ export default function CheckoutEventView({
                         <div className="flex flex-col gap-2 pt-2 border-t border-white/[0.06] text-xs">
                           <div className="flex items-center justify-between">
                             <span className="text-zinc-500 uppercase tracking-wider text-[11px]">
-                              MEMBERS ENTRY FEES:
+                              ENTRY TICKET CHARGES:
                             </span>
                             <span className="text-zinc-400 text-[11px] font-mono">
-                              ₹{ev.entry_fee} per member ({ev.team_size} members = ₹{ev.entry_fee * (ev.team_size || 1)})
+                              ₹249 per attendee
                             </span>
                           </div>
                           <div className="flex flex-wrap items-center gap-2">
+                            {/* Leader */}
                             <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08]">
                               <span className="text-[#FF6A00] font-semibold text-[11px]">LEADER:</span>
                               <span className="text-zinc-200">{ev.team_leader_email || userEmail}</span>
-                              <span className="text-emerald-400 font-mono font-medium">₹{ev.entry_fee}</span>
+                              {entryTicketDetails.isPurchased ? (
+                                <span className="text-emerald-400 font-mono font-medium text-[10px]">Paid ✓</span>
+                              ) : (
+                                <span className="text-amber-400 font-mono font-medium">₹249</span>
+                              )}
                             </div>
-                            {ev.team_members && ev.team_members.map((memberEmail, mIdx) => (
+                            {/* Other members */}
+                            {(ev.memberEntryTickets ?? ev.team_members.map((email) => ({ email, entryTicketPrice: 249, isRegistered: true, requiresRegistration: false }))).map((member, mIdx) => (
                               <div key={mIdx} className="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/[0.08]">
-                                <span className="text-zinc-400 font-semibold text-[11px]">MEMBER {mIdx + 1}:</span>
-                                <span className="text-zinc-200">{memberEmail}</span>
-                                <span className="text-emerald-400 font-mono font-medium">₹{ev.entry_fee}</span>
+                                <span className="text-zinc-400 font-semibold text-[11px]">M{mIdx + 1}:</span>
+                                <span className="text-zinc-200">{member.email}</span>
+                                {member.entryTicketPrice === 0 ? (
+                                  <span className="text-emerald-400 font-mono font-medium text-[10px]">Paid ✓</span>
+                                ) : (
+                                  <span className="text-amber-400 font-mono font-medium">₹249</span>
+                                )}
+                                {('requiresRegistration' in member) && member.requiresRegistration && (
+                                  <span className="text-[10px] font-mono text-red-400 bg-red-500/10 border border-red-500/20 px-1.5 py-0.5 rounded">⚠ not registered</span>
+                                )}
                               </div>
                             ))}
                           </div>
@@ -453,21 +579,19 @@ export default function CheckoutEventView({
             <span className="text-emerald-400">₹0</span>
           </div>
 
-          {/* Individual Events Entry Fees */}
+          {/* Individual Event Fees */}
           {unpaidIndividualEvents.length > 0 && (
             <div className="flex items-center justify-between text-zinc-400">
-              <span>Individual Events Entry Fees ({unpaidIndividualEvents.length})</span>
+              <span>Individual Event Fees ({unpaidIndividualEvents.length})</span>
               <span className="text-zinc-200">₹{individualTotal}</span>
             </div>
           )}
 
-          {/* Team Members Entry Fees */}
+          {/* Team Event Fees */}
           {unpaidTeamEvents.length > 0 && (
             <div className="flex flex-col gap-1.5 text-zinc-400">
               <div className="flex items-center justify-between">
-                <span>
-                  Team Members Entry Fees ({unpaidTeamEvents.reduce((acc, t) => acc + (t.team_size || 1), 0)} members)
-                </span>
+                <span>Team Event Fees ({unpaidTeamEvents.length})</span>
                 <span className="text-zinc-200">₹{teamTotal}</span>
               </div>
               <div className="flex flex-col gap-1 pl-3 border-l border-white/[0.08] text-[11px]">
@@ -475,14 +599,37 @@ export default function CheckoutEventView({
                   <div key={t._id} className="flex items-center justify-between">
                     <span className="text-zinc-300">
                       {t.event_title}{' '}
-                      <span className="text-zinc-500">
-                        ({t.team_name} • {t.team_size} members × ₹{t.entry_fee})
-                      </span>
+                      <span className="text-zinc-500">({t.team_name})</span>
                     </span>
-                    <span className="text-emerald-400 font-medium">₹{t.entry_fee * (t.team_size || 1)}</span>
+                    <span className="text-emerald-400 font-medium">₹{t.entry_fee}</span>
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* Entry Ticket Charges */}
+          {entryTicketTotal > 0 && (
+            <div className="flex flex-col gap-1.5 text-zinc-400">
+              <div className="flex items-center justify-between">
+                <span>
+                  Entry Ticket Charges
+                  {entryTicketDetails.price > 0 && entryTicketTotal > 0
+                    ? ` (₹${entryTicketDetails.price} × ${Math.round(entryTicketTotal / entryTicketDetails.price)} attendee${Math.round(entryTicketTotal / entryTicketDetails.price) !== 1 ? 's' : ''})`
+                    : ''}
+                </span>
+                <span className="text-zinc-200">₹{entryTicketTotal}</span>
+              </div>
+              <div className="flex flex-col gap-1 pl-3 border-l border-amber-500/20 text-[11px] text-amber-400/80">
+                <span>Mandatory fest entry ticket — one per attendee, charged once.</span>
+              </div>
+            </div>
+          )}
+
+          {entryTicketDetails.isPurchased && entryTicketTotal === 0 && (
+            <div className="flex items-center justify-between text-zinc-400">
+              <span>Your Entry Ticket</span>
+              <span className="text-emerald-400 font-medium">Already purchased ✓</span>
             </div>
           )}
 
