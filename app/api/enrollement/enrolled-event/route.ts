@@ -5,6 +5,7 @@ import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema";
 import EnrolledIndividualEvent from "@/database/schema/enrolled-individual-event.schema";
 import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
+import EntryTicket from "@/database/schema/entry-ticket.schema";
 
 import { verifyJWT } from "@/utilities/jwt";
 
@@ -65,6 +66,20 @@ export async function GET(request: NextRequest) {
                     error: "User does not exist",
                     redirect: true,
                     redirectUrl: "/register/check-email",
+                },
+                { status: 404 });
+        }
+
+        const entryTicket = await EntryTicket.findOne({ userId: userData.user.id, isPaid: true });
+
+        if (!entryTicket) {
+            return NextResponse.json(
+                {
+                    message: "Entry ticket not found",
+                    data: null,
+                    error: "User does not have a paid entry ticket",
+                    redirect: true,
+                    redirectUrl: "/register/entry-ticket",
                 },
                 { status: 404 });
         }
