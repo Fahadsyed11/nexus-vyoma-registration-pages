@@ -17,17 +17,6 @@ const entryTicketSchema = new mongoose.Schema({
         ref: "User",
         required: true
     },
-    email: {
-        type: String,
-        required: true,
-        lowercase: true,
-        trim: true,
-        index: true,
-    },
-    transactionId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Transaction",
-    },
     entries: {
         type: [entriesSchema],
         required: true,
@@ -41,9 +30,13 @@ const entryTicketSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    isEmailSent: {
-        type: Boolean,
-        default: false
+    transactionId: {
+        type: String,
+        default: null
+    },
+    orderId: {
+        type: String,
+        default: null
     }
 }, { timestamps: true, overwriteModels: true });
 

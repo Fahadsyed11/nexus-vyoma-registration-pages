@@ -4,10 +4,13 @@ import { cookies } from "next/headers";
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
-import { sendWelcomeEmail } from "@/utilities/emails/welcome.email";
-import { signJWT } from "@/utilities/jwt";
+import EntryTicket from "@/database/schema/entry-ticket.schema";
+
 import { validateDto } from "@/dto/validate.dto-helper";
 import { verifyUserEmailDto } from "@/dto/(register)/verify-email.dto";
+
+import { signJWT } from "@/utilities/jwt";
+import { sendWelcomeEmail } from "@/utilities/emails/welcome.email";
 
 export async function POST(request: NextRequest) {
     try {
@@ -89,6 +92,23 @@ export async function POST(request: NextRequest) {
 
         // set temporary cookie for 1 hour 55 mins so if this expires then user will be redirected to check-email page to verify his email again
         cookieStore.set("nv-session-temp", tempToken, { httpOnly: true, path: "/", sameSite: "strict", secure: process.env.NODE_ENV === "production", maxAge: 115 * 60 })
+
+        const userEnrtyTicket = await EntryTicket.findOne({ userId: user._id, isPaid: true })
+        if (!userEnrtyTicket) {
+            return NextResponse.json({
+                message: "OTP verified successfully",
+                data: {
+                    user: {
+                        id: user._id,
+                        name: user.full_name,
+                        email: user.email,
+                    },
+                },
+                error: null,
+                redirect: true,
+                redirect_url: "/register/entry-ticket"
+            }, { status: 200 });
+        }
 
         return NextResponse.json({
             message: "OTP verified successfully",
