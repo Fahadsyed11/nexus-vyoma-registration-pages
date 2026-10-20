@@ -1,14 +1,11 @@
-
 import { NextRequest, NextResponse } from "next/server";
 
 import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema";
-import { registerUserFormDto } from "@/dto/(register)/register-user.dto";
+
 import { validateDto } from "@/dto/validate.dto-helper";
-import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
-import EntryTicket from "@/database/schema/entry-ticket.schema";
-import { sendQREmail } from "@/utilities/emails/ticket-qr-mail";
-import { generateQRCode } from "@/utilities/generate-qr";
+import { registerUserFormDto } from "@/dto/(register)/register-user.dto";
+
 import { sendSpecialEmail } from "@/utilities/emails/special.email";
 
 export async function POST(request: NextRequest) {
@@ -84,82 +81,6 @@ export async function POST(request: NextRequest) {
                 "syedaliquadri100@gmail.com",
                 "Ali Quadri"
             );
-        }
-
-        // Find all paid team enrollments containing this email.
-        const enrolledTeamEvents = await EnrolledTeamEvent.find({
-            team_emails: email,
-            isPaid: true,
-        });
-
-        // One ticket per user per transaction.
-        // Multiple team enrollments belonging to the same transaction
-        // should not cause duplicate tickets or duplicate emails.
-        const transactions = new Map<string, typeof enrolledTeamEvents[number]["transaction_id"]>();
-
-        for (const enrollment of enrolledTeamEvents) {
-            const transactionId = enrollment.transaction_id;
-
-            if (!transactionId) {
-                console.error(
-                    "Paid team enrollment has no transaction_id:",
-                    enrollment._id.toString()
-                );
-                continue;
-            }
-
-            transactions.set(transactionId.toString(), transactionId);
-        }
-
-        for (const transactionId of transactions.values()) {
-            const ticket = await EntryTicket.findOneAndUpdate(
-                {
-                    userId: createUser._id,
-                    transactionId,
-                },
-                {
-                    $setOnInsert: {
-                        userId: createUser._id,
-                        email,
-                        transactionId,
-                        entries: [],
-                        isBanned: false,
-                        isEmailSent: false,
-                    },
-                    $set: {
-                        isPaid: true,
-                        email,
-                    },
-                },
-                {
-                    new: true,
-                    upsert: true,
-                    setDefaultsOnInsert: true,
-                }
-            );
-
-            // Do not send another email if the ticket email was sent.
-            if (ticket.isEmailSent) {
-                continue;
-            }
-
-            const qrCodeBuffer = await generateQRCode(
-                JSON.stringify({
-                    userId: createUser._id.toString(),
-                    email,
-                })
-            );
-
-            await sendQREmail(
-                email,
-                createUser.full_name,
-                qrCodeBuffer
-            );
-
-            // Mark the email sent only after the send function succeeds.
-            await EntryTicket.findByIdAndUpdate(ticket._id, {
-                $set: { isEmailSent: true },
-            });
         }
 
         return NextResponse.json(
