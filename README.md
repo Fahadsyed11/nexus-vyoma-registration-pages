@@ -43,6 +43,34 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-20 — Fix Turbopack Google Font Build Resolution
+
+**Done**
+- Removed the global `*.css` Turbopack loader override from [next.config.ts](./next.config.ts), which was intercepting Next’s generated `next/font/google` CSS and causing the internal font module resolution failure.
+- Preserved the existing server-side Google font declarations in [app/layout.tsx](./app/layout.tsx).
+- Configured the `dev` and `build` scripts to use Next.js's webpack fallback because Next 16.4.0's Turbopack font resolver cannot resolve the generated `next/font/google` modules in this project.
+- Verified the fix with TypeScript and a successful webpack production build. Repository-wide ESLint still reports pre-existing issues outside this change.
+
+**Files changed**
+- `next.config.ts`
+- `package.json`
+- `README.md`
+
+### 2026-10-20 — Create Entry Ticket Registration Page (`/register/entry-ticket`)
+
+**Done**
+- Created the Server Component route [app/register/entry-ticket/page.tsx](file:///Users/syedaliquadri/Developer/college-projects/nexus-vyoma/nexus-vyoma-registration-pages/app/register/entry-ticket/page.tsx) with Cashfree v3 JS SDK `<Script>` tag, `<Navbar alwaysVisible />`, `<FooterSection />`, and `<Suspense>`.
+- Created the interactive leaf Client Component [components/registration/EntryTicketView.tsx](file:///Users/syedaliquadri/Developer/college-projects/nexus-vyoma/nexus-vyoma-registration-pages/components/registration/EntryTicketView.tsx).
+- Integrated lifecycle check: fetches `/api/entry-ticket` on mount, redirects if session is unauthenticated or if ticket is already paid, and displays an on-brand Nexus Vyoma all-days pass card if unpaid.
+- Implemented "Pay Now" trigger: securely invokes `/api/payments/create-order` via POST, receives `payment_session_id`, dynamically loads the Cashfree v3 SDK, and triggers `cashfree.checkout({ paymentSessionId, redirectTarget: '_modal' })`.
+- Strictly complied with brand design guidelines (Deep Black, Navy, Crimson, Deep Orange, Golden Amber, vector `NexusMark` and `Spark`), Rule 4 payment security, and Rule 6 asset lock.
+- Verified TypeScript compilation (`npx tsc --noEmit` — 0 errors) and ESLint (`npx eslint` on new files — 0 errors, 0 warnings).
+
+**Files changed**
+- `app/register/entry-ticket/page.tsx`
+- `components/registration/EntryTicketView.tsx`
+- `README.md`
+
 ### 2026-10-20 — Fix Ticket QR Mail Fallback `messageId` Type Error
 
 **Done**
