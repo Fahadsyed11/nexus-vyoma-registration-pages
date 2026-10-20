@@ -9,6 +9,11 @@ import EventEnrollmentView, {
   SerializedEnrolledEvent,
 } from '@/components/registration/EventEnrollmentView';
 import { verifyJWT } from '@/utilities/jwt';
+import { connectToDatabase } from '@/database/db';
+import Event from '@/database/schema/event.schema';
+import RegisterUser from '@/database/schema/register-user.schema';
+import EnrolledIndividualEvent from '@/database/schema/enrolled-individual-event.schema';
+import EnrolledTeamEvent from '@/database/schema/enrolled-team-event.schema';
 
 interface SessionTokenData {
   user?: { id?: string; name?: string; email?: string };
@@ -38,7 +43,6 @@ export const metadata: Metadata = {
     'Enroll in individual and team events, competitions, and workshops for Nexus Vyoma 2026 at ISL Engineering College, Hyderabad.',
 };
 
-
 const DUMMY_AVAILABLE_EVENTS: SerializedEvent[] = [
   {
     _id: 'dummy-avail-ind-1',
@@ -59,16 +63,6 @@ const DUMMY_AVAILABLE_EVENTS: SerializedEvent[] = [
     entry_fee: 150,
     participants_type: 'individual',
     category: 'Design',
-  },
-  {
-    _id: 'dummy-avail-ind-3',
-    title: 'Beatboxing & Solo Rap Arena',
-    short_description: 'Live microphone freestyle cipher and rhythm battles.',
-    venue: 'Open Stage Arena',
-    date_time: '11 Nov 2026 • 05:00 PM',
-    entry_fee: 0,
-    participants_type: 'individual',
-    category: 'Cultural',
   },
   {
     _id: 'dummy-avail-team-1',
@@ -121,11 +115,153 @@ async function EnrollEventContent() {
   const userEmail = sessionUser.email;
   const userName = sessionUser.name;
 
-  const availableEvents = DUMMY_AVAILABLE_EVENTS;
+  let availableEvents: SerializedEvent[] = [];
   let individualEnrolled: SerializedEnrolledEvent[] = [];
   let teamEnrolled: SerializedEnrolledEvent[] = [];
 
-  // Place dummy enrolled events if user has none, to match wireframe presentation
+  try {
+    await connectToDatabase();
+
+    // 1. Fetch live PAID events from MongoDB (free events are already included in 3-day fest entry ticket)
+    interface MongoEventDoc {
+      _id: { toString(): string };
+      title?: string;
+      short_description?: string;
+      long_description?: string;
+      venue?: string;
+      date_time?: string;
+      image_url?: string;
+      entry_fee?: number;
+      participants_type?: string;
+      team_size?: number;
+      participant_limit?: number;
+      category?: string;
+    }
+
+    const rawEvents = (await Event.find({ entry_fee: { $gt: 0 } })
+      .sort({ entry_fee: -1, title: 1 })
+      .lean()) as unknown as MongoEventDoc[];
+    if (rawEvents && rawEvents.length > 0) {
+      availableEvents = rawEvents.map((e) => ({
+        _id: e._id.toString(),
+        title: e.title || 'Untitled Event',
+        short_description: e.short_description || '',
+        long_description: e.long_description || '',
+        venue: e.venue || 'ISL Campus',
+        date_time: e.date_time || 'Schedule TBA',
+        image_url: e.image_url || '',
+        entry_fee: typeof e.entry_fee === 'number' ? e.entry_fee : 0,
+        participants_type: (e.participants_type === 'team' ? 'team' : 'individual') as 'team' | 'individual',
+        team_size: e.team_size || (e.participants_type === 'team' ? 2 : 1),
+        min_team_size: e.team_size || 2,
+        max_team_size: e.participant_limit || e.team_size || 4,
+        category: e.category || 'General',
+      }));
+    }
+
+    // 2. Fetch User's Paid Events from MongoDB
+    interface MongoUserDoc {
+      _id: { toString(): string };
+      email: string;
+      full_name?: string;
+    }
+
+    const regUser = (await RegisterUser.findOne({ email: userEmail }).lean()) as unknown as MongoUserDoc | null;
+    if (regUser) {
+      interface PopulatedIndDoc {
+        _id: { toString(): string };
+        event_id?: MongoEventDoc;
+      }
+
+      const paidInd = (await EnrolledIndividualEvent.find({
+        register_user_id: regUser._id,
+        isPaid: true,
+      })
+        .populate('event_id')
+        .lean()) as unknown as PopulatedIndDoc[];
+
+      if (paidInd && paidInd.length > 0) {
+        individualEnrolled = paidInd.map((pi) => {
+          const ev = pi.event_id;
+          return {
+            _id: pi._id.toString(),
+            event_title: ev?.title || 'Enrolled Event',
+            event_id: ev?._id?.toString() || pi._id.toString(),
+            participation_type: 'individual' as const,
+            event_details: ev
+              ? {
+                  _id: ev._id.toString(),
+                  title: ev.title || '',
+                  short_description: ev.short_description || '',
+                  venue: ev.venue || '',
+                  date_time: ev.date_time || '',
+                  entry_fee: ev.entry_fee || 0,
+                  participants_type: 'individual' as const,
+                  image_url: ev.image_url || '',
+                }
+              : null,
+          };
+        });
+      }
+
+      interface PopulatedTeamDoc {
+        _id: { toString(): string };
+        team_name?: string;
+        team_leader_register_user_id?: { toString(): string };
+        team_length?: number;
+        team_emails?: string[];
+        event_id?: MongoEventDoc;
+      }
+
+      const paidTeams = (await EnrolledTeamEvent.find({
+        $or: [
+          { team_leader_register_user_id: regUser._id },
+          { team_emails: userEmail },
+        ],
+        isPaid: true,
+      })
+        .populate('event_id')
+        .lean()) as unknown as PopulatedTeamDoc[];
+
+      if (paidTeams && paidTeams.length > 0) {
+        teamEnrolled = paidTeams.map((pt) => {
+          const ev = pt.event_id;
+          const isLeader = pt.team_leader_register_user_id?.toString() === regUser._id.toString();
+          return {
+            _id: pt._id.toString(),
+            event_title: ev?.title || pt.team_name || 'Enrolled Team Event',
+            event_id: ev?._id?.toString() || pt._id.toString(),
+            participation_type: 'team' as const,
+            team_name: pt.team_name,
+            team_leader_email: isLeader ? userEmail : (pt.team_emails?.[0] || ''),
+            team_size: pt.team_length || (pt.team_emails?.length || 0) + 1,
+            team_members: pt.team_emails || [],
+            event_details: ev
+              ? {
+                  _id: ev._id.toString(),
+                  title: ev.title || '',
+                  short_description: ev.short_description || '',
+                  venue: ev.venue || '',
+                  date_time: ev.date_time || '',
+                  entry_fee: ev.entry_fee || 0,
+                  participants_type: 'team' as const,
+                  team_size: ev.team_size || pt.team_length || 4,
+                }
+              : null,
+          };
+        });
+      }
+    }
+  } catch (err) {
+    console.error('Failed to query MongoDB in enroll-event page:', err);
+  }
+
+  // Graceful fallback to dummy available events if MongoDB collection is empty
+  if (availableEvents.length === 0) {
+    availableEvents = DUMMY_AVAILABLE_EVENTS;
+  }
+
+  // Graceful fallback to dummy enrolled events if user has none, to keep sections visible
   if (individualEnrolled.length === 0) {
     individualEnrolled = [
       {

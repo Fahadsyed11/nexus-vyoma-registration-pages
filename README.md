@@ -124,6 +124,38 @@ Newest first.
 - `components/ui/SlideCommit.tsx`
 - `README.md`
 
+### 2026-10-20 — Filter "Add Events" Catalog Strictly to Paid Events (`entry_fee > 0`)
+
+**Done**
+- `app/register/enroll-event/page.tsx`:
+  - Updated MongoDB query to `Event.find({ entry_fee: { $gt: 0 } }).sort({ entry_fee: -1, title: 1 }).lean()` so only paid events are retrieved from the database (free events are already included with the 3-day fest entry ticket).
+  - Cleaned up dummy available events fallback to ensure only paid competitions are listed.
+- `components/registration/EventEnrollmentView.tsx`:
+  - Enforced `(ev.entry_fee || 0) > 0` condition in both `eligibleIndividualEvents` and `eligibleTeamEvents`.
+  - Updated section header note to clarify: *"All 8 free events are included with your pass • Add paid competitions below"*, displaying the count of open paid competitions.
+
+**Files changed**
+- `app/register/enroll-event/page.tsx`
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
+### 2026-10-20 — MongoDB Integration & Side-by-Side Dual-Box Add Events UI on `/register/enroll-event`
+
+**Done**
+- `app/register/enroll-event/page.tsx`:
+  - Connected to MongoDB (`Event.find({}).sort({ entry_fee: -1, title: 1 }).lean()`) to fetch live competition and workshop records directly.
+  - Queried user's real paid enrollments (`EnrolledIndividualEvent` and `EnrolledTeamEvent`) with graceful fallback to maintain visual continuity when zero enrollments exist.
+- `components/registration/EventEnrollmentView.tsx`:
+  - Retained `[02] Individual Events (Paid)` (smooth horizontal scroll) and `[03] Team Events (Paid)` (collapsible row accordion) exactly as originally structured.
+  - Redesigned `[04] ADD EVENTS` into a side-by-side dual-box layout matching the user's sketch:
+    - **Left Box**: Segmented switch between `[ TEAM ]` and `[ INDIVIDUAL ]` with live badge count and a scrollable list of available events containing titles, descriptions, format/squad tags, venue/time metadata, fees, and `+ Select Event` actions.
+    - **Right Box**: Header titled `SELECTED EVENTS (not paid)` showing live selected events in real-time (individual cards with fee and remove button; team cards with squad name input, leader email, member email inputs, and remove button), followed by the total summary and `Proceed To Check Out` button.
+
+**Files changed**
+- `app/register/enroll-event/page.tsx`
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
 ### 2026-10-20 — Match `/events` Page Theme & Framing on `/register/entry-ticket`
 
 **Done**
