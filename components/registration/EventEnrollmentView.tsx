@@ -40,10 +40,17 @@ interface EventEnrollmentViewProps {
   initialTeamEnrolled: SerializedEnrolledEvent[];
 }
 
-interface SelectedTeamEventState {
+export interface VerifiedMember {
+  email: string;
+  name?: string;
+  college?: string;
+}
+
+export interface SelectedTeamEventState {
   eventId: string;
   teamName: string;
   teamMembers: string[];
+  verifiedDetails?: VerifiedMember[];
 }
 
 export default function EventEnrollmentView({
@@ -68,6 +75,11 @@ export default function EventEnrollmentView({
   // Selected Pending Events for Checkout
   const [selectedIndividualIds, setSelectedIndividualIds] = useState<string[]>([]);
   const [selectedTeamEvents, setSelectedTeamEvents] = useState<SelectedTeamEventState[]>([]);
+
+  // Progressive Teammate Verification States
+  const [pendingMemberEmail, setPendingMemberEmail] = useState<Record<string, string>>({});
+  const [verifyingMember, setVerifyingMember] = useState<Record<string, boolean>>({});
+  const [memberError, setMemberError] = useState<Record<string, string | null>>({});
 
   // Submission & feedback states
   const [submitting, setSubmitting] = useState(false);
@@ -171,19 +183,27 @@ export default function EventEnrollmentView({
   // Add team event to pending selection
   const handleSelectTeamEvent = (eventId: string) => {
     if (!eventId || selectedTeamEvents.some((t) => t.eventId === eventId)) return;
-    const ev = availableEvents.find((e) => e._id === eventId);
-    const minMembers = Math.max(0, (ev?.min_team_size || ev?.team_size || 1) - 1);
-    const initialMembers = Array(minMembers).fill('');
-
     setSelectedTeamEvents((prev) => [
       ...prev,
-      { eventId, teamName: '', teamMembers: initialMembers },
+      { eventId, teamName: '', teamMembers: [], verifiedDetails: [] },
     ]);
+    setPendingMemberEmail((prev) => ({ ...prev, [eventId]: '' }));
+    setMemberError((prev) => ({ ...prev, [eventId]: null }));
     setFeedbackError(null);
   };
 
   const handleRemoveTeam = (eventId: string) => {
     setSelectedTeamEvents((prev) => prev.filter((t) => t.eventId !== eventId));
+    setPendingMemberEmail((prev) => {
+      const next = { ...prev };
+      delete next[eventId];
+      return next;
+    });
+    setMemberError((prev) => {
+      const next = { ...prev };
+      delete next[eventId];
+      return next;
+    });
   };
 
   const updateTeamName = (eventId: string, name: string) => {
@@ -192,33 +212,112 @@ export default function EventEnrollmentView({
     );
   };
 
-  const updateTeamMember = (eventId: string, index: number, value: string) => {
-    setSelectedTeamEvents((prev) =>
-      prev.map((t) => {
-        if (t.eventId !== eventId) return t;
-        const updated = [...t.teamMembers];
-        updated[index] = value;
-        return { ...t, teamMembers: updated };
-      })
-    );
+  // Progressive Teammate Verification: Verify email & add to squad
+  const handleVerifyAndAddMember = async (eventId: string) => {
+    const rawEmail = pendingMemberEmail[eventId] || '';
+    const email = rawEmail.trim().toLowerCase();
+    setMemberError((prev) => ({ ...prev, [eventId]: null }));
+
+    if (!email) {
+      setMemberError((prev) => ({ ...prev, [eventId]: 'Please enter a teammate email.' }));
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setMemberError((prev) => ({ ...prev, [eventId]: 'Please enter a valid email format.' }));
+      return;
+    }
+
+    if (email === userEmail.toLowerCase()) {
+      setMemberError((prev) => ({
+        ...prev,
+        [eventId]: 'You are already registered as Team Leader. Enter your teammate’s email.',
+      }));
+      return;
+    }
+
+    const currentTeam = selectedTeamEvents.find((t) => t.eventId === eventId);
+    if (currentTeam?.teamMembers.includes(email)) {
+      setMemberError((prev) => ({
+        ...prev,
+        [eventId]: 'This teammate is already added to this squad.',
+      }));
+      return;
+    }
+
+    const ev = availableEvents.find((e) => e._id === eventId);
+    const maxTeammates = Math.max(1, (ev?.max_team_size || ev?.team_size || 4) - 1);
+    if ((currentTeam?.teamMembers.length || 0) >= maxTeammates) {
+      setMemberError((prev) => ({
+        ...prev,
+        [eventId]: `Maximum squad limit (${ev?.max_team_size || ev?.team_size || 4} members including leader) reached.`,
+      }));
+      return;
+    }
+
+    setVerifyingMember((prev) => ({ ...prev, [eventId]: true }));
+
+    try {
+      const res = await fetch('/api/registration/verify-team-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      const result = await res.json().catch(() => null);
+
+      if (res.ok && result?.registered && result?.data) {
+        const verifiedInfo: VerifiedMember = {
+          email: result.data.email,
+          name: result.data.name,
+          college: result.data.college,
+        };
+
+        setSelectedTeamEvents((prev) =>
+          prev.map((t) => {
+            if (t.eventId !== eventId) return t;
+            return {
+              ...t,
+              teamMembers: [...t.teamMembers, verifiedInfo.email],
+              verifiedDetails: [...(t.verifiedDetails || []), verifiedInfo],
+            };
+          })
+        );
+
+        // Clear input for the next member
+        setPendingMemberEmail((prev) => ({ ...prev, [eventId]: '' }));
+        setMemberError((prev) => ({ ...prev, [eventId]: null }));
+      } else {
+        setMemberError((prev) => ({
+          ...prev,
+          [eventId]:
+            result?.message ||
+            'Attendee not registered yet. All team members must register for Nexus Vyoma first.',
+        }));
+      }
+    } catch {
+      setMemberError((prev) => ({
+        ...prev,
+        [eventId]: 'Failed to verify member. Please check your connection.',
+      }));
+    } finally {
+      setVerifyingMember((prev) => ({ ...prev, [eventId]: false }));
+    }
   };
 
-  const addMemberField = (eventId: string) => {
+  const handleRemoveVerifiedMember = (eventId: string, memberEmail: string) => {
     setSelectedTeamEvents((prev) =>
       prev.map((t) => {
         if (t.eventId !== eventId) return t;
-        return { ...t, teamMembers: [...t.teamMembers, ''] };
+        return {
+          ...t,
+          teamMembers: t.teamMembers.filter((em) => em !== memberEmail),
+          verifiedDetails: (t.verifiedDetails || []).filter((m) => m.email !== memberEmail),
+        };
       })
     );
-  };
-
-  const removeMemberField = (eventId: string, index: number) => {
-    setSelectedTeamEvents((prev) =>
-      prev.map((t) => {
-        if (t.eventId !== eventId) return t;
-        return { ...t, teamMembers: t.teamMembers.filter((_, i) => i !== index) };
-      })
-    );
+    setMemberError((prev) => ({ ...prev, [eventId]: null }));
   };
 
   // Fee calculation
@@ -255,6 +354,13 @@ export default function EventEnrollmentView({
       const eventObj = availableEvents.find((e) => e._id === teamItem.eventId);
       if (!teamItem.teamName.trim()) {
         setFeedbackError(`Please specify a team name for "${eventObj?.title || 'the team event'}".`);
+        return;
+      }
+      const minMembers = Math.max(0, (eventObj?.min_team_size || eventObj?.team_size || 2) - 1);
+      if (teamItem.teamMembers.length < minMembers) {
+        setFeedbackError(
+          `"${eventObj?.title || 'Team event'}" requires at least ${minMembers} registered teammate(s). Currently added: ${teamItem.teamMembers.length}.`
+        );
         return;
       }
     }
@@ -841,40 +947,124 @@ export default function EventEnrollmentView({
                             />
                           </div>
 
-                          {/* Squad Members */}
-                          <div className="flex flex-col gap-1.5 pt-1">
+                          {/* Squad Members: Progressive Verification */}
+                          <div className="flex flex-col gap-2 pt-1">
                             <div className="flex items-center justify-between">
                               <label className="font-mono text-[10px] uppercase text-zinc-400">
-                                Teammates ({tItem.teamMembers.length} added)
+                                Team Members ({tItem.teamMembers.length} verified • Min {Math.max(1, (ev.min_team_size || ev.team_size || 2) - 1)} required)
                               </label>
-                              <button
-                                type="button"
-                                onClick={() => addMemberField(tItem.eventId)}
-                                className="text-[10px] font-mono text-[#FF8833] hover:text-[#FF6A00] cursor-pointer"
-                              >
-                                + Add Member
-                              </button>
+                              <span className="text-[10px] font-mono text-zinc-500">
+                                Max {(ev.max_team_size || ev.team_size || 4) - 1} Teammates
+                              </span>
                             </div>
 
-                            {tItem.teamMembers.map((memberEmail, mIdx) => (
-                              <div key={mIdx} className="flex items-center gap-2">
-                                <input
-                                  type="email"
-                                  value={memberEmail}
-                                  onChange={(e) => updateTeamMember(tItem.eventId, mIdx, e.target.value)}
-                                  placeholder={`Teammate #${mIdx + 2} email`}
-                                  className="flex-1 bg-black/60 text-white font-mono text-xs px-3 py-1.5 rounded-lg border border-white/[0.1] focus:border-[#FF6A00] focus:outline-none"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() => removeMemberField(tItem.eventId, mIdx)}
-                                  aria-label="Remove teammate field"
-                                  className="p-1 text-zinc-500 hover:text-red-400 cursor-pointer text-sm"
-                                >
-                                  ×
-                                </button>
+                            {/* Verified Members List */}
+                            {(tItem.verifiedDetails || []).map((m, mIdx) => (
+                              <div
+                                key={m.email}
+                                className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs"
+                              >
+                                <div className="flex items-center gap-2 min-w-0 pr-2">
+                                  <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[11px] font-bold shrink-0">
+                                    ✓
+                                  </span>
+                                  <div className="flex flex-col min-w-0">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                      <span className="text-white font-medium text-xs">
+                                        Team Member - {mIdx + 1}:
+                                      </span>
+                                      <span className="text-emerald-300 font-medium truncate">
+                                        {m.name || 'Registered Attendee'}
+                                      </span>
+                                    </div>
+                                    <span className="text-zinc-400 font-mono text-[11px] truncate">
+                                      {m.email}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 uppercase font-semibold">
+                                    VERIFIED
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveVerifiedMember(tItem.eventId, m.email)}
+                                    aria-label={`Remove ${m.name || m.email}`}
+                                    className="p-1 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
+                                  >
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
                               </div>
                             ))}
+
+                            {/* Progressive Input for Next Team Member with + (Verify) button */}
+                            {tItem.teamMembers.length < Math.max(1, (ev.max_team_size || ev.team_size || 4) - 1) ? (
+                              <div className="flex flex-col gap-1 pt-0.5">
+                                <label className="font-mono text-[10px] uppercase text-zinc-400">
+                                  Add Team Member - {tItem.teamMembers.length + 1} (Must be registered)
+                                </label>
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="email"
+                                    value={pendingMemberEmail[tItem.eventId] || ''}
+                                    onChange={(e) => {
+                                      setPendingMemberEmail((prev) => ({
+                                        ...prev,
+                                        [tItem.eventId]: e.target.value,
+                                      }));
+                                      if (memberError[tItem.eventId]) {
+                                        setMemberError((prev) => ({
+                                          ...prev,
+                                          [tItem.eventId]: null,
+                                        }));
+                                      }
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        handleVerifyAndAddMember(tItem.eventId);
+                                      }
+                                    }}
+                                    disabled={verifyingMember[tItem.eventId]}
+                                    placeholder={`Enter Team Member - ${tItem.teamMembers.length + 1} email`}
+                                    className="flex-1 bg-black/60 text-white font-mono text-xs px-3 py-2 rounded-lg border border-white/[0.12] focus:border-[#FF6A00] focus:outline-none disabled:opacity-50"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleVerifyAndAddMember(tItem.eventId)}
+                                    disabled={
+                                      verifyingMember[tItem.eventId] ||
+                                      !(pendingMemberEmail[tItem.eventId] || '').trim()
+                                    }
+                                    title={`Verify & Add Team Member - ${tItem.teamMembers.length + 1}`}
+                                    className="h-8.5 px-3 rounded-lg border border-[#FF6A00]/70 bg-[#FF6A00]/20 hover:bg-[#FF6A00] text-white font-bold text-sm flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
+                                  >
+                                    {verifyingMember[tItem.eventId] ? (
+                                      <svg className="animate-spin w-4 h-4 text-[#FF6A00]" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                      </svg>
+                                    ) : (
+                                      <span className="text-base leading-none font-bold">+</span>
+                                    )}
+                                  </button>
+                                </div>
+
+                                {memberError[tItem.eventId] && (
+                                  <p className="text-[11px] font-mono text-red-400 px-1 pt-0.5">
+                                    {memberError[tItem.eventId]}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.06] text-[11px] font-mono text-zinc-500 text-center">
+                                Maximum squad limit reached for this event.
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

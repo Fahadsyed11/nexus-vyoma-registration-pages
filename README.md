@@ -124,6 +124,24 @@ Newest first.
 - `components/ui/SlideCommit.tsx`
 - `README.md`
 
+### 2026-10-20 — Progressive Teammate Verification with Live `+` Verify Button
+
+**Done**
+- `app/api/registration/verify-team-member/route.ts`:
+  - Created a dedicated endpoint that verifies if a teammate's email is already registered for Nexus Vyoma in MongoDB without sending an OTP.
+  - Returns attendee name, email, and college on success, or an informative error message if unregistered or invalid.
+- `components/registration/EventEnrollmentView.tsx`:
+  - Implemented progressive disclosure for squad members:
+    - Starts with Team Member 1 email input and an inline `+` (Verify & Add) button.
+    - When clicked, queries `/api/registration/verify-team-member`, verifies attendee status, and displays the teammate as a verified card with attendee name and `[VERIFIED]` badge.
+    - Only after Team Member 1 is successfully verified does the input field for Team Member 2 appear with its own `+` button, progressively enabling squad buildup up to the event limit.
+    - Added squad size validation in `handleProceedToCheckout` ensuring the minimum required teammates are verified.
+
+**Files changed**
+- `app/api/registration/verify-team-member/route.ts`
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
 ### 2026-10-20 — Filter "Add Events" Catalog Strictly to Paid Events (`entry_fee > 0`)
 
 **Done**
