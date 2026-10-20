@@ -10,6 +10,11 @@ import EventEnrollmentView, {
   SerializedEnrolledEvent,
 } from '@/components/registration/EventEnrollmentView';
 import { verifyJWT } from '@/utilities/jwt';
+import { connectToDatabase } from '@/database/db';
+import Event from '@/database/schema/event.schema';
+import RegisterUser from '@/database/schema/register-user.schema';
+import EnrolledIndividualEvent from '@/database/schema/enrolled-individual-event.schema';
+import EnrolledTeamEvent from '@/database/schema/enrolled-team-event.schema';
 
 interface SessionTokenData {
   user?: { id?: string; name?: string; email?: string };

@@ -380,6 +380,7 @@ const SlideCommit: React.FC<SlideCommitProps> = ({
       style={
         {
           width,
+          maxWidth: '100%',
           height,
           '--sc-track': trackColor,
           '--sc-ink': handleColor,

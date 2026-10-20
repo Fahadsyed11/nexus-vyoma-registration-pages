@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     try {
         // Verify the order directly with Cashfree.
         const response = await cashfree.PGFetchOrder(orderId);
-        const orderStatus = response.data.order_status;
+        const orderStatus = response?.data?.order_status;
 
         if (orderStatus === "PAID") {
             return NextResponse.json({
@@ -55,15 +55,10 @@ export async function GET(request: NextRequest) {
             }, { status: 400 });
         }
 
-        // The payment is not confirmed as successful or definitively failed.
-        return NextResponse.json({
-            message: "Payment pending",
-            status: 200,
-            data: null,
-            error: null,
-            redirect: true,
-            redirectUrl: "/payment/pending"
-        }, { status: 200 });
+        // The payment is not confirmed as successful or definitively failed (pending or user dropped).
+        return NextResponse.redirect(
+            new URL(`/payment/pending?order_id=${orderId}`, request.url)
+        );
     } catch (error) {
         // Let Next.js internal signals (prerender bail-out, redirect, notFound)
         // pass through. Only real errors continue to the code below.
