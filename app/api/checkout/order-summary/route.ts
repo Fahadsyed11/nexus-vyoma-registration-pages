@@ -156,6 +156,7 @@ export async function POST(_request: NextRequest) {
         transaction.enrolledIndividualEvents = enrolledIndividualEvents.map(event => event._id);
         transaction.teamEventsAmount = teamEventsAmount;
         transaction.individualEventsAmount = individualEventsAmount;
+        transaction.status = "creating";
         transaction.reservation_time = new Date(Date.now() + 30 * 60 * 1000); // Set reservation time to 30 minutes from now
         await transaction.save();
 

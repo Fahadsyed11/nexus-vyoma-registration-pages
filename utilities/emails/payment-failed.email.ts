@@ -1,20 +1,34 @@
 import { sendEmailWithSES } from "../aws/helper.aws";
 import EmailSchema from "@/database/schema/email.schema";
 
+// Escapes text before placing it inside HTML (the gateway message is external text)
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export async function sendEmailToPaymentFailed(
-    to: string,
-    user_name: string,
-    transaction_id: string,
-    order_id: string,
-    amount: number
+  to: string,
+  user_name: string,
+  order_id: string,
+  amount: number,
+  message: string
 ) {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || "https://nexusvyoma.islec.edu.in";
-    const formattedAmount = Number(amount || 0).toLocaleString('en-IN');
-    const checkoutUrl = `${baseUrl}/register/checkout-event`;
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '') || "https://nexusvyoma.islec.edu.in";
+  const formattedAmount = Number(amount || 0).toLocaleString('en-IN');
+  const checkoutUrl = `${baseUrl}/register/checkout-event`;
 
-    const subject = `Payment Notice: Registration Incomplete for Nexus Vyoma 2026 [Order #${order_id}]`;
+  // Failure reason shown to the user, with a fallback if none was provided
+  const reason = message?.trim() || "The payment could not be completed.";
+  const reasonHtml = escapeHtml(reason);
 
-    const textContent = `NEXUS VYOMA 2026 — PAYMENT NOTICE
+  const subject = `Payment Notice: Registration Incomplete for Nexus Vyoma 2026 [Order #${order_id}]`;
+
+  const textContent = `NEXUS VYOMA 2026 — PAYMENT NOTICE
 
 Hello ${user_name},
 
@@ -23,9 +37,9 @@ We noticed that your recent payment attempt for Nexus Vyoma 2026 could not be co
 TRANSACTION SUMMARY:
 • Attendee: ${user_name}
 • Order ID: ${order_id}
-• Transaction Reference: ${transaction_id}
 • Amount: ₹${formattedAmount}
 • Status: Failed / Incomplete
+• Reason: ${reason}
 
 IMPORTANT NOTICE ON DEBITED FUNDS:
 If money was deducted from your bank account, card, or UPI app, it will typically be refunded automatically by your bank or payment provider within 3–5 business days.
@@ -40,7 +54,7 @@ Need assistance? Contact our team via the portal or reply directly to this email
 ISL Engineering College, Hyderabad
 Ideas • People • Culture • Beyond`;
 
-    const htmlContent = `<!DOCTYPE html>
+  const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -127,16 +141,16 @@ Ideas • People • Culture • Beyond`;
                         <td style="padding: 4px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: #E5E7EB;">${order_id}</td>
                       </tr>
                       <tr>
-                        <td style="padding: 4px 0; color: #9CA3AF;">Transaction Ref:</td>
-                        <td style="padding: 4px 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: #9CA3AF; font-size: 12px;">${transaction_id}</td>
-                      </tr>
-                      <tr>
                         <td style="padding: 4px 0; color: #9CA3AF;">Amount:</td>
                         <td style="padding: 4px 0; font-weight: 700; font-size: 15px; color: #FFFFFF;">&#8377;${formattedAmount}</td>
                       </tr>
                       <tr>
                         <td style="padding: 4px 0; color: #9CA3AF;">Status:</td>
                         <td style="padding: 4px 0; font-weight: 600; color: #EF4444;">Failed / Incomplete</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 4px 0; color: #9CA3AF; vertical-align: top;">Reason:</td>
+                        <td style="padding: 4px 0; color: #E5E7EB; line-height: 18px;">${reasonHtml}</td>
                       </tr>
                     </table>
                   </td>
@@ -197,27 +211,27 @@ Ideas • People • Culture • Beyond`;
 </body>
 </html>`;
 
-    const { error, messageId, success } = await sendEmailWithSES(to, subject, htmlContent, textContent);
+  const { error, messageId, success } = await sendEmailWithSES(to, subject, htmlContent, textContent);
 
-    if (!success) {
-        return {
-            success: false,
-            error: error,
-            messageId: messageId,
-        };
-    }
-
-    // Save the email details to the database
-    await EmailSchema.create({
-        email: to,
-        type: "payment_failed",
-        message_id: messageId,
-        subject,
-    });
-
+  if (!success) {
     return {
-        success: true,
-        error: null,
-        messageId: messageId,
+      success: false,
+      error: error,
+      messageId: messageId,
     };
+  }
+
+  // Save the email details to the database
+  await EmailSchema.create({
+    email: to,
+    type: "payment_failed",
+    message_id: messageId,
+    subject,
+  });
+
+  return {
+    success: true,
+    error: null,
+    messageId: messageId,
+  };
 }
