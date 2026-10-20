@@ -32,8 +32,11 @@ export async function POST(request: NextRequest) {
             }
 
             if (paymentStatus === "SUCCESS") {
-                const qr_code = await generateQRCode({ userId: entryTicket.userId, userEmail: customerEmail })
-                await sendQREmail(customerEmail, customerName, qr_code)
+                if (entryTicket && entryTicket.isPaid) {
+                    const qr_code = await generateQRCode({ userId: entryTicket.userId, userEmail: customerEmail })
+                    await sendQREmail(customerEmail, customerName, qr_code)
+                }
+                
                 entryTicket.isPaid = true;
                 entryTicket.paymentId = body.data?.payment?.payment_id || null;
                 await entryTicket.save();
