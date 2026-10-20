@@ -27,41 +27,11 @@ export async function GET(request: NextRequest) {
             }, { status: 400 })
         }
 
-        await connectToDatabase();
-
-        // Find the transaction associated with this Cashfree order.
-        const transaction = await Transaction.findOne({
-            order_id: orderId,
-        });
-
-        if (!transaction) {
-            return NextResponse.json({
-                message: "Order not found",
-                status: 404,
-                data: null,
-                error: "Order not found",
-                redirect: true,
-                redirectUrl: "/payment/failure?reason=order_not_found"
-            }, { status: 404 })
-        }
-
         // Verify the order directly with Cashfree.
         const response = await cashfree.PGFetchOrder(orderId);
         const orderStatus = response.data.order_status;
 
         if (orderStatus === "PAID") {
-            // Record the verified status. Your webhook/fulfillment logic
-            // should also handle success idempotently.
-            await Transaction.updateOne(
-                {
-                    _id: transaction._id,
-                    status: { $in: ["pending", "creating"] },
-                },
-                {
-                    $set: { status: "completed" },
-                }
-            );
-
             return NextResponse.json({
                 message: "Payment successful",
                 status: 200,
@@ -76,15 +46,6 @@ export async function GET(request: NextRequest) {
             orderStatus === "EXPIRED" ||
             orderStatus === "TERMINATED"
         ) {
-            await Transaction.updateOne(
-                {
-                    _id: transaction._id,
-                    status: { $in: ["pending", "creating"] },
-                },
-                {
-                    $set: { status: "failed" },
-                }
-            );
 
             return NextResponse.json({
                 message: "Payment failed",
