@@ -125,9 +125,17 @@ export async function POST() {
 
         const cashfreeResponse = await cashfree.PGCreateOrder(cashfreeRequest);
 
+        const cashfreeData = cashfreeResponse.data;
+
         return NextResponse.json({
             message: "Payment initiation successful",
-            data: cashfreeResponse,
+            data: {
+                order_id: cashfreeData.order_id,
+                order_status: cashfreeData.order_status,
+                payment_session_id: cashfreeData.payment_session_id,
+                order_amount: cashfreeData.order_amount,
+                order_currency: cashfreeData.order_currency,
+            },
             error: null,
             redirect: false,
             redirectUrl: null
