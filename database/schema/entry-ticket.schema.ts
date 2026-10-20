@@ -37,7 +37,7 @@ const entryTicketSchema = new mongoose.Schema({
     orderId: {
         type: String,
         default: null
-    }
+    },
 }, { timestamps: true, overwriteModels: true });
 
 entryTicketSchema.index({ userId: 1, transactionId: 1 }, { unique: true });
