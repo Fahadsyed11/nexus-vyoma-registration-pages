@@ -88,6 +88,72 @@ export async function POST() {
 
         if (entryTicket && entryTicket.isPaid) {
             // If the user has already paid for the entry ticket, Then now you can check for enrolled event payments.
+
+            // Check if the user has any transaction with status "creating" latest one. If yes, then return that transaction details to the user. If not, then create a new transaction with status "creating" and return that transaction details to the user.
+            const latestCreatingTransaction = await Transaction.findOne({
+                userId: user._id,
+                status: "creating",
+            }).sort({ createdAt: -1 })
+
+            // If the latest creating transaction exists and its reservation time is still valid, return that transaction details to the user.
+            if (latestCreatingTransaction && latestCreatingTransaction.reservation_time > new Date()) {
+
+                const teamEventsAmount = latestCreatingTransaction.teamEventsAmount as number;
+                const individualEventsAmount = latestCreatingTransaction.individualEventsAmount as number;
+
+                let totalAmount = teamEventsAmount + individualEventsAmount;
+                const serviceFee = 30
+
+                totalAmount += serviceFee;
+
+                const eventOrderId = `NV_${latestCreatingTransaction._id}_${Date.now()}`;
+
+                const cashfreeRequest = {
+                    order_amount: totalAmount,
+                    order_currency: "INR",
+                    order_id: eventOrderId,
+                    order_meta: {
+                        return_url: `${appUrl}/api/payments/return?order_id={order_id}`,
+                        notify_url: `${appUrl}/api/payments/webhook`,
+                    },
+                    customer_details: {
+                        customer_id: user._id.toString(),
+                        customer_phone: user.phone_number,
+                        customer_email: user.email,
+                        customer_name: user.full_name,
+                    },
+                }
+
+                const cashfreeResponse = await cashfree.PGCreateOrder(cashfreeRequest);
+
+                const cashfreeData = cashfreeResponse.data;
+
+                return NextResponse.json({
+                    message: "Payment initiation successful",
+                    data: {
+                        order_id: cashfreeData.order_id,
+                        order_status: cashfreeData.order_status,
+                        payment_session_id: cashfreeData.payment_session_id,
+                        order_amount: cashfreeData.order_amount,
+                        order_currency: cashfreeData.order_currency,
+                    },
+                    error: null,
+                    redirect: false,
+                    redirectUrl: null
+                }, { status: 200 })
+
+            } else {
+                return NextResponse.json(
+                    {
+                        message: "No valid transaction found. Please initiate a new transaction.",
+                        data: null,
+                        error: "NO_VALID_TRANSACTION",
+                        redirect: true,
+                        redirectUrl: "/register/enroll-event",
+                    },
+                    { status: 404 }
+                );
+            }
         }
 
         let userEntryTicket;
