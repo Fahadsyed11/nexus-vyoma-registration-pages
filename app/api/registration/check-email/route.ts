@@ -4,11 +4,11 @@ import { connectToDatabase } from "@/database/db";
 import RegisterUser from "@/database/schema/register-user.schema"
 import OtpVerification from "@/database/schema/otp-verification.schema"
 
-import { generateOtp } from "@/utilities/generate-otp";
-import { sendOTPEmail } from "@/utilities/emails/otp-qr";
-
 import { validateDto } from "@/dto/validate.dto-helper";
 import { checkUserEmailDto } from "@/dto/(register)/check-email.dto";
+
+import { generateOtp } from "@/utilities/generate-otp";
+import { sendOTPEmail } from "@/utilities/emails/otp.email";
 
 export async function POST(request: NextRequest) {
     try {
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
             email
         });
 
-        if(!user) {
+        if (!user) {
             return NextResponse.json({
                 message: "User not found",
                 data: null,
@@ -75,20 +75,13 @@ export async function POST(request: NextRequest) {
         );
 
         if (!emailSuccess) {
-            console.warn("⚠️ AWS SES failed to send OTP email (likely SES Sandbox recipient restrictions):", error);
-            if (process.env.NODE_ENV === "development") {
-                console.log("\n=======================================================");
-                console.log(`🔐 [NEXUS VYOMA DEV OTP]: >>> ${otp} <<< for ${email}`);
-                console.log("=======================================================\n");
-            } else {
-                return NextResponse.json({
-                    message: "Failed to send OTP email",
-                    data: null,
-                    error: error,
-                    redirect: false,
-                    redirect_url: null
-                }, { status: 500 });
-            }
+            return NextResponse.json({
+                message: "Failed to send OTP email",
+                data: null,
+                error: error || "Unknown error",
+                redirect: false,
+                redirect_url: null
+            }, { status: 500 });
         }
 
         await OtpVerification.create({
@@ -106,7 +99,6 @@ export async function POST(request: NextRequest) {
             redirect: true,
             redirect_url: "/verify-email"
         }, { status: 200 });
-
 
     } catch (error) {
         return NextResponse.json({

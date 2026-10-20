@@ -2,6 +2,11 @@ import { Cashfree, CFEnvironment } from "cashfree-pg";
 
 const isProduction = process.env.NODE_ENV === "production";
 
+// This value is deliberately derived server-side and returned with an order.
+// The browser must initialise the Cashfree SDK in the same environment that
+// created its payment session.
+export const cashfreeMode = isProduction ? "production" : "sandbox";
+
 const sandbox_payment_api_secret_key = process.env.SANDBOX_PAYMENT_KEY_SECRET;
 const sandbox_payment_api_id = process.env.SANDBOX_PAYMENT_KEY_ID;
 

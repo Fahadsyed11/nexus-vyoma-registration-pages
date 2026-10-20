@@ -17,30 +17,26 @@ const transactionSchema = new mongoose.Schema(
             ref: "EnrolledTeamEvent",
             default: [],
         },
-        // Kept for compatibility: this is the leader's own ticket, if present.
-        // The full list of attendees charged for entry tickets is entryTicketEmails.
-        entryTicketId: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "EntryTicket",
-            default: undefined,
-        },
-        entryTicketEmails: {
-            type: [String],
-            default: [],
-            set: (emails: string[]) =>
-                (emails ?? []).map((email) => String(email).trim().toLowerCase()).filter(Boolean),
-        },
         status: {
             type: String,
             enum: ["pending", "completed", "failed", "idle", "creating"],
             required: true,
             default: "idle",
         },
-        orderId: {
+        paymentId: {
             type: String,
             default: undefined,
         },
-        totalAmount: {
+        individualEventsAmount: {
+            type: Number,
+            required: true,
+            min: 0,
+            validate: {
+                validator: Number.isFinite,
+                message: "totalAmount must be a finite number",
+            },
+        },
+        teamEventsAmount: {
             type: Number,
             required: true,
             min: 0,

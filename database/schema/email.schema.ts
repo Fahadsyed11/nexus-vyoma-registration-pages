@@ -8,7 +8,7 @@ const emailSchema = new mongoose.Schema({
     type: {
         type: String,
         required: true,
-        enum: ["new_user", "otp_verification", "qr_code", "special", "other"],
+        enum: ["new_user", "otp_verification", "ticket_qr", "special", "payment_failed", "team_member_not_registered", "other"],
     },
     message_id: {
         type: String,

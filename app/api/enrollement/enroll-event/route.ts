@@ -1,6 +1,7 @@
 import { connectToDatabase } from "@/database/db";
 import EnrolledIndividualEvent from "@/database/schema/enrolled-individual-event.schema";
 import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
+import EntryTicket from "@/database/schema/entry-ticket.schema";
 import Event from "@/database/schema/event.schema";
 import RegisterUser from "@/database/schema/register-user.schema";
 import { verifyJWT } from "@/utilities/jwt";
@@ -68,8 +69,22 @@ export async function GET(request: NextRequest) {
                 { status: 404 });
         }
 
-        // Fetch All events.
-        const events = await Event.find();
+        const entryTicket = await EntryTicket.findOne({ userId: user._id, isPaid: true })
+
+        if (!entryTicket) {
+            return NextResponse.json(
+                {
+                    message: "Entry ticket not found for the user",
+                    data: null,
+                    error: "Entry ticket does not exist",
+                    redirect: true,
+                    redirectUrl: "/register/entry-ticket",
+                },
+                { status: 404 });
+        }
+
+        // Fetch All events. (Only events with entry fee greater than 0)
+        const events = await Event.find({ entry_fee: { $gt: 0 } });
 
         const allIndividualEvents = events.filter(event => event.participants_type === "individual");
         const allTeamEvents = events.filter(event => event.participants_type === "team");
@@ -286,7 +301,7 @@ export async function POST(request: NextRequest) {
 
         await connectToDatabase();
 
-        const event = await Event.findById(eventId);
+        const event = await Event.findOne({ _id: eventId, entry_fee: { $gt: 0 } });
 
         if (!event) {
             return NextResponse.json(
@@ -311,6 +326,20 @@ export async function POST(request: NextRequest) {
                     error: "User does not exist",
                     redirect: true,
                     redirectUrl: "/register/check-email",
+                },
+                { status: 404 });
+        }
+
+        const entryTicket = await EntryTicket.findOne({ userId: user._id, isPaid: true })
+
+        if (!entryTicket) {
+            return NextResponse.json(
+                {
+                    message: "Entry ticket not found for the user",
+                    data: null,
+                    error: "Entry ticket does not exist",
+                    redirect: true,
+                    redirectUrl: "/register/entry-ticket",
                 },
                 { status: 404 });
         }
@@ -386,8 +415,8 @@ export async function POST(request: NextRequest) {
             const team_length = teamEmails.length + 1; // +1 for the team leader
 
             if (
-                event.min_team_size >= team_length ||
-                event.max_team_size <= team_length
+                event.min_team_size > team_length ||
+                event.max_team_size < team_length
             ) {
                 return NextResponse.json({
                     message: "Team size is not valid for this event",
@@ -398,11 +427,39 @@ export async function POST(request: NextRequest) {
                 }, { status: 400 })
             }
 
+            if (teamEmails && teamEmails.length > 0) {
+                for (const email of teamEmails) {
+                    const existingUser = await RegisterUser.findOne({ email: email });
+
+                    if (!existingUser) {
+                        return NextResponse.json({
+                            message: `Team member with email ${email} is not registered`,
+                            data: null,
+                            error: "Team member not registered",
+                            redirect: false,
+                            redirectUrl: null
+                        }, { status: 400 })
+                    }
+
+                    const userEntryTicket = await EntryTicket.findOne({ userId: existingUser?._id, isPaid: true })
+                    if (!userEntryTicket) {
+                        return NextResponse.json({
+                            message: `Team member with email ${email} has not paid for the entry ticket`,
+                            data: null,
+                            error: "Team member entry ticket not paid",
+                            redirect: false,
+                            redirectUrl: null
+                        }, { status: 400 })
+                    }
+                }
+            }
+
             const existingTeamEvent = await EnrolledTeamEvent.findOne({
                 event_id: eventId,
                 $or: [
                     { team_leader_register_user_id: teamLeaderId },
-                    { team_emails: { $in: teamEmails } }
+                    { team_emails: { $in: teamEmails } },
+                    { isPaid: false }
                 ]
             });
 

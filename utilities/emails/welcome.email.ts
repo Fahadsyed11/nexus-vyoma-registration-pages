@@ -2,11 +2,11 @@ import { sendEmailWithSES } from "../aws/helper.aws";
 import EmailSchema from "@/database/schema/email.schema"
 
 export async function sendWelcomeEmail(user_id: string, to: string, user_name: string) {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nexusvyoma.com";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nexusvyoma.islec.edu.in";
 
-    const subject = `Welcome to Nexus Vyoma 2026, ${user_name}!`;
+  const subject = `Welcome to Nexus Vyoma 2026, ${user_name}!`;
 
-    const textContent = `NEXUS VYOMA 2026 — REGISTRATION CONFIRMED
+  const textContent = `NEXUS VYOMA 2026 — REGISTRATION CONFIRMED
 
 Hello ${user_name},
 
@@ -25,7 +25,7 @@ ${baseUrl}/events
 ISL Engineering College, Hyderabad
 Ideas • People • Culture • Beyond`;
 
-    const htmlContent = `
+  const htmlContent = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,28 +157,28 @@ Ideas • People • Culture • Beyond`;
 </html>
 `;
 
-    const { error, messageId, success } = await sendEmailWithSES(to, subject, htmlContent, textContent);
+  const { error, messageId, success } = await sendEmailWithSES(to, subject, htmlContent, textContent);
 
-    if (!success) {
-        return {
-            success: false,
-            error: error,
-            messageId: messageId,
-        }
-    }
-
-    // Save the email details to the database
-    await EmailSchema.create({
-        email: to,
-        type: "new_user",
-        message_id: messageId,
-        user_id,
-        subject,
-    })
-
+  if (!success) {
     return {
-        success: true,
-        error: null,
-        messageId: messageId,
+      success: false,
+      error: error,
+      messageId: messageId,
     }
+  }
+
+  // Save the email details to the database
+  await EmailSchema.create({
+    email: to,
+    type: "new_user",
+    message_id: messageId,
+    user_id,
+    subject,
+  })
+
+  return {
+    success: true,
+    error: null,
+    messageId: messageId,
+  }
 }

@@ -1,4 +1,5 @@
 import { connectToDatabase } from "@/database/db";
+import EntryTicket from "@/database/schema/entry-ticket.schema";
 import RegisterUser from "@/database/schema/register-user.schema";
 import Transaction from "@/database/schema/transaction.schema";
 import { verifyJWT } from "@/utilities/jwt";
@@ -80,271 +81,65 @@ export async function POST() {
             );
         }
 
-        // Reuse/reconcile existing pending transactions; don't create
-        // another Cashfree order blindly.
-        const pendingTransaction = await Transaction.findOne({
-            userId: user._id,
-            status: "pending",
-        }).sort({ createdAt: -1 });
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-        if (pendingTransaction) {
-            if (pendingTransaction.order_id) {
-                try {
-                    const existingOrder = await cashfree.PGFetchOrder(
-                        pendingTransaction.order_id
-                    );
+        // Check if the user has paid for entry ticket or not
+        const entryTicket = await EntryTicket.findOne({ userId: user._id });
 
-                    const orderStatus = existingOrder.data.order_status;
-
-                    if (orderStatus === "PAID") {
-                        await Transaction.updateOne(
-                            {
-                                _id: pendingTransaction._id,
-                                status: "pending",
-                            },
-                            {
-                                $set: { status: "completed" },
-                            }
-                        );
-
-                        return NextResponse.json(
-                            {
-                                message: "Payment has already been completed",
-                                data: {
-                                    orderId: pendingTransaction.order_id,
-                                    status: "completed",
-                                },
-                                error: null,
-                            },
-                            { status: 200 }
-                        );
-                    }
-
-                    return NextResponse.json(
-                        {
-                            message: "A payment is already in progress",
-                            data: {
-                                orderId: pendingTransaction.order_id,
-                                status: orderStatus,
-                            },
-                            error: "PAYMENT_ALREADY_PENDING",
-                        },
-                        { status: 409 }
-                    );
-                } catch (error) {
-                    console.error("Cashfree order status lookup failed:", error);
-
-                    return NextResponse.json(
-                        {
-                            message:
-                                "Unable to verify the existing payment. Please try again later.",
-                            data: null,
-                            error: "PAYMENT_STATUS_CHECK_FAILED",
-                        },
-                        { status: 503 }
-                    );
-                }
-            }
-
-            return NextResponse.json(
-                {
-                    message:
-                        "A pending transaction has no Cashfree order ID and requires reconciliation.",
-                    data: null,
-                    error: "PENDING_TRANSACTION_REQUIRES_RECONCILIATION",
-                },
-                { status: 409 }
-            );
+        if (entryTicket && entryTicket.isPaid) {
+            // If the user has already paid for the entry ticket, Then now you can check for enrolled event payments.
         }
 
-        // Find the latest transaction prepared by the checkout route.
-        const transaction = await Transaction.findOne({
-            userId: user._id,
-            status: "idle",
-        }).sort({ createdAt: -1 });
-
-        if (!transaction) {
-            return NextResponse.json(
-                {
-                    message: "No idle transaction found for the user",
-                    data: null,
-                    error: "NO_IDLE_TRANSACTION",
-                    redirect: true,
-                    redirectUrl: "/register/check-email",
-                },
-                { status: 404 }
-            );
-        }
-
-        if (
-            typeof transaction.totalAmount !== "number" ||
-            !Number.isFinite(transaction.totalAmount) ||
-            transaction.totalAmount <= 0
-        ) {
-            return NextResponse.json(
-                {
-                    message: "Invalid transaction amount",
-                    data: null,
-                    error: "INVALID_TRANSACTION_AMOUNT",
-                },
-                { status: 400 }
-            );
-        }
-
-        if (
-            !user.phone_number ||
-            !user.email ||
-            !user.full_name
-        ) {
-            return NextResponse.json(
-                {
-                    message: "Required customer details are missing",
-                    data: null,
-                    error: "MISSING_CUSTOMER_DETAILS",
-                },
-                { status: 400 }
-            );
-        }
-
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
-
-        if (!appUrl) {
-            console.error("NEXT_PUBLIC_APP_URL is not configured");
-
-            return NextResponse.json(
-                {
-                    message: "Payment configuration is unavailable",
-                    data: null,
-                    error: "PAYMENT_CONFIGURATION_ERROR",
-                },
-                { status: 500 }
-            );
-        }
-
-        /*
-         * Atomically reserve this transaction before contacting Cashfree.
-         * This prevents concurrent requests from both starting order creation.
-         *
-         * Make sure "creating" is an allowed status in your Transaction schema.
-         */
-        const reservedTransaction = await Transaction.findOneAndUpdate(
-            {
-                _id: transaction._id,
+        let userEntryTicket;
+        if (!entryTicket) {
+            userEntryTicket = await EntryTicket.create({
                 userId: user._id,
-                status: "idle",
-            },
-            {
-                $set: { status: "creating" },
-            },
-            { new: true }
-        );
-
-        if (!reservedTransaction) {
-            return NextResponse.json(
-                {
-                    message: "Transaction state changed. Please refresh and try again.",
-                    data: null,
-                    error: "TRANSACTION_STATE_CHANGED",
-                },
-                { status: 409 }
-            );
+            })
+        } else if (entryTicket && !entryTicket.isPaid) {
+            userEntryTicket = entryTicket;
         }
 
-        const orderId = reservedTransaction._id.toString();
+        const orderId = `NVET_${user._id}_${Date.now()}`;
+        const entryTicketAmount = process.env.ENTRY_TICKET_PRICE
 
-        try {
-            const cashfreeRequest = {
-                order_amount: reservedTransaction.totalAmount,
-                order_currency: "INR",
-                order_id: orderId,
-                order_meta: {
-                    return_url: `${appUrl}/api/payments/return?order_id={order_id}`,
-                    notify_url: `${appUrl}/api/payments/webhook`,
-                },
-                customer_details: {
-                    customer_id: user._id.toString(),
-                    customer_phone: user.phone_number,
-                    customer_email: user.email,
-                    customer_name: user.full_name,
-                },
-            };
+        const entryTicketAmountNum = parseInt(entryTicketAmount || "299");
 
-            const response = await cashfree.PGCreateOrder(cashfreeRequest);
+        userEntryTicket.orderId = orderId;
+        await userEntryTicket.save();
 
-            const cashfreeOrderId = response.data.order_id;
-            const paymentSessionId = response.data.payment_session_id;
-
-            if (!cashfreeOrderId || !paymentSessionId) {
-                throw new Error("Cashfree response is missing order/session details");
-            }
-
-            const updatedTransaction = await Transaction.findOneAndUpdate(
-                {
-                    _id: reservedTransaction._id,
-                    userId: user._id,
-                    status: "creating",
-                },
-                {
-                    $set: {
-                        status: "pending",
-                        order_id: cashfreeOrderId,
-                    },
-                },
-                { new: true }
-            );
-
-            if (!updatedTransaction) {
-                // Cashfree may already have created the order. Do not blindly retry.
-                console.error(
-                    "Cashfree order created, but transaction state update failed:",
-                    cashfreeOrderId
-                );
-
-                return NextResponse.json(
-                    {
-                        message:
-                            "Order creation needs reconciliation. Please check payment status before retrying.",
-                        data: {
-                            orderId: cashfreeOrderId,
-                        },
-                        error: "TRANSACTION_UPDATE_FAILED",
-                    },
-                    { status: 503 }
-                );
-            }
-
-            return NextResponse.json(
-                {
-                    message: "Order created successfully",
-                    data: {
-                        orderId: cashfreeOrderId,
-                        payment_session_id: paymentSessionId,
-                        order_amount: response.data.order_amount,
-                    },
-                    error: null,
-                    redirect: false,
-                    redirectUrl: null,
-                },
-                { status: 200 }
-            );
-        } catch (error) {
-            console.error("Cashfree order creation failed:", error);
-
-            /*
-             * Do not automatically reset the transaction to idle here.
-             * A network timeout may happen after Cashfree created the order.
-             * Reconcile with Cashfree before allowing another order attempt.
-             */
-            return NextResponse.json(
-                {
-                    message:
-                        "Unable to confirm order creation. Payment status must be checked before retrying.",
-                    data: null,
-                    error: "PAYMENT_INITIATION_UNCONFIRMED",
-                },
-                { status: 503 }
-            );
+        const cashfreeRequest = {
+            order_amount: entryTicketAmountNum,
+            order_currency: "INR",
+            order_id: orderId,
+            order_meta: {
+                return_url: `${appUrl}/api/payments/return?order_id={order_id}`,
+                notify_url: `${appUrl}/api/payments/webhook`,
+            },
+            customer_details: {
+                customer_id: user._id.toString(),
+                customer_phone: user.phone_number,
+                customer_email: user.email,
+                customer_name: user.full_name,
+            },
         }
+
+        const cashfreeResponse = await cashfree.PGCreateOrder(cashfreeRequest);
+
+        const cashfreeData = cashfreeResponse.data;
+
+        return NextResponse.json({
+            message: "Payment initiation successful",
+            data: {
+                order_id: cashfreeData.order_id,
+                order_status: cashfreeData.order_status,
+                payment_session_id: cashfreeData.payment_session_id,
+                order_amount: cashfreeData.order_amount,
+                order_currency: cashfreeData.order_currency,
+            },
+            error: null,
+            redirect: false,
+            redirectUrl: null
+        }, { status: 200 })
     } catch (error) {
         console.error("Payment initiation route failed:", error);
 

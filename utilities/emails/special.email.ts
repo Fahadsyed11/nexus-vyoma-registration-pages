@@ -7,7 +7,7 @@ export async function sendSpecialEmail(
   registrant_name?: string,
   registrant_email?: string
 ): Promise<void> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nexusvyoma.com";
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://nexusvyoma.islec.edu.in";
   const subject = `[Nexus Vyoma Alert] Special Registration Notification — ${user_name}`;
 
   const textContent = `NEXUS VYOMA 2026 — SPECIAL REGISTRATION ALERT
@@ -108,22 +108,20 @@ ISL Engineering College, Hyderabad`;
                         <td style="padding: 4px 0; font-size: 13px; color: #9CA3AF;">Timestamp:</td>
                         <td style="padding: 4px 0; font-size: 13px; color: #FF6A00; font-family: monospace;">${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST</td>
                       </tr>
-                      ${
-                        registrant_name
-                          ? `<tr>
+                      ${registrant_name
+      ? `<tr>
                         <td style="padding: 4px 0; font-size: 13px; color: #9CA3AF;">Registrant:</td>
                         <td style="padding: 4px 0; font-size: 13px; font-weight: 600; color: #FFFFFF;">${registrant_name}</td>
                       </tr>`
-                          : ""
-                      }
-                      ${
-                        registrant_email
-                          ? `<tr>
+      : ""
+    }
+                      ${registrant_email
+      ? `<tr>
                         <td style="padding: 4px 0; font-size: 13px; color: #9CA3AF;">Registrant Email:</td>
                         <td style="padding: 4px 0; font-size: 13px; color: #E5E7EB;">${registrant_email}</td>
                       </tr>`
-                          : ""
-                      }
+      : ""
+    }
                       <tr>
                         <td style="padding: 4px 0; font-size: 13px; color: #9CA3AF;">Status:</td>
                         <td style="padding: 4px 0; font-size: 13px; color: #34D399; font-weight: 600;">Recorded in Database</td>

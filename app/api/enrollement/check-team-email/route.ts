@@ -2,23 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
 import { connectToDatabase } from "@/database/db";
+import EntryTicket from "@/database/schema/entry-ticket.schema";
 import RegisterUser from "@/database/schema/register-user.schema";
-import EnrolledIndividualEvent from "@/database/schema/enrolled-individual-event.schema";
-import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
 
+import { TokenData } from "../enroll-event/route";
 import { verifyJWT } from "@/utilities/jwt";
 
-export interface TokenData {
-    user: {
-        id: string;
-        name: string;
-        email: string;
-    };
-}
-
-// When /enroll-event page is loaded, after verification of the user token, we will fetch the user data and enrolled events data and also fetch the events excluding the ones the user is already enrolled in. We will also extend the reservation time for the events that are not paid yet and are not extended yet. The reservation time will be extended by 5 minutes from the current time.
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
     try {
+        const body = await request.json();
+        const { email } = body; // for now only individual events
         const cookieStore = await cookies();
         const userToken = cookieStore.get("nv-session")?.value;
         const tempToken = cookieStore.get("nv-session-temp")?.value;
@@ -69,46 +62,66 @@ export async function GET(request: NextRequest) {
                 { status: 404 });
         }
 
-        // Fetch Paid Events for the User
-        const paidIndividualEvents = await EnrolledIndividualEvent.find({
-            register_user_id: user._id,
-            isPaid: true
-        }).select("-transaction_id -__v");
+        const entryTicket = await EntryTicket.findOne({ userId: user._id, isPaid: true })
 
-        const paidTeamEvents = await EnrolledTeamEvent.find({
-            $or: [
-                { team_leader_register_user_id: user._id },
-                { team_emails: user.email }
-            ],
-            isPaid: true
-        }).select("-transaction_id -__v");
+        if (!entryTicket) {
+            return NextResponse.json(
+                {
+                    message: "Entry ticket not found for the user",
+                    data: null,
+                    error: "Entry ticket does not exist",
+                    redirect: true,
+                    redirectUrl: "/register/entry-ticket",
+                },
+                { status: 404 });
+        }
 
-        const paidEvents = {
-            individualEvents: paidIndividualEvents || [],
-            teamEvents: paidTeamEvents || []
+        const teamUser = await RegisterUser.findOne({ email: email });
+
+        if (!teamUser) {
+            return NextResponse.json(
+                {
+                    message: "Team member has not registered yet. Please ask them to register first.",
+                    data: null,
+                    error: "User does not exist",
+                    redirect: true,
+                    redirectUrl: "/register/check-email",
+                },
+                { status: 404 });
+        }
+
+        const teamEntryTicket = await EntryTicket.findOne({
+            userId: teamUser._id,
+            isPaid: true
+        })
+
+        if (!teamEntryTicket) {
+            return NextResponse.json(
+                {
+                    message: "Team member has not purchased the entry ticket yet. Please ask them to purchase the entry ticket first.",
+                    data: null,
+                    error: "Entry ticket does not exist",
+                    redirect: true,
+                    redirectUrl: "/register/entry-ticket",
+                },
+                { status: 404 });
         }
 
         return NextResponse.json({
-            message: "User and enrolled events fetched successfully",
-            data: {
-                user: {
-                    id: user._id,
-                    name: user.full_name,
-                    email: user.email,
-                },
-                paidEvents,
-            },
+            message: "Team member has registered and purchased the entry ticket.",
+            data: null,
             error: null,
             redirect: false,
             redirectUrl: null
-        }, { status: 200 })
+        }, { status: 200 });
     } catch (error) {
         return NextResponse.json({
-            message: "Error fetching token",
+            message: "Error creating enrolled events",
             data: null,
             error: error,
             redirect: false,
             redirectUrl: null
         }, { status: 500 })
     }
+
 }
