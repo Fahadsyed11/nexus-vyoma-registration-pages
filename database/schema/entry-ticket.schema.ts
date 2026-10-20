@@ -30,7 +30,7 @@ const entryTicketSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-    transactionId: {
+    paymentId: {
         type: String,
         default: null
     },
@@ -39,8 +39,6 @@ const entryTicketSchema = new mongoose.Schema({
         default: null
     },
 }, { timestamps: true, overwriteModels: true });
-
-entryTicketSchema.index({ userId: 1, transactionId: 1 }, { unique: true });
 
 const EntryTicket = mongoose.models.EntryTicket || mongoose.model("EntryTicket", entryTicketSchema);
 
