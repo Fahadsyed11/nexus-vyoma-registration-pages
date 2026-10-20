@@ -13,7 +13,7 @@ import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
 import EnrolledIndividualEvent from "@/database/schema/enrolled-individual-event.schema";
 import Transaction from "@/database/schema/transaction.schema";
 
-const ENTRY_TICKET_PRICE = 249;
+const ENTRY_TICKET_PRICE = 299;
 
 type ObjectIdLike = mongoose.Types.ObjectId | string;
 

@@ -43,6 +43,82 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-20 — Integrated `SlideCommit` Interactive Pay Button on `/register/entry-ticket`
+
+**Done**
+- `components/tickets/EntryTicketView.tsx`:
+  - Replaced static "BUY 3-DAY PASS" button with the interactive physics-based `SlideCommit` component across desktop and mobile views, matching `/register/checkout-event`.
+  - Configured labels: `label="Slide to pay ₹299"`, `doneLabel="Redirecting..."`, `errorLabel="Order Failed"`, with brand tokens (`trackColor="#10131E"`, `handleColor="#FF6A00"`, `successColor="#22c55e"`, `dangerColor="#e5484d"`).
+  - Wired `onConfirm` to call `/api/registration/entry-ticket` for order creation, smoothly prompting attendee details modal if required, and transitioning to green checkmark with `"Redirecting..."` before navigating to checkout.
+  - Added accessible keyboard interaction hints (`Slide the handle to confirm pass. Keyboard: use arrow keys or End`).
+- `components/ui/SlideCommit.tsx`:
+  - Fixed typo in `type Grip` on line 40.
+  - Added `maxWidth: '100%'` to root inline styles to safeguard responsive behavior on ultra-compact mobile viewports.
+
+**Files changed**
+- `components/tickets/EntryTicketView.tsx`
+- `components/ui/SlideCommit.tsx`
+- `README.md`
+
+### 2026-10-20 — Match `/events` Page Theme & Framing on `/register/entry-ticket`
+
+**Done**
+- `app/register/entry-ticket/page.tsx`: Added the signature `/events` outer framed card container (`border border-zinc-800/90 bg-black/70 shadow-[0_20px_50px_rgba(0,0,0,0.85)] rounded-2xl sm:rounded-3xl p-4 sm:p-8 lg:p-10`).
+- `components/tickets/EntryTicketView.tsx`:
+  - Aligned typography and title placement to `/events`: moved `ENTRY TICKET` rolling title directly into the desktop left aside above the sticky stub, with `font-mono text-xs font-semibold tracking-[0.2em] text-zinc-400 uppercase mt-4`.
+  - Re-themed cards and containers to `#0c0d13` with `border-zinc-800/90` and the signature `/events` button styling (`bg-[#FF6A00] hover:bg-[#ff7b1a] text-black font-bold`).
+  - Restructured event cards to match `EventCard.tsx` layout precisely: uncropped posters with ambient color-matched background glows, bold orange category labels, uppercase titles, date/venue rows, and bottom-right format badges.
+- `components/tickets/TicketStubCard.tsx`: Styled ticket stub body with `#0c0d13` dark canvas and `border-zinc-800/90` accents.
+
+**Files changed**
+- `app/register/entry-ticket/page.tsx`
+- `components/tickets/EntryTicketView.tsx`
+- `components/tickets/TicketStubCard.tsx`
+- `README.md`
+
+### 2026-10-20 — Dedicated Independent Scroll Container for Free Events on Entry Ticket Page
+
+**Done**
+- `components/tickets/EntryTicketView.tsx`:
+  - Created a dedicated scroll container for the right-side free events list (`lg:overflow-y-auto lg:pr-3 [scrollbar-width:thin] [scrollbar-color:#2a2d3d_transparent]`) matching the exact UX of `/events`.
+  - Added `ResizeObserver` on `leftAsideRef` to automatically synchronize the maximum height of the right scroll container with the locked ticket aside.
+  - Enhanced free event cards with aspect-square poster images, ambient blurred backdrop glows, category pills, date/venue metadata, and `FREE WITH PASS` status tags.
+
+**Files changed**
+- `components/tickets/EntryTicketView.tsx`
+- `README.md`
+
+### 2026-10-20 — Locked Sticky Entry Ticket & Free Events Showcase from MongoDB
+
+**Done**
+- `app/register/entry-ticket/page.tsx`: Updated Server Component to query all free events (`entry_fee: 0`) directly from MongoDB via `Event.find()`, serializing them and passing to the view.
+- `components/tickets/EntryTicketView.tsx`:
+  - Locked the left ticket column with `lg:sticky lg:top-28 lg:self-start` so the ticket stub and checkout CTA remain pinned on desktop while the visitor scrolls through events.
+  - Replaced the right-side form with a showcase of all {freeEvents.length} free events from MongoDB included with the 3-day pass (cards showing category, team/solo format, schedule, venue, prize, and expandable overview).
+  - Integrated the primary action button (`BUY 3-DAY PASS • ₹299 →`) directly on the sticky left container with a quick modal for unauthenticated attendees to input their details.
+
+**Files changed**
+- `app/register/entry-ticket/page.tsx`
+- `components/tickets/EntryTicketView.tsx`
+- `README.md`
+
+### 2026-10-20 — 3-Day Entry Ticket Page & API Route (₹299 Flat Access)
+
+**Done**
+- `app/register/entry-ticket/page.tsx`: Created the Server Component page for purchasing the 3-day all-access entry ticket (10–12 Nov 2026). Incorporates server-side session checks (`nv-session` & `nv-session-temp`), SEO metadata, mirror-glass `Navbar`, and official `FooterSection`.
+- `components/tickets/TicketStubCard.tsx`: Created visual ticket stub component with authentic perforated coupon divider notches, holographic flame gradient accent, glowing status badge (`3-DAY FEST PASS`), and barcode styling.
+- `components/tickets/EntryTicketView.tsx`: Created responsive 2-column buyer view with animated `RegistrationTitleRolling` header, pass perks list, pre-filled session data if logged in, interactive buyer form (name, email, phone, college), ₹299 order breakdown, and checkout action.
+- `app/api/registration/entry-ticket/route.ts`: Built GET (fetches ticket details & user purchase status) and POST (validates attendee input, computes ₹299 server-side, manages `RegisterUser`, `EntryTicket`, and `Transaction`, with Cashfree order integration).
+- `app/api/(checkout)/order-summary/route.ts`: Updated `ENTRY_TICKET_PRICE` from 249 to 299 to ensure universal price consistency.
+
+**Files changed**
+- `app/register/entry-ticket/page.tsx`
+- `components/tickets/TicketStubCard.tsx`
+- `components/tickets/EntryTicketView.tsx`
+- `app/api/registration/entry-ticket/route.ts`
+- `app/api/(checkout)/order-summary/route.ts`
+- `README.md`
+
 ### 2026-10-19 — Reset OTP Verification State on Resend / New Email Session
 
 **Done**
