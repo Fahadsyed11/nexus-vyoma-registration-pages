@@ -14,8 +14,6 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
 
-        console.log("Received Cashfree Webhook:", body);
-
         const orderId = body.data?.order?.order_id;
         const customerId = body.data?.customer_details?.customer_id;
         const customerEmail = body.data?.customer_details?.customer_email;
