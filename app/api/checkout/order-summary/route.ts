@@ -1,18 +1,18 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import mongoose from "mongoose";
 
 import { TokenData } from "../../enrollement/enroll-event/route";
 import { verifyJWT } from "@/utilities/jwt";
 import { connectToDatabase } from "@/database/db";
 
+import Event from "@/database/schema/event.schema";
 import RegisterUser from "@/database/schema/register-user.schema";
 import EntryTicket from "@/database/schema/entry-ticket.schema";
 import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
 import EnrolledIndividualEvent from "@/database/schema/enrolled-individual-event.schema";
 import Transaction from "@/database/schema/transaction.schema";
 
-export async function POST(_request: NextRequest) {
+export async function POST() {
     try {
         const cookieStore = await cookies();
 
@@ -49,6 +49,8 @@ export async function POST(_request: NextRequest) {
         }
 
         await connectToDatabase();
+        // Ensure Event model is evaluated and registered in Mongoose
+        void Event;
 
         const currentUser = await RegisterUser.findById(userData.user.id).lean();
 
@@ -80,21 +82,20 @@ export async function POST(_request: NextRequest) {
             );
         }
 
+        // Only block if a gateway payment is actively pending confirmation.
+        // A "creating" transaction is the checkout draft and should allow viewing/refreshing.
         const pendingTransactions = await Transaction.find({
-            $or: [
-                { status: "creating" },
-                { status: "pending" }
-            ],
+            status: "pending",
             userId: currentUser._id,
             reservation_time: { $gt: new Date() },
-        })
+        });
 
         if (pendingTransactions.length > 0) {
             return NextResponse.json(
                 {
-                    message: "You have pending transactions. Please wait for them to complete.",
+                    message: "You have a pending transaction awaiting payment confirmation. Please wait for it to complete.",
                     data: null,
-                    error: "Pending transactions exist",
+                    error: "Pending transaction exists",
                     redirect: false,
                     redirectUrl: null,
                 },
@@ -106,7 +107,7 @@ export async function POST(_request: NextRequest) {
             team_leader_register_user_id: currentUser._id,
             isPaid: false,
             reservation_time: { $gt: new Date() },
-        }).populate("event_id").lean();
+        }).populate("event_id");
 
         const enrolledIndividualEvents = await EnrolledIndividualEvent.find({
             register_user_id: currentUser._id,
@@ -127,29 +128,32 @@ export async function POST(_request: NextRequest) {
             );
         }
 
-        let transaction;
-        transaction = await Transaction.findOne({
+        // Find existing idle or creating draft transaction, or create a new one
+        let transaction = await Transaction.findOne({
             userId: currentUser._id,
-            status: "idle",
-        })
+            status: { $in: ["idle", "creating"] },
+        });
 
         if (!transaction) {
             transaction = await Transaction.create({
                 userId: currentUser._id,
                 status: "idle",
-            })
+                teamEventsAmount: 0,
+                individualEventsAmount: 0,
+            });
         }
 
         let teamEventsAmount = 0;
         for (const event of enrolledTeamEvents) {
-            event.event_id.entry_fee = Number(event.event_id.entry_fee as number);
-            teamEventsAmount += event.event_id.entry_fee * event.team_length;
+            const entryFee = Number(event?.event_id?.entry_fee) || 0;
+            const length = Number(event?.team_length) || 1;
+            teamEventsAmount += entryFee * length;
         }
 
         let individualEventsAmount = 0;
         for (const event of enrolledIndividualEvents) {
-            event.event_id.entry_fee = Number(event.event_id.entry_fee as number);
-            individualEventsAmount += event.event_id.entry_fee;
+            const entryFee = Number(event?.event_id?.entry_fee) || 0;
+            individualEventsAmount += entryFee;
         }
 
         transaction.enrolledTeamEvents = enrolledTeamEvents.map(event => event._id);
@@ -157,7 +161,7 @@ export async function POST(_request: NextRequest) {
         transaction.teamEventsAmount = teamEventsAmount;
         transaction.individualEventsAmount = individualEventsAmount;
         transaction.status = "creating";
-        transaction.reservation_time = new Date(Date.now() + 30 * 60 * 1000); // Set reservation time to 30 minutes from now
+        transaction.reservation_time = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes from now
         await transaction.save();
 
         return NextResponse.json(

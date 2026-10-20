@@ -16,8 +16,14 @@ export async function GET(request: NextRequest) {
     // API, and Next.js signals it by throwing an internal error. If that throw
     // happens inside try/catch, our catch block swallows it.
     const orderId = request.nextUrl.searchParams.get("order_id");
+    const acceptsHtml = request.headers.get("accept")?.includes("text/html") ?? true;
 
     if (!orderId) {
+        if (acceptsHtml) {
+            return NextResponse.redirect(
+                new URL("/payment/failure?reason=missing_order_id", request.url)
+            );
+        }
         return NextResponse.json({
             message: "Missing order_id in query parameters",
             status: 400,
@@ -34,30 +40,40 @@ export async function GET(request: NextRequest) {
         const orderStatus = response?.data?.order_status;
 
         if (orderStatus === "PAID") {
+            if (acceptsHtml) {
+                return NextResponse.redirect(
+                    new URL(`/payment/success?order_id=${encodeURIComponent(orderId)}`, request.url)
+                );
+            }
             return NextResponse.json({
                 message: "Payment successful",
                 status: 200,
                 data: null,
                 error: null,
                 redirect: true,
-                redirectUrl: "/payment/success"
+                redirectUrl: `/payment/success?order_id=${encodeURIComponent(orderId)}`
             }, { status: 200 });
         }
 
         if (orderStatus === "EXPIRED" || orderStatus === "TERMINATED") {
+            if (acceptsHtml) {
+                return NextResponse.redirect(
+                    new URL(`/payment/failure?order_id=${encodeURIComponent(orderId)}`, request.url)
+                );
+            }
             return NextResponse.json({
                 message: "Payment failed",
                 status: 400,
                 data: null,
                 error: "Payment failed",
                 redirect: true,
-                redirectUrl: "/payment/failure"
+                redirectUrl: `/payment/failure?order_id=${encodeURIComponent(orderId)}`
             }, { status: 400 });
         }
 
         // The payment is not confirmed as successful or definitively failed (pending or user dropped).
         return NextResponse.redirect(
-            new URL(`/payment/pending?order_id=${orderId}`, request.url)
+            new URL(`/payment/pending?order_id=${encodeURIComponent(orderId)}`, request.url)
         );
     } catch (error) {
         // Let Next.js internal signals (prerender bail-out, redirect, notFound)
@@ -65,6 +81,12 @@ export async function GET(request: NextRequest) {
         unstable_rethrow(error);
 
         console.error("Payment return verification failed:", error);
+
+        if (acceptsHtml) {
+            return NextResponse.redirect(
+                new URL("/payment/failure?reason=verification_error", request.url)
+            );
+        }
 
         // A verification error does not mean the payment failed.
         return NextResponse.json({

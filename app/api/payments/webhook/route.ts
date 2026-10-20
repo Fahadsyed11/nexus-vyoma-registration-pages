@@ -1,3 +1,5 @@
+import EnrolledIndividualEvent from "@/database/schema/enrolled-individual-event.schema";
+import EnrolledTeamEvent from "@/database/schema/enrolled-team-event.schema";
 import EntryTicket from "@/database/schema/entry-ticket.schema";
 import Transaction from "@/database/schema/transaction.schema";
 import { sendEmailToPaymentFailed } from "@/utilities/emails/payment-failed.email";
@@ -60,6 +62,21 @@ export async function POST(request: NextRequest) {
             if (paymentStatus === "SUCCESS") {
                 if (transaction.status === "completed") {
                     return NextResponse.json({ message: "Payment already processed for this transaction" }, { status: 200 });
+                }
+
+                const enrolledIndividualEvents = transaction.enrolledIndividualEvents;
+                const enrolledTeamEvents = transaction.enrolledTeamEvents;
+
+                if (enrolledIndividualEvents && enrolledIndividualEvents.length > 0) {
+                    for (const eventId of enrolledIndividualEvents) {
+                        await EnrolledIndividualEvent.findByIdAndUpdate(eventId, { isPaid: true })
+                    }
+                }
+
+                if (enrolledTeamEvents && enrolledTeamEvents.length > 0) {
+                    for (const eventId of enrolledTeamEvents) {
+                        await EnrolledTeamEvent.findByIdAndUpdate(eventId, { isPaid: true })
+                    }
                 }
 
                 transaction.status = "completed";

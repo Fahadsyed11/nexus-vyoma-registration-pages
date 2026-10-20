@@ -218,13 +218,21 @@ export default function StatusCard({
               </Link>
             </div>
           ) : (
-            <Link
-              href="/events"
-              className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-semibold text-sm text-black bg-[#FF6A00] hover:bg-[#ff7b1a] shadow-[0_0_30px_rgba(255,106,0,0.4)] transition-all duration-200 active:scale-[0.98]"
-            >
-              <span>Explore Events</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex flex-col items-center gap-4">
+              <Link
+                href="/events"
+                className="inline-flex items-center gap-2 px-7 py-3 rounded-full font-semibold text-sm text-black bg-[#FF6A00] hover:bg-[#ff7b1a] shadow-[0_0_30px_rgba(255,106,0,0.4)] transition-all duration-200 active:scale-[0.98]"
+              >
+                <span>Explore Events</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                href="/register/enroll-event"
+                className="text-xs sm:text-sm font-mono tracking-wider text-zinc-400 hover:text-white underline underline-offset-8 transition-colors"
+              >
+                Enroll in Events &rarr;
+              </Link>
+            </div>
           )}
         </>
       )}

@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
                     message: "Team member has not registered yet. Please ask them to register first.",
                     data: null,
                     error: "User does not exist",
-                    redirect: true,
-                    redirectUrl: "/register/check-email",
+                    redirect: false,
+                    redirectUrl: null,
                 },
                 { status: 404 });
         }
@@ -101,8 +101,8 @@ export async function POST(request: NextRequest) {
                     message: "Team member has not purchased the entry ticket yet. Please ask them to purchase the entry ticket first.",
                     data: null,
                     error: "Entry ticket does not exist",
-                    redirect: true,
-                    redirectUrl: "/register/entry-ticket",
+                    redirect: false,
+                    redirectUrl: null,
                 },
                 { status: 404 });
         }

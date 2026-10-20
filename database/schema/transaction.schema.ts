@@ -29,7 +29,7 @@ const transactionSchema = new mongoose.Schema(
         },
         individualEventsAmount: {
             type: Number,
-            required: true,
+            default: 0,
             min: 0,
             validate: {
                 validator: Number.isFinite,
@@ -38,7 +38,7 @@ const transactionSchema = new mongoose.Schema(
         },
         teamEventsAmount: {
             type: Number,
-            required: true,
+            default: 0,
             min: 0,
             validate: {
                 validator: Number.isFinite,

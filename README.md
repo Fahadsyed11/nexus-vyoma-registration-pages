@@ -43,6 +43,120 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-21 — Fix Order Summary Model Registration & Checkout Transaction Loop
+
+**Done**
+- `app/api/checkout/order-summary/route.ts`:
+  - Resolved intermittent `MissingSchemaError: Schema hasn't been registered for model "Event"` by ensuring `Event` model reference is evaluated immediately after database connection, preventing Turbopack bundler elision.
+  - Resolved self-locking `400: Pending transactions exist` loop on page refresh by restricting the block to transactions with `status: "pending"` (awaiting payment gateway response), while allowing `"creating"` draft transactions to be viewed, refreshed, and updated.
+  - Added safe transaction initialization defaults (`teamEventsAmount: 0, individualEventsAmount: 0`) and fallback checks for populated `event_id` fields.
+  - Verified with ESLint (0 errors) and TypeScript compiler (`tsc --noEmit` passed).
+
+**Files changed**
+- `app/api/checkout/order-summary/route.ts`
+- `README.md`
+
+### 2026-10-21 — Event Checkout Empty Arrays Handling & Auto-Redirect
+
+**Done**
+- `components/registration/CheckoutEventView.tsx`:
+  - Added empty array safeguards on data returned by `POST /api/checkout/order-summary`.
+  - Seamlessly handles scenarios where an attendee enrolls in only individual events (`enrolledTeamEvents: []`) or only team events (`enrolledIndividualEvents: []`).
+  - Implemented automatic redirection to `/register/enroll-event` when both `enrolledTeamEvents` and `enrolledIndividualEvents` are empty.
+  - Verified with ESLint (0 errors) and TypeScript compiler (`tsc --noEmit` passed).
+
+**Files changed**
+- `components/registration/CheckoutEventView.tsx`
+- `README.md`
+
+### 2026-10-21 — Event Checkout Live API Integration & Experience Polish
+
+**Done**
+- `app/register/checkout-event/page.tsx`:
+  - Streamlined into an SSR shell rendering `CheckoutEventView` with the asynchronous Cashfree v3 SDK script (`strategy="afterInteractive"`).
+  - Eliminated server-to-server loopback fetch that previously created Suspense loading hangs.
+- `components/registration/CheckoutEventView.tsx`:
+  - Integrated `POST /api/checkout/order-summary` on mount to fetch live attendee, team, and individual enrollment data with redirect and error handling.
+  - Removed entry fee indicators from Personal Details (since all attendees reaching this step have already purchased an entry ticket).
+  - Updated team event fees to calculate and display per-participant charges (`event_fee × team_length`) and detailed breakdown for leader and members.
+  - Removed redundant "REGISTERED SQUAD" list.
+  - Restyled Order Summary with clear hierarchy: **Subtotal** (listing individual and team event lines), **Service Charge** (displaying ₹30), and **Total Amount** (`subtotal + 30`).
+  - Added single-action lock (`isLocked = true`) to permanently disable `SlideCommit` once slid to prevent duplicate requests.
+  - Integrated `POST /api/payments/create-order` on slide confirm with Cashfree modal checkout.
+- Verified with ESLint (0 errors) and TypeScript compiler (`tsc --noEmit` passed).
+
+**Files changed**
+- `app/register/checkout-event/page.tsx`
+- `components/registration/CheckoutEventView.tsx`
+- `README.md`
+
+### 2026-10-20 — Add "Enroll in Events" Text Link on Payment Success View
+
+**Done**
+- `components/payment/StatusCard.tsx`:
+  - Added an "Enroll in Events &rarr;" text link (`/register/enroll-event`) positioned directly below the primary "Explore Events" button on the payment success status screen.
+  - Styled with brand monospace typography (`font-mono tracking-wider text-zinc-400 hover:text-white underline underline-offset-8 transition-colors`) matching existing navigation patterns.
+  - Verified with ESLint and TypeScript compiler (`tsc --noEmit`).
+
+**Files changed**
+- `components/payment/StatusCard.tsx`
+- `README.md`
+
+### 2026-10-20 — Cashfree Return Route HTTP Redirect to Payment Status Pages
+
+**Done**
+- `app/api/payments/return/route.ts`:
+  - Upgraded Cashfree payment return handler to inspect request headers (`accept: text/html`) and issue immediate HTTP redirects (`NextResponse.redirect`) to the frontend status pages (`/payment/success?order_id=...` or `/payment/failure?order_id=...`) upon browser navigation.
+  - Resolved browser rendering raw JSON response `{"message":"Payment successful", ...}` when Cashfree redirected to `/api/payments/return?order_id=...`.
+  - Maintained backward compatibility for programmatic API consumers expecting JSON payloads.
+  - Verified with ESLint and TypeScript compiler (`tsc --noEmit`).
+
+**Files changed**
+- `app/api/payments/return/route.ts`
+- `README.md`
+
+### 2026-10-20 — Add Checkout Dummy Data Variable & Standalone Preview Mode
+
+**Done**
+- `app/register/checkout-event/page.tsx`:
+  - Added `dummyCheckoutData` variable containing complete mock structures for testing: attendee user information, unpaid individual competitions ("Algorithmic Code Sprint", "Cyber Forensic Challenge"), unpaid team events ("RoboWars Combat Championship" with 3-member squad details and entry ticket items), entry ticket status, and server pricing summary.
+  - Added `USE_DUMMY_DATA = true` toggle to render `CheckoutEventView` with `dummyCheckoutData` directly, enabling full UI inspection and review of `/register/checkout-event` without requiring database entries or prior API requests.
+  - Retained the live backend pipeline intact when toggling `USE_DUMMY_DATA = false`.
+  - Zero database creation, modification, or schema updates.
+
+**Files changed**
+- `app/register/checkout-event/page.tsx`
+- `README.md`
+
+### 2026-10-20 — Display Enrolled Events in Selected Events Section & Fix Lost Catalog Events
+
+**Done**
+- `components/registration/EventEnrollmentView.tsx`:
+  - **Master Event Catalogue Sync**: Integrated `/api/event` query during enrollment initialization to preserve the complete event catalog. When `GET /api/enrollement/enroll-event` filters user-enrolled events out of `availableEvents`, event metadata (title, entry fee, schedule, venue) is fully retained and resolved.
+  - **Selected Events (Not Paid) Display**: Updated the right-hand column to prominently render all active unpaid reservations (`pendingIndividual` and `pendingTeam`) retrieved from `GET /api/enrollement/enroll-event` (`data.enrollUserEvents`), alongside in-progress staged selections.
+  - **Reservation Management**: Added reservation status badges (`RESERVED (NOT PAID)` / `TEAM RESERVED (NOT PAID)`) with teammate/squad breakdown and a cancel/delete action calling `DELETE /api/enrollement/enroll-event` with `{ enrolledEventId, eventId }` to return cancelled events immediately back to the available catalog.
+  - **Instant Single Event Enrolment**: Provided quick "Enroll Event →" / "Enroll Squad →" actions on staged cards calling `POST /api/enrollement/enroll-event` so users can enroll individual events immediately and watch them transition into the Enrolled Reservations list.
+  - **Total Summary & Adaptive Checkout**: Unified `totalSelectedCount` and `totalFee` to accurately tally both enrolled unpaid reservations and staged selections. If only unpaid reservations exist, clicking **PROCEED TO CHECK OUT** advances directly to `/register/checkout-event`.
+  - **Zero Backend Changes**: Kept all `route.ts` and schema files untouched.
+
+**Files changed**
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
+### 2026-10-20 — Connect Event Enrollment to Live Endpoints & Solo/Team Validations (Zero route.ts Changes)
+
+**Done**
+- `components/registration/EventEnrollmentView.tsx`:
+  - **Sequential API Loading on Page Mount**: Sequentially calls `GET /api/enrollement/enrolled-event` (retrieving user details, registered status, and paid enrollments) followed by `GET /api/enrollement/enroll-event` (retrieving event catalog and pending reservations).
+  - **Solo Team Handling**: For team events with `max_team_size === 1`, automatically satisfies the team requirement with the team leader alone (`teamEmails: []`), displaying a solo team badge and omitting superfluous teammate email inputs.
+  - **Teammate Email Verification**: Wired the **+** button to `POST /api/enrollement/check-team-email` with `{ email }`. Accurately handles HTTP 200 (verified, unlocks next input), HTTP 404 with custom error messages (not registered / ticket not purchased), and HTTP 401 redirect flags.
+  - **Sequential Checkout Submission**: On checkout submission, calls `POST /api/enrollement/enroll-event` individually per selected event with exact backend payload schemas (`{ eventId }` for individual events, `{ eventId, teamName, teamEmails }` for team events), followed by seamless navigation to `/payment/checkout`.
+  - **Strict Constraint Adherence**: Zero modifications made to any `route.ts` or database schema files; all enhancements were implemented entirely in frontend client components.
+
+**Files changed**
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
 ### 2026-10-20 — Cashfree Modal Checkout & In-App Status Navigation (Zero route.ts Changes)
 
 **Done**
