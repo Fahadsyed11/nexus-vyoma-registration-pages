@@ -79,6 +79,37 @@ async function getInitialAttendeeState() {
   }
 }
 
+function parseEventSchedule(rawDateStr: string): { date: string; time: string } {
+  if (!rawDateStr || rawDateStr === 'Schedule TBA') {
+    return { date: '10–12 Nov', time: 'Schedule TBA' };
+  }
+  try {
+    const d = new Date(rawDateStr);
+    if (isNaN(d.getTime())) {
+      const parts = rawDateStr.split(',');
+      if (parts.length >= 2) {
+        return { date: parts[0].trim(), time: parts.slice(1).join(',').trim() };
+      }
+      return { date: rawDateStr, time: '' };
+    }
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = d.getDate();
+    const month = months[d.getMonth()] || 'Nov';
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    const formattedHours = hours % 12 || 12;
+    const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+
+    return {
+      date: `${day} ${month}`,
+      time: `${formattedHours}:${formattedMinutes} ${ampm}`,
+    };
+  } catch {
+    return { date: rawDateStr, time: '' };
+  }
+}
+
 async function getFreeEvents(): Promise<FreeEventItem[]> {
   try {
     await connectToDatabase();
@@ -88,21 +119,28 @@ async function getFreeEvents(): Promise<FreeEventItem[]> {
       .sort({ date_time: 1 })
       .lean();
 
-    return docs.map((e) => ({
-      _id: e._id.toString(),
-      title: e.title,
-      short_description: e.short_description || '',
-      long_description: e.long_description || '',
-      venue: e.venue || 'ISL Campus',
-      date_time: e.date_time || 'Schedule TBA',
-      image_url: e.image_url || '',
-      category: e.category || 'General',
-      participants_type: (e.participants_type === 'team' ? 'team' : 'individual') as 'individual' | 'team',
-      team_size: e.team_size || 1,
-      min_team_size: e.min_team_size || 1,
-      max_team_size: e.max_team_size || 1,
-      prize: e.prize || 'Exciting Prizes & Certificates',
-    }));
+    return docs.map((e) => {
+      const rawSchedule = e.date_time || 'Schedule TBA';
+      const { date, time } = parseEventSchedule(rawSchedule);
+
+      return {
+        _id: e._id.toString(),
+        title: e.title,
+        short_description: e.short_description || '',
+        long_description: e.long_description || '',
+        venue: e.venue || 'ISL Campus',
+        date_time: rawSchedule,
+        formatted_date: date,
+        formatted_time: time,
+        image_url: e.image_url || '',
+        category: e.category || 'General',
+        participants_type: (e.participants_type === 'team' ? 'team' : 'individual') as 'individual' | 'team',
+        team_size: e.team_size || 1,
+        min_team_size: e.min_team_size || 1,
+        max_team_size: e.max_team_size || 1,
+        prize: e.prize || 'Exciting Prizes & Certificates',
+      };
+    });
   } catch (err) {
     console.error('Error fetching free events for entry ticket:', err);
     return [];

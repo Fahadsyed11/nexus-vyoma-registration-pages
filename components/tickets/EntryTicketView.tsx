@@ -15,6 +15,8 @@ export interface FreeEventItem {
   long_description?: string;
   venue: string;
   date_time: string;
+  formatted_date?: string;
+  formatted_time?: string;
   image_url?: string;
   category: string;
   participants_type: 'individual' | 'team';
@@ -38,23 +40,16 @@ interface EntryTicketViewProps {
   freeEvents: FreeEventItem[];
 }
 
-function formatEventDate(dateStr: string) {
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return { date: dateStr, time: '' };
-    const date = d.toLocaleDateString('en-IN', {
-      day: 'numeric',
-      month: 'short',
-    });
-    const time = d.toLocaleTimeString('en-IN', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
-    return { date, time };
-  } catch {
-    return { date: dateStr, time: '' };
+function getEventDisplaySchedule(event: FreeEventItem): { date: string; time: string } {
+  if (event.formatted_date) {
+    return { date: event.formatted_date, time: event.formatted_time || '' };
   }
+  const raw = event.date_time || 'Schedule TBA';
+  if (raw.includes(',')) {
+    const parts = raw.split(',');
+    return { date: parts[0].trim(), time: parts.slice(1).join(',').trim() };
+  }
+  return { date: raw, time: '' };
 }
 
 export default function EntryTicketView({
@@ -72,27 +67,30 @@ export default function EntryTicketView({
     const el = leftAsideRef.current;
     if (!el) return;
 
+    let rafId: number;
     const updateHeight = () => {
       if (window.innerWidth >= 1024) {
         const height = el.offsetHeight;
         if (height > 0) {
-          setAsideHeight(height);
+          setAsideHeight((prev) => (prev !== height ? height : prev));
         }
       } else {
-        setAsideHeight(null);
+        setAsideHeight((prev) => (prev !== null ? null : prev));
       }
     };
 
     updateHeight();
 
     const ro = new ResizeObserver(() => {
-      updateHeight();
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateHeight);
     });
     ro.observe(el);
 
     window.addEventListener('resize', updateHeight);
 
     return () => {
+      cancelAnimationFrame(rafId);
       ro.disconnect();
       window.removeEventListener('resize', updateHeight);
     };
@@ -121,21 +119,6 @@ export default function EntryTicketView({
     const trimmedPhone = phoneNumber.trim();
     const trimmedInstitution = institution.trim();
 
-    // If unauthenticated and details are incomplete, prompt modal
-    if (!initialUser) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (
-        !trimmedEmail ||
-        !emailRegex.test(trimmedEmail) ||
-        !trimmedName ||
-        trimmedPhone.replace(/\D/g, '').length < 10 ||
-        !trimmedInstitution
-      ) {
-        setIsModalOpen(true);
-        setError('Please provide attendee details to buy the entry pass.');
-        throw new Error('Attendee details required');
-      }
-    }
 
     setLoading(true);
 
@@ -159,8 +142,12 @@ export default function EntryTicketView({
         throw new Error(errMsg);
       }
 
-      if (data?.data?.orderId) {
-        redirectTargetRef.current = `/register/checkout-event?order_id=${data.data.orderId}`;
+      // Direct to payment gateway checkout or post-gateway status page
+      if (data?.data?.paymentUrl || data?.data?.paymentLink) {
+        redirectTargetRef.current = data.data.paymentUrl || data.data.paymentLink;
+      } else if (data?.data?.orderId) {
+        // Post-order fallback directed to status page (success/pending)
+        redirectTargetRef.current = `/payment/success?order_id=${data.data.orderId}`;
       } else {
         redirectTargetRef.current = '/payment/success';
       }
@@ -180,7 +167,11 @@ export default function EntryTicketView({
 
   const handleSlideDone = () => {
     const target = redirectTargetRef.current || '/payment/success';
-    router.push(target);
+    if (target.startsWith('http://') || target.startsWith('https://')) {
+      window.location.href = target;
+    } else {
+      router.push(target);
+    }
   };
 
   const handleInitiatePurchase = async (e?: React.FormEvent) => {
@@ -240,14 +231,16 @@ export default function EntryTicketView({
           data?.message || 'Order initiated successfully! Redirecting...'
         );
 
-        if (data?.data?.orderId) {
+        if (data?.data?.paymentUrl || data?.data?.paymentLink) {
+          window.location.href = data.data.paymentUrl || data.data.paymentLink;
+        } else if (data?.data?.orderId) {
           setTimeout(() => {
-            router.push(`/register/checkout-event?order_id=${data.data.orderId}`);
-          }, 1000);
+            router.push(`/payment/success?order_id=${data.data.orderId}`);
+          }, 800);
         } else {
           setTimeout(() => {
             router.push('/payment/success');
-          }, 1200);
+          }, 1000);
         }
         return;
       }
@@ -309,7 +302,7 @@ export default function EntryTicketView({
                 className="w-full max-w-[340px]"
               />
               <p className="text-[10px] font-mono text-zinc-500 tracking-wide text-center">
-                Slide the handle to confirm pass. Keyboard: use arrow keys or End.
+                Slide the handle to confirm pass<span className="hidden sm:inline">. Keyboard: use arrow keys or End</span>.
               </p>
             </div>
           )}
@@ -323,10 +316,11 @@ export default function EntryTicketView({
         ref={leftAsideRef}
         className="hidden lg:flex lg:col-span-5 xl:col-span-4 w-full flex-col gap-6 lg:sticky lg:top-24"
       >
-        {/* Title & Subtitle matching EventsExplorer.tsx */}
+        {/* Title & Subtitle matching EventsExplorer.tsx (as='div' to keep single h1 per page) */}
         <div>
           <RegistrationTitleRolling
             title="ENTRY TICKET"
+            as="div"
             className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl tracking-tight text-white uppercase select-none leading-none"
           />
           <p className="font-mono text-xs font-semibold tracking-[0.2em] text-zinc-400 uppercase mt-4">
@@ -405,24 +399,6 @@ export default function EntryTicketView({
               </p>
             </div>
           )}
-
-          {!initialUser && !isPurchased && (
-            <div className="flex flex-col items-center gap-1.5 pt-1">
-              <button
-                type="button"
-                onClick={() => setIsModalOpen(true)}
-                className="text-xs font-mono text-[#FF6A00] hover:underline cursor-pointer"
-              >
-                {fullName ? `Passholder: ${fullName} (Edit details)` : 'Enter Passholder Details'}
-              </button>
-              <Link
-                href="/register/check-email"
-                className="text-[11px] font-mono text-zinc-500 hover:text-white underline underline-offset-4 tracking-wide"
-              >
-                Already registered? Login with OTP &rarr;
-              </Link>
-            </div>
-          )}
         </div>
       </aside>
 
@@ -434,25 +410,30 @@ export default function EntryTicketView({
         className="lg:col-span-7 xl:col-span-8 w-full flex flex-col"
       >
         {/* Right Section Header */}
-        <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800/80">
-          <div className="flex flex-col gap-0.5">
-            <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-[#FF6A00]">
-              ACCESS INCLUDED
-            </span>
-            <h2 className="font-subheading font-medium text-xl sm:text-2xl text-white uppercase tracking-wide">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2.5 pb-3 mb-4 border-b border-zinc-800/80">
+          <div className="flex flex-col gap-1 sm:gap-0.5">
+            <div className="flex items-center justify-between sm:justify-start gap-3">
+              <span className="font-mono text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#FF6A00]">
+                ACCESS INCLUDED
+              </span>
+              <span className="sm:hidden text-[10px] font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md whitespace-nowrap shrink-0">
+                {freeEvents.length} FREE EVENTS
+              </span>
+            </div>
+            <h2 className="font-subheading font-medium text-xl sm:text-2xl text-white uppercase tracking-wide leading-tight">
               Included Free Events
             </h2>
           </div>
-          <span className="text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
-            {freeEvents.length} Events • 100% Free
+          <span className="hidden sm:inline-flex text-xs font-mono font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md whitespace-nowrap shrink-0">
+            {freeEvents.length} FREE EVENTS
           </span>
         </div>
 
-        {/* Scrollable Event Listing Container (Matches /events right scroll container) */}
+        {/* Scrollable Event Listing Container (Matches /events right scroll container on desktop; natural flow on mobile) */}
         <div
           tabIndex={0}
           className="w-full flex flex-col gap-4 sm:gap-5 lg:overflow-y-auto lg:pr-3 [scrollbar-width:thin] [scrollbar-color:#2a2d3d_transparent] focus:outline-none"
-          style={asideHeight ? { maxHeight: `${asideHeight - 50}px` } : { maxHeight: '820px' }}
+          style={asideHeight ? { maxHeight: `${asideHeight - 50}px` } : undefined}
         >
           {freeEvents.length === 0 ? (
             <div className="w-full min-h-[320px] rounded-2xl bg-[#0c0d13] border border-zinc-800 flex flex-col items-center justify-center p-8 text-center gap-4">
@@ -465,7 +446,7 @@ export default function EntryTicketView({
             </div>
           ) : (
             freeEvents.map((event, idx) => {
-              const { date, time } = formatEventDate(event.date_time);
+              const { date, time } = getEventDisplaySchedule(event);
               const hasImage = Boolean(event.image_url && event.image_url.startsWith('http'));
 
               return (
@@ -521,10 +502,6 @@ export default function EntryTicketView({
                           <span className="font-mono text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#FF6A00] block select-none">
                             {event.category}
                           </span>
-                          <span className="inline-block w-1 h-1 rounded-full bg-zinc-600" />
-                          <span className="font-mono text-[10px] text-emerald-400 font-semibold tracking-wider uppercase bg-emerald-500/10 border border-emerald-500/25 px-2 py-0.5 rounded-md">
-                            FREE WITH PASS
-                          </span>
                         </div>
 
                         <h3 className="font-subheading font-medium text-xl sm:text-2xl md:text-3xl tracking-wide text-white uppercase group-hover:text-zinc-100 transition-colors leading-tight">
@@ -541,8 +518,8 @@ export default function EntryTicketView({
                       {/* Metadata: Venue, Highlighted Date, Time */}
                       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-zinc-300 font-sans pr-16 sm:pr-20">
                         <span>{event.venue}</span>
-                        <span className="text-[#FF6A00] font-medium">{date}</span>
-                        {time && <span className="text-zinc-400">{time}</span>}
+                        <span suppressHydrationWarning className="text-[#FF6A00] font-medium">{date}</span>
+                        {time && <span suppressHydrationWarning className="text-zinc-400">{time}</span>}
                       </div>
 
                       {/* Prize Note if present */}

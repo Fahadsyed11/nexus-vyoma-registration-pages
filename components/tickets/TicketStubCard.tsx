@@ -22,12 +22,12 @@ export default function TicketStubCard({
 
       {/* Upper Stub: Fest Info & Pricing */}
       <div className="p-5 sm:p-6 flex flex-col gap-4 relative z-10">
-        <div className="flex items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] sm:text-[11px] font-mono tracking-widest uppercase bg-[#FF6A00]/15 text-[#FF8833] border border-[#FF6A00]/30 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] animate-pulse" />
+        <div className="flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] sm:text-[11px] font-mono tracking-wider uppercase bg-[#FF6A00]/15 text-[#FF8833] border border-[#FF6A00]/30 font-semibold whitespace-nowrap shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] animate-pulse shrink-0" />
             {isPurchased ? 'CONFIRMED PASS' : '3-DAY FEST PASS'}
           </span>
-          <span className="text-[11px] font-mono tracking-wider text-zinc-400 uppercase">
+          <span className="text-[10px] sm:text-[11px] font-mono tracking-wider text-zinc-400 uppercase whitespace-nowrap shrink-0">
             10 · 11 · 12 NOV 2026
           </span>
         </div>
@@ -42,16 +42,16 @@ export default function TicketStubCard({
         </div>
 
         {/* Pricing Highlight */}
-        <div className="flex items-baseline justify-between pt-3 border-t border-zinc-800/80">
-          <div className="flex flex-col">
-            <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-widest font-semibold">
+        <div className="flex items-baseline justify-between gap-2 pt-3 border-t border-zinc-800/80">
+          <div className="flex flex-col min-w-0">
+            <span className="text-[10px] sm:text-[11px] font-mono text-zinc-400 uppercase tracking-wider font-semibold whitespace-nowrap">
               ALL-ACCESS PASS
             </span>
-            <span className="text-xs font-mono text-emerald-400">
-              Single Ticket • All 3 Days Included
+            <span className="text-[11px] sm:text-xs font-mono text-emerald-400 whitespace-nowrap">
+              Single Pass • All 3 Days
             </span>
           </div>
-          <div className="flex items-baseline gap-1">
+          <div className="flex items-baseline gap-1 shrink-0">
             <span className="text-xs font-mono text-[#FF8833]">₹</span>
             <span className="font-[family-name:var(--font-display)] text-3xl sm:text-4xl text-white tracking-tight">
               {price}
@@ -91,22 +91,24 @@ export default function TicketStubCard({
           <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-widest font-semibold">
             Pass Benefits:
           </span>
-          <ul className="flex flex-col gap-1.5 text-xs font-mono text-zinc-300">
-            <li className="flex items-start gap-2">
-              <span className="text-[#FF6A00] mt-0.5">✦</span>
-              <span>Complete 3-Day Campus Access (10–12 Nov)</span>
+          <ul className="flex flex-col gap-2 text-xs font-mono text-zinc-300">
+            <li className="flex items-start gap-2 leading-relaxed">
+              <span className="text-[#FF6A00] mt-0.5 shrink-0 select-none">✦</span>
+              <span>
+                Complete 3-Day Campus Access <span className="whitespace-nowrap">(10–12 Nov)</span>
+              </span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[#FF6A00] mt-0.5">✦</span>
-              <span>Cultural Evenings, Celebrity Concerts & DJ Night</span>
+            <li className="flex items-start gap-2 leading-relaxed">
+              <span className="text-[#FF6A00] mt-0.5 shrink-0 select-none">✦</span>
+              <span>Cultural Evenings, Celebrity Concerts &amp; DJ Night</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[#FF6A00] mt-0.5">✦</span>
-              <span>Technical Arenas, Hackathons & Project Expos</span>
+            <li className="flex items-start gap-2 leading-relaxed">
+              <span className="text-[#FF6A00] mt-0.5 shrink-0 select-none">✦</span>
+              <span>Technical Arenas, Hackathons &amp; Project Expos</span>
             </li>
-            <li className="flex items-start gap-2">
-              <span className="text-[#FF6A00] mt-0.5">✦</span>
-              <span>Gaming Arenas, E-Sports Pit & Food Streets</span>
+            <li className="flex items-start gap-2 leading-relaxed">
+              <span className="text-[#FF6A00] mt-0.5 shrink-0 select-none">✦</span>
+              <span>Gaming Arenas, E-Sports Pit &amp; Food Streets</span>
             </li>
           </ul>
         </div>
@@ -126,7 +128,7 @@ export default function TicketStubCard({
               />
             ))}
           </div>
-          <span className="text-[10px] font-mono tracking-[0.25em] text-zinc-500 uppercase">
+          <span className="text-[10px] font-mono tracking-[0.16em] sm:tracking-[0.25em] text-zinc-500 uppercase whitespace-nowrap text-center">
             {attendeeEmail
               ? `NV26-PASS-${attendeeEmail.slice(0, 4).toUpperCase()}-${price}`
               : `NV26-ALLACCESS-3DAY-${price}`}

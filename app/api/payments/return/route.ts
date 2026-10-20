@@ -1,30 +1,15 @@
 import { connectToDatabase } from "@/database/db";
 import Transaction from "@/database/schema/transaction.schema";
+import EntryTicket from "@/database/schema/entry-ticket.schema";
 import cashfree from "@/utilities/payment/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
-
-    if (!appUrl) {
-        return NextResponse.json(
-            { message: "Application URL is not configured" },
-            { status: 500 }
-        );
-    }
-
     try {
         const orderId = request.nextUrl.searchParams.get("order_id");
 
         if (!orderId) {
-            return NextResponse.json({
-                message: "Missing order_id in query parameters",
-                status: 400,
-                data: null,
-                error: "Missing order_id in query parameters",
-                redirect: true,
-                redirectUrl: "/payment/failure?reason=missing_order_id"
-            }, { status: 400 })
+            return NextResponse.redirect(new URL("/payment/failed?reason=missing_order_id", request.url));
         }
 
         await connectToDatabase();
@@ -35,23 +20,15 @@ export async function GET(request: NextRequest) {
         });
 
         if (!transaction) {
-            return NextResponse.json({
-                message: "Order not found",
-                status: 404,
-                data: null,
-                error: "Order not found",
-                redirect: true,
-                redirectUrl: "/payment/failure?reason=order_not_found"
-            }, { status: 404 })
+            return NextResponse.redirect(new URL(`/payment/failed?order_id=${orderId}&reason=order_not_found`, request.url));
         }
 
         // Verify the order directly with Cashfree.
         const response = await cashfree.PGFetchOrder(orderId);
-        const orderStatus = response.data.order_status;
+        const orderStatus = response?.data?.order_status;
 
         if (orderStatus === "PAID") {
-            // Record the verified status. Your webhook/fulfillment logic
-            // should also handle success idempotently.
+            // Record the verified status.
             await Transaction.updateOne(
                 {
                     _id: transaction._id,
@@ -62,14 +39,17 @@ export async function GET(request: NextRequest) {
                 }
             );
 
-            return NextResponse.json({
-                message: "Payment successful",
-                status: 200,
-                data: null,
-                error: null,
-                redirect: true,
-                redirectUrl: "/payment/success"
-            }, { status: 200 })
+            // If an entry ticket was associated, mark it paid
+            if (transaction.entryTicketId) {
+                await EntryTicket.updateOne(
+                    { _id: transaction.entryTicketId },
+                    { $set: { isPaid: true } }
+                );
+            }
+
+            return NextResponse.redirect(
+                new URL(`/payment/success?order_id=${orderId}&txnid=${transaction._id}`, request.url)
+            );
         }
 
         if (
@@ -86,36 +66,19 @@ export async function GET(request: NextRequest) {
                 }
             );
 
-            return NextResponse.json({
-                message: "Payment failed",
-                status: 400,
-                data: null,
-                error: "Payment failed",
-                redirect: true,
-                redirectUrl: "/payment/failure"
-            }, { status: 400 });
+            return NextResponse.redirect(
+                new URL(`/payment/failed?order_id=${orderId}&reason=${orderStatus.toLowerCase()}`, request.url)
+            );
         }
 
-        // The payment is not confirmed as successful or definitively failed.
-        return NextResponse.json({
-            message: "Payment pending",
-            status: 200,
-            data: null,
-            error: null,
-            redirect: true,
-            redirectUrl: "/payment/pending"
-        }, { status: 200 });
+        // The payment is not confirmed as successful or definitively failed (pending or user dropped).
+        return NextResponse.redirect(
+            new URL(`/payment/pending?order_id=${orderId}`, request.url)
+        );
     } catch (error) {
         console.error("Payment return verification failed:", error);
-
-        // A verification error does not mean the payment failed.
-        return NextResponse.json({
-            message: "Payment verification error",
-            status: 500,
-            data: null,
-            error: "Payment verification error",
-            redirect: true,
-            redirectUrl: "/payment/failure?reason=verification_error"
-        }, { status: 500 })
+        return NextResponse.redirect(
+            new URL("/payment/failed?reason=verification_error", request.url)
+        );
     }
 }

@@ -43,6 +43,70 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-20 — Polished Mobile Header Layout & Slider Hint
+
+**Done**
+- `components/tickets/EntryTicketView.tsx`:
+  - Adjusted the event listing header on mobile: placed `ACCESS INCLUDED` and `8 FREE EVENTS` on top, allowing `INCLUDED FREE EVENTS` to span full width cleanly without mid-word breaks or squished badges.
+  - Simplified the mobile slider hint to `"Slide the handle to confirm pass."`, hiding the desktop keyboard note (`. Keyboard: use arrow keys or End`) on small touchscreens to prevent multiline wrapping.
+
+**Files changed**
+- `components/tickets/EntryTicketView.tsx`
+- `README.md`
+
+### 2026-10-20 — Removed `FREE WITH PASS` Card Tags & Updated Free Events Badge
+
+**Done**
+- `components/tickets/EntryTicketView.tsx`:
+  - Removed the `FREE WITH PASS` green pill tags and separator dots from all free event cards, matching the clean `/events` card layout.
+  - Updated the section header counter badge from `"{freeEvents.length} Events • 100% Free"` to `"{freeEvents.length} FREE EVENTS"`.
+  - Cleaned up the empty container in the desktop aside.
+
+**Files changed**
+- `components/tickets/EntryTicketView.tsx`
+- `README.md`
+
+### 2026-10-20 — Configured Gateway Routing to Payment Status Pages (`/payment/success`, `/failed`, `/pending`)
+
+**Done**
+- `app/api/payments/return/route.ts`:
+  - Converted the payment return route from returning static JSON to performing actual HTTP 302 browser redirects to the official status pages:
+    - Paid: `/payment/success?order_id=${orderId}&txnid=${transaction._id}`
+    - Expired/Terminated: `/payment/failed?order_id=${orderId}&reason=${orderStatus}` (fixed old 404 path `/payment/failure`)
+    - Pending: `/payment/pending?order_id=${orderId}`
+    - Missing/Invalid order: `/payment/failed?reason=...`
+  - Atomically marks `EntryTicket.isPaid = true` when payment is verified as `PAID`.
+- `components/tickets/EntryTicketView.tsx`:
+  - Updated `handleSlideConfirm` and `handleInitiatePurchase` to remove redirects to `/register/checkout-event`.
+  - Added clean direct gateway redirection hooks (`data.data.paymentUrl` / `data.data.paymentLink`), and routed test/post-order confirmation directly to `/payment/success?order_id=...`.
+
+**Files changed**
+- `app/api/payments/return/route.ts`
+- `components/tickets/EntryTicketView.tsx`
+- `README.md`
+
+### 2026-10-20 — Fixed Mobile Text Wrapping & Hydration Errors on `/register/entry-ticket`
+
+**Done**
+- `components/tickets/TicketStubCard.tsx`:
+  - Resolved `3-DAY FEST PASS` and `10 · 11 · 12 NOV 2026` multiline wrapping by applying `whitespace-nowrap shrink-0` and compact tracking/padding, keeping the indicator dot aligned.
+  - Replaced awkwardly wrapping subtitle with concise `Single Pass • All 3 Days` (`whitespace-nowrap`), preventing "Included" from breaking onto a new line next to the price.
+  - Wrapped `(10–12 Nov)` in `<span className="whitespace-nowrap">` to eliminate mid-hyphen line splits.
+  - Adjusted barcode tracking to `tracking-[0.16em] sm:tracking-[0.25em]` for safe rendering across narrow viewports.
+- `app/register/entry-ticket/page.tsx`:
+  - Implemented deterministic server-side schedule parsing in `getFreeEvents()` (`parseEventSchedule`), supplying exact `formatted_date` and `formatted_time` strings to eliminate mobile Safari `toLocaleTimeString` hydration mismatches.
+- `components/tickets/EntryTicketView.tsx`:
+  - Wrapped `ResizeObserver` height updates in `requestAnimationFrame` with value memoization to prevent `ResizeObserver loop completed with undelivered notifications`.
+  - Removed arbitrary `maxHeight: '820px'` style lock on mobile viewports, allowing natural document scroll.
+  - Set desktop title to `as="div"` so there is strictly one `<h1>` per page (Rule 2).
+  - Added `suppressHydrationWarning` on schedule badges.
+
+**Files changed**
+- `components/tickets/TicketStubCard.tsx`
+- `app/register/entry-ticket/page.tsx`
+- `components/tickets/EntryTicketView.tsx`
+- `README.md`
+
 ### 2026-10-20 — Integrated `SlideCommit` Interactive Pay Button on `/register/entry-ticket`
 
 **Done**
