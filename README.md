@@ -43,6 +43,294 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-21 — Universal Festival Pass Email & Single-Send Enforcement
+
+**Done**
+- **Universal Festival Pass Copy & Layout (`utilities/emails/ticket-qr-mail.ts`)**:
+  - Updated subject to `Your Official Festival Pass & Universal QR Code — Nexus Vyoma 2026`.
+  - Updated email text & HTML templates to clearly communicate that the QR code is an all-in-one Universal Festival Pass covering:
+    - Festival Gate Entry across all 3 days (10–12 Nov 2026).
+    - Verification and check-in for all currently enrolled events and competitions.
+    - Automatic validity for any future events or workshops enrolled in.
+  - Noted that attendees will not receive separate QR passes for individual events.
+  - Updated attachment filename to `nexus-vyoma-festival-pass.png`.
+- **Enforced Single-Send Delivery**:
+  - Added duplicate check `await EmailSchema.findOne({ email: to, type: "ticket_qr" })` at the top of `sendQREmail`. If a ticket email was already sent to the recipient, it gracefully skips sending duplicate QR emails.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+**Files changed**
+- `utilities/emails/ticket-qr-mail.ts`
+- `README.md`
+
+### 2026-10-21 — Registration Strict 10-Digit Phone Number Formatting & Validation
+
+**Done**
+- **Strict 10-Digit Phone Formatting (`components/registration/RegistrationFormStep.tsx`)**:
+  - Implemented real-time input sanitization in `handleChange` removing any spaces or non-digit characters (`replace(/\D/g, '')`) and clamping strictly to 10 digits.
+  - Added `onKeyDown` prevention on Space (`e.key === ' '`) to prevent spaces from being typed.
+  - Added `maxLength={10}`, `pattern="[0-9]{10}"`, and `inputMode="numeric"`.
+- **Valibot Schema Enforcement (`dto/(register)/register-user.dto.ts`)**:
+  - Enforced exact 10-digit regex validation: `/^\d{10}$/` with clear error message `"Phone number must be exactly 10 digits with no spaces"`.
+  - Blocks submissions with less or more than 10 digits on both client-side and server-side endpoints.
+- **Entry Ticket Consistency (`components/tickets/EntryTicketView.tsx`)**:
+  - Applied the same real-time non-digit stripping, space suppression, and 10-digit clamping to ticket checkout phone inputs.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+**Files changed**
+- `components/registration/RegistrationFormStep.tsx`
+- `dto/(register)/register-user.dto.ts`
+- `components/tickets/EntryTicketView.tsx`
+- `README.md`
+
+### 2026-10-21 — Organizers Mobile Scroll-Triggered Color Reveal
+
+**Done**
+- **Mobile Touchscreen Color Reveal (`components/organizers/OrganizerProfile.tsx`)**:
+  - Implemented an `IntersectionObserver` on touch/mobile devices (`@media (hover: none)` or viewport $< 768\text{px}$) to detect when organizer portraits scroll into the viewport.
+  - Automatically transitions portraits smoothly from grayscale into full color (`duration-1000 ease-out`), activating a subtle warm ambient glow and elevated border highlight without requiring touch, tap, or hold.
+  - Unobserves elements once triggered to preserve 60fps scroll performance.
+  - Preserves standard desktop `group-hover` interactions for pointer-equipped devices.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+**Files changed**
+- `components/organizers/OrganizerProfile.tsx`
+- `README.md`
+
+### 2026-10-21 — Organizers Heading Size & Typography Refinement
+
+**Done**
+- **Heading Size & Colon Removal (`components/organizers/OrganizersView.tsx`)**:
+  - Increased section heading typography to `text-lg sm:text-xl md:text-2xl` with prominent `text-zinc-100` color.
+  - Removed trailing colons (`:`) from all section titles (`CHIEF PATRON`, `PATRON`, `CONVENER`, `ADVISORY BOARD`, etc.).
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+**Files changed**
+- `components/organizers/OrganizersView.tsx`
+- `README.md`
+
+### 2026-10-21 — Organizers Header Centering, Count Removal & Image Loading Fix
+
+**Done**
+- **Centered Middle Headers**:
+  - Centered all section headers (`CHIEF PATRON:`, `PATRON:`, `CONVENER:`, `ADVISORY BOARD:`, etc.) in the middle across all roles, matching the Chief Patron and Patron presentation.
+- **Removed Total Counts**:
+  - Removed the `total - {count}` indicators from all section headers.
+- **Fixed Image Loading & Timeout Resolution**:
+  - Resolved HTTP 504 Gateway Timeout caused by Next.js optimizer attempting to buffer large S3 images (e.g. 7.4 MB) by adding `unoptimized` on `next/image` in `components/organizers/OrganizerProfile.tsx`. Images now stream directly from AWS S3 without Next.js proxy delays.
+  - Added an `onError` state fallback to seamlessly display the high-fidelity SVG silhouette placeholder if any asset fails to load.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors. Verified HTTP 200 response on `http://localhost:3000/organizers`.
+
+**Files changed**
+- `components/organizers/OrganizersView.tsx`
+- `components/organizers/OrganizerProfile.tsx`
+- `README.md`
+
+### 2026-10-21 — Organizers Dynamic 8-Tier Hierarchy & Social Link Filtering
+
+**Done**
+- **8-Tier Hierarchy Ordering**:
+  - Configured dynamic section grouping in `lib/data/organizersData.ts` and `components/organizers/OrganizersView.tsx` strictly following the requested hierarchy:
+    1. Chief Patron
+    2. Patron
+    3. Convener
+    4. Advisory Board
+    5. Organizing Faculty
+    6. Board Members
+    7. Tech Team
+    8. Coordinators
+- **Single-Member Centering & Dynamic Counters**:
+  - Roles with 1 member (e.g. Chief Patron, Patron) are centered horizontally with centered headers.
+  - Multi-member roles (e.g. Convener, Advisory Board) wrap responsively with a right-aligned `total - {count}` indicator.
+- **Card Presentation & Social Link Filtering (`components/organizers/OrganizerProfile.tsx`)**:
+  - Displays member `name` and, below it, their official `title` (e.g., *Chairman*, *Dean Student Welfare*, *Principal ISL Pharmacy College*).
+  - Sanitizes `linkedin` and `instagram` attributes: explicitly suppresses icons if value is `"N / A"`, `"N/A"`, empty, or invalid, rendering only active URLs.
+- **Build & Live Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Verified live SSR response on `http://localhost:3000/organizers` rendering the active database members correctly grouped.
+
+**Files changed**
+- `components/organizers/OrganizersView.tsx`
+- `components/organizers/OrganizerProfile.tsx`
+- `lib/data/organizersData.ts`
+- `README.md`
+
+### 2026-10-21 — Organizers Page Layout Update & Database Integration
+
+**Done**
+- Restructured `/organizers` page layout to exactly match the requested wireframe specification:
+  - **Section 1 (Leadership Stack)**: Centered vertical column containing 4 circular profiles matching the updated hierarchy: Chief Patron (Salman), Patron (Masood), Convener (Zareena), and Convener (Dr. Bari).
+  - **Section 2 (Faculty Org)**: Section title `FACULTY ORG:` with right badge `total - 15` and a 5-column responsive grid (Advisory Board, Principals, Dean, HODs, and Faculty).
+  - **Section 3 (Student Org)**: Section title `STUDENT ORG:` featuring 1 centered top profile for `Student Council`, a 4-column × 3-row grid (12 members: 8 Board members + 4 Tech Team), and the exact metadata breakdown summary block (`1 student council`, `8 Board members`, `4 tech team`, `total - 13`).
+- **Database-Driven (Zero Mock/Dummy Data)**:
+  - Wired SSR loading in `app/organizers/page.tsx` directly fetching live data from `GET /api/organizer-member` without modifying any DB schemas or API routes.
+  - Linked database entries dynamically to slots by member roles/titles/names (e.g., tech team members automatically display real AWS S3 portraits and social links).
+  - Fallback slots render high-fidelity monochrome SVG avatar masks awaiting official database entries per Rule 6 (Strict Asset Lock).
+- **Type Safety & Build Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Verified SSR payload and HTTP 200 response on `http://localhost:3000/organizers`.
+
+**Files changed**
+- `app/organizers/page.tsx`
+- `components/organizers/OrganizersView.tsx`
+- `components/organizers/OrganizerProfile.tsx`
+- `lib/data/organizersData.ts`
+- `README.md`
+
+### 2026-10-21 — Fix Order Summary Model Registration & Checkout Transaction Loop
+
+**Done**
+- `app/api/checkout/order-summary/route.ts`:
+  - Resolved intermittent `MissingSchemaError: Schema hasn't been registered for model "Event"` by ensuring `Event` model reference is evaluated immediately after database connection, preventing Turbopack bundler elision.
+  - Resolved self-locking `400: Pending transactions exist` loop on page refresh by restricting the block to transactions with `status: "pending"` (awaiting payment gateway response), while allowing `"creating"` draft transactions to be viewed, refreshed, and updated.
+  - Added safe transaction initialization defaults (`teamEventsAmount: 0, individualEventsAmount: 0`) and fallback checks for populated `event_id` fields.
+  - Verified with ESLint (0 errors) and TypeScript compiler (`tsc --noEmit` passed).
+
+**Files changed**
+- `app/api/checkout/order-summary/route.ts`
+- `README.md`
+
+### 2026-10-21 — Event Checkout Empty Arrays Handling & Auto-Redirect
+
+**Done**
+- `components/registration/CheckoutEventView.tsx`:
+  - Added empty array safeguards on data returned by `POST /api/checkout/order-summary`.
+  - Seamlessly handles scenarios where an attendee enrolls in only individual events (`enrolledTeamEvents: []`) or only team events (`enrolledIndividualEvents: []`).
+  - Implemented automatic redirection to `/register/enroll-event` when both `enrolledTeamEvents` and `enrolledIndividualEvents` are empty.
+  - Verified with ESLint (0 errors) and TypeScript compiler (`tsc --noEmit` passed).
+
+**Files changed**
+- `components/registration/CheckoutEventView.tsx`
+- `README.md`
+
+### 2026-10-21 — Event Checkout Live API Integration & Experience Polish
+
+**Done**
+- `app/register/checkout-event/page.tsx`:
+  - Streamlined into an SSR shell rendering `CheckoutEventView` with the asynchronous Cashfree v3 SDK script (`strategy="afterInteractive"`).
+  - Eliminated server-to-server loopback fetch that previously created Suspense loading hangs.
+- `components/registration/CheckoutEventView.tsx`:
+  - Integrated `POST /api/checkout/order-summary` on mount to fetch live attendee, team, and individual enrollment data with redirect and error handling.
+  - Removed entry fee indicators from Personal Details (since all attendees reaching this step have already purchased an entry ticket).
+  - Updated team event fees to calculate and display per-participant charges (`event_fee × team_length`) and detailed breakdown for leader and members.
+  - Removed redundant "REGISTERED SQUAD" list.
+  - Restyled Order Summary with clear hierarchy: **Subtotal** (listing individual and team event lines), **Service Charge** (displaying ₹30), and **Total Amount** (`subtotal + 30`).
+  - Added single-action lock (`isLocked = true`) to permanently disable `SlideCommit` once slid to prevent duplicate requests.
+  - Integrated `POST /api/payments/create-order` on slide confirm with Cashfree modal checkout.
+- Verified with ESLint (0 errors) and TypeScript compiler (`tsc --noEmit` passed).
+
+**Files changed**
+- `app/register/checkout-event/page.tsx`
+- `components/registration/CheckoutEventView.tsx`
+- `README.md`
+
+### 2026-10-20 — Add "Enroll in Events" Text Link on Payment Success View
+
+**Done**
+- `components/payment/StatusCard.tsx`:
+  - Added an "Enroll in Events &rarr;" text link (`/register/enroll-event`) positioned directly below the primary "Explore Events" button on the payment success status screen.
+  - Styled with brand monospace typography (`font-mono tracking-wider text-zinc-400 hover:text-white underline underline-offset-8 transition-colors`) matching existing navigation patterns.
+  - Verified with ESLint and TypeScript compiler (`tsc --noEmit`).
+
+**Files changed**
+- `components/payment/StatusCard.tsx`
+- `README.md`
+
+### 2026-10-20 — Cashfree Return Route HTTP Redirect to Payment Status Pages
+
+**Done**
+- `app/api/payments/return/route.ts`:
+  - Upgraded Cashfree payment return handler to inspect request headers (`accept: text/html`) and issue immediate HTTP redirects (`NextResponse.redirect`) to the frontend status pages (`/payment/success?order_id=...` or `/payment/failure?order_id=...`) upon browser navigation.
+  - Resolved browser rendering raw JSON response `{"message":"Payment successful", ...}` when Cashfree redirected to `/api/payments/return?order_id=...`.
+  - Maintained backward compatibility for programmatic API consumers expecting JSON payloads.
+  - Verified with ESLint and TypeScript compiler (`tsc --noEmit`).
+
+**Files changed**
+- `app/api/payments/return/route.ts`
+- `README.md`
+
+### 2026-10-20 — Add Checkout Dummy Data Variable & Standalone Preview Mode
+
+**Done**
+- `app/register/checkout-event/page.tsx`:
+  - Added `dummyCheckoutData` variable containing complete mock structures for testing: attendee user information, unpaid individual competitions ("Algorithmic Code Sprint", "Cyber Forensic Challenge"), unpaid team events ("RoboWars Combat Championship" with 3-member squad details and entry ticket items), entry ticket status, and server pricing summary.
+  - Added `USE_DUMMY_DATA = true` toggle to render `CheckoutEventView` with `dummyCheckoutData` directly, enabling full UI inspection and review of `/register/checkout-event` without requiring database entries or prior API requests.
+  - Retained the live backend pipeline intact when toggling `USE_DUMMY_DATA = false`.
+  - Zero database creation, modification, or schema updates.
+
+**Files changed**
+- `app/register/checkout-event/page.tsx`
+- `README.md`
+
+### 2026-10-20 — Display Enrolled Events in Selected Events Section & Fix Lost Catalog Events
+
+**Done**
+- `components/registration/EventEnrollmentView.tsx`:
+  - **Master Event Catalogue Sync**: Integrated `/api/event` query during enrollment initialization to preserve the complete event catalog. When `GET /api/enrollement/enroll-event` filters user-enrolled events out of `availableEvents`, event metadata (title, entry fee, schedule, venue) is fully retained and resolved.
+  - **Selected Events (Not Paid) Display**: Updated the right-hand column to prominently render all active unpaid reservations (`pendingIndividual` and `pendingTeam`) retrieved from `GET /api/enrollement/enroll-event` (`data.enrollUserEvents`), alongside in-progress staged selections.
+  - **Reservation Management**: Added reservation status badges (`RESERVED (NOT PAID)` / `TEAM RESERVED (NOT PAID)`) with teammate/squad breakdown and a cancel/delete action calling `DELETE /api/enrollement/enroll-event` with `{ enrolledEventId, eventId }` to return cancelled events immediately back to the available catalog.
+  - **Instant Single Event Enrolment**: Provided quick "Enroll Event →" / "Enroll Squad →" actions on staged cards calling `POST /api/enrollement/enroll-event` so users can enroll individual events immediately and watch them transition into the Enrolled Reservations list.
+  - **Total Summary & Adaptive Checkout**: Unified `totalSelectedCount` and `totalFee` to accurately tally both enrolled unpaid reservations and staged selections. If only unpaid reservations exist, clicking **PROCEED TO CHECK OUT** advances directly to `/register/checkout-event`.
+  - **Zero Backend Changes**: Kept all `route.ts` and schema files untouched.
+
+**Files changed**
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
+### 2026-10-20 — Connect Event Enrollment to Live Endpoints & Solo/Team Validations (Zero route.ts Changes)
+
+**Done**
+- `components/registration/EventEnrollmentView.tsx`:
+  - **Sequential API Loading on Page Mount**: Sequentially calls `GET /api/enrollement/enrolled-event` (retrieving user details, registered status, and paid enrollments) followed by `GET /api/enrollement/enroll-event` (retrieving event catalog and pending reservations).
+  - **Solo Team Handling**: For team events with `max_team_size === 1`, automatically satisfies the team requirement with the team leader alone (`teamEmails: []`), displaying a solo team badge and omitting superfluous teammate email inputs.
+  - **Teammate Email Verification**: Wired the **+** button to `POST /api/enrollement/check-team-email` with `{ email }`. Accurately handles HTTP 200 (verified, unlocks next input), HTTP 404 with custom error messages (not registered / ticket not purchased), and HTTP 401 redirect flags.
+  - **Sequential Checkout Submission**: On checkout submission, calls `POST /api/enrollement/enroll-event` individually per selected event with exact backend payload schemas (`{ eventId }` for individual events, `{ eventId, teamName, teamEmails }` for team events), followed by seamless navigation to `/payment/checkout`.
+  - **Strict Constraint Adherence**: Zero modifications made to any `route.ts` or database schema files; all enhancements were implemented entirely in frontend client components.
+
+**Files changed**
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
+### 2026-10-20 — Cashfree Modal Checkout & In-App Status Navigation (Zero route.ts Changes)
+
+**Done**
+- `components/tickets/EntryTicketView.tsx`:
+  - Updated Cashfree checkout to open in modal mode (`redirectTarget: '_modal'`), matching the proven pattern in `CheckoutEventView.tsx`.
+  - On checkout completion, queries `/api/payments/return?order_id=...` as a background API fetch, allowing the existing backend route to perform order verification without top-level browser navigation.
+  - Transitions to `/payment/success?order_id=...` directly via Next.js client router (`router.push`), eliminating browser protocol mismatch on Safari (`https://localhost:3000`) and avoiding any changes to `route.ts`.
+- `app/payment/success/page.tsx` & `components/payment/StatusCard.tsx`:
+  - Display actual transaction and order identifiers without hardcoded placeholders.
+  - Tailored action button for 3-day entry ticket pass to navigate directly to event enrollment (`/register/enroll-event`).
+
+**Files changed**
+- `components/tickets/EntryTicketView.tsx`
+- `app/payment/success/page.tsx`
+- `components/payment/StatusCard.tsx`
+- `README.md`
+
+### 2026-10-20 — Entry Ticket Checkout, Auto-Redirect, and Cashfree Payment Integration
+
+**Done**
+- `components/registration/OtpStepForm.tsx`: ensured safe fallback redirect destination is `/register/entry-ticket`.
+- `app/register/entry-ticket/page.tsx`: added server-side purchased check that redirects to `/register/enroll-event` if already bought; replaced empty suspense fallback with a brand loading indicator to eliminate suspense hanging.
+- `components/tickets/EntryTicketView.tsx`:
+  - Added on-load verification calling `GET /api/entry-ticket` to automatically redirect users to `/register/enroll-event` if already purchased.
+  - Replaced the slide button with a dedicated one-click disable Pay Button (`PAY ₹299 • GET 3-DAY PASS →`).
+  - Integrated `POST /api/payments/create-order` to fetch the Cashfree payment session ID.
+  - Added safe dynamic injection of Cashfree JS SDK v3 without causing Suspense or continuous loading loops, seamlessly launching Cashfree checkout.
+- `components/registration/EventEnrollmentView.tsx`: added `initialIndividualPending` and `initialTeamPending` props to `EventEnrollmentViewProps` to resolve type contract mismatch.
+
+**Files changed**
+- `app/register/entry-ticket/page.tsx`
+- `components/tickets/EntryTicketView.tsx`
+- `components/registration/OtpStepForm.tsx`
+- `components/registration/EventEnrollmentView.tsx`
+- `README.md`
+
 ### 2026-10-19 — Reset OTP Verification State on Resend / New Email Session
 
 **Done**

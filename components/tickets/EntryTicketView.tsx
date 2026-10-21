@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import RegistrationTitleRolling from '@/components/registration/RegistrationTitleRolling';
-import SlideCommit from '@/components/ui/SlideCommit';
 import TicketStubCard from './TicketStubCard';
 
 export interface FreeEventItem {
@@ -38,6 +37,60 @@ interface EntryTicketViewProps {
   initialUser: UserSessionInfo | null;
   initialIsPurchased?: boolean;
   freeEvents: FreeEventItem[];
+}
+
+interface CashfreeCheckoutResult {
+  error?: { message?: string; code?: string };
+  redirect?: boolean;
+  paymentDetails?: unknown;
+}
+
+interface CashfreeInstance {
+  checkout: (options: {
+    paymentSessionId: string;
+    redirectTarget?: '_modal' | '_self' | '_top';
+  }) => Promise<CashfreeCheckoutResult>;
+}
+
+declare global {
+  interface Window {
+    Cashfree?: (options: { mode: 'sandbox' | 'production' }) => CashfreeInstance;
+  }
+}
+
+async function loadCashfreeSDK(): Promise<CashfreeInstance> {
+  const mode =
+    process.env.NEXT_PUBLIC_CASHFREE_MODE === 'production' ? 'production' : 'sandbox';
+
+  if (typeof window !== 'undefined' && window.Cashfree) {
+    return window.Cashfree({ mode });
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    if (typeof window === 'undefined') return reject(new Error('Window not available'));
+    if (window.Cashfree) return resolve();
+
+    const existing = document.querySelector('script[src*="cashfree.js"]');
+    if (existing) {
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', () => reject(new Error('Failed to load Cashfree SDK')));
+      if (window.Cashfree) resolve();
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://sdk.cashfree.com/js/v3/cashfree.js';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Failed to load Cashfree SDK'));
+    document.body.appendChild(script);
+  });
+
+  if (!window.Cashfree) {
+    throw new Error('Cashfree SDK is not available');
+  }
+
+  return window.Cashfree({ mode });
 }
 
 function getEventDisplaySchedule(event: FreeEventItem): { date: string; time: string } {
@@ -96,6 +149,26 @@ export default function EntryTicketView({
     };
   }, []);
 
+  // 01 — Check entry ticket purchase status on page load
+  useEffect(() => {
+    let isMounted = true;
+    async function checkEntryTicketStatus() {
+      try {
+        const res = await fetch('/api/entry-ticket');
+        const data = await res.json().catch(() => null);
+        if (isMounted && data?.redirect && data?.redirectUrl === '/register/enroll-event') {
+          router.replace('/register/enroll-event');
+        }
+      } catch (err) {
+        console.error('Error checking entry ticket on load:', err);
+      }
+    }
+    checkEntryTicketStatus();
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
   // Buyer Form Modal State for unauthenticated visitors
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [fullName, setFullName] = useState(initialUser?.name || '');
@@ -104,73 +177,108 @@ export default function EntryTicketView({
   const [institution, setInstitution] = useState(initialUser?.institution || '');
 
   const [loading, setLoading] = useState(false);
+  const [paying, setPaying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const redirectTargetRef = useRef<string | null>(null);
 
   const isPurchased = initialIsPurchased;
 
-  const handleSlideConfirm = async () => {
+  // 02 — Cashfree Payment Handler with single-click disable
+  const handlePayEntryTicket = async () => {
+    if (paying) return;
     setError(null);
     setSuccessMessage(null);
 
-    const trimmedEmail = email.trim();
-    const trimmedName = fullName.trim();
-    const trimmedPhone = phoneNumber.trim();
-    const trimmedInstitution = institution.trim();
-
-
-    setLoading(true);
+    // Disable button immediately on click
+    setPaying(true);
 
     try {
-      const res = await fetch('/api/registration/entry-ticket', {
+      // 1. Call api/payments/create-order
+      const res = await fetch('/api/payments/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          full_name: initialUser?.name || trimmedName,
-          email: initialUser?.email || trimmedEmail,
-          phone_number: initialUser?.phone_number || trimmedPhone,
-          institution: initialUser?.institution || trimmedInstitution,
-        }),
       });
 
-      const data = await res.json().catch(() => null);
+      const resData = await res.json().catch(() => null);
 
-      if (!res.ok) {
-        const errMsg = data?.message || 'Failed to initiate ticket order. Please try again.';
-        setError(errMsg);
-        throw new Error(errMsg);
+      if (!res.ok || !resData?.data?.payment_session_id) {
+        // If unauthenticated / session expired, redirect to check-email
+        if (res.status === 401 && resData?.redirectUrl) {
+          router.push(resData.redirectUrl);
+          return;
+        }
+        throw new Error(resData?.message || 'Failed to initiate entry ticket order.');
       }
 
-      // Direct to payment gateway checkout or post-gateway status page
-      if (data?.data?.paymentUrl || data?.data?.paymentLink) {
-        redirectTargetRef.current = data.data.paymentUrl || data.data.paymentLink;
-      } else if (data?.data?.orderId) {
-        // Post-order fallback directed to status page (success/pending)
-        redirectTargetRef.current = `/payment/success?order_id=${data.data.orderId}`;
-      } else {
-        redirectTargetRef.current = '/payment/success';
+      const orderId = resData.data.order_id as string | undefined;
+      const sessionId = resData.data.payment_session_id as string;
+
+      // 2. Load Cashfree v3 SDK dynamically
+      const cashfree = await loadCashfreeSDK();
+
+      // 3. Open Cashfree modal checkout popup
+      const checkoutResult = await cashfree.checkout({
+        paymentSessionId: sessionId,
+        redirectTarget: '_modal',
+      });
+
+      if (checkoutResult?.error) {
+        const cancelMsg = checkoutResult.error.message || 'Payment was cancelled or failed.';
+        setError(cancelMsg);
+        setPaying(false);
+        return;
       }
 
-      // Smooth pending transition before switching to done phase
-      await new Promise((resolve) => setTimeout(resolve, 600));
-      return true;
+      if (checkoutResult?.paymentDetails) {
+        // Query backend /api/payments/return to finalize order & get redirectUrl
+        if (orderId) {
+          try {
+            const verifyRes = await fetch(
+              `/api/payments/return?order_id=${encodeURIComponent(orderId)}`
+            );
+            const verifyData = await verifyRes.json().catch(() => null);
+            if (verifyData?.redirectUrl) {
+              const targetUrl = verifyData.redirectUrl.includes('?')
+                ? `${verifyData.redirectUrl}&order_id=${encodeURIComponent(orderId)}`
+                : `${verifyData.redirectUrl}?order_id=${encodeURIComponent(orderId)}`;
+              router.push(targetUrl);
+              return;
+            }
+          } catch (verifyErr) {
+            console.warn('Background payment return check error:', verifyErr);
+          }
+          router.push(`/payment/success?order_id=${encodeURIComponent(orderId)}`);
+          return;
+        }
+        router.push('/payment/success');
+        return;
+      }
+
+      // If checkout modal closed or completed without explicit paymentDetails flag:
+      if (orderId) {
+        try {
+          const verifyRes = await fetch(
+            `/api/payments/return?order_id=${encodeURIComponent(orderId)}`
+          );
+          const verifyData = await verifyRes.json().catch(() => null);
+          if (verifyData?.redirectUrl && verifyData.redirectUrl.includes('/payment/success')) {
+            const targetUrl = `${verifyData.redirectUrl}?order_id=${encodeURIComponent(orderId)}`;
+            router.push(targetUrl);
+            return;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      setPaying(false);
     } catch (err) {
-      if (err instanceof Error && err.message !== 'Attendee details required') {
-        setError(err.message);
-      }
-      throw err;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSlideDone = () => {
-    const target = redirectTargetRef.current || '/payment/success';
-    if (target.startsWith('http://') || target.startsWith('https://')) {
-      window.location.href = target;
-    } else {
-      router.push(target);
+      console.error('Entry ticket payment error:', err);
+      setError(
+        err instanceof Error ? err.message : 'Unable to open payment gateway. Please try again.'
+      );
+      // Re-enable button on failure so attendee can retry
+      setPaying(false);
     }
   };
 
@@ -277,34 +385,42 @@ export default function EntryTicketView({
 
         {/* Mobile Buy CTA */}
         <div className="pt-2">
+          {error && (
+            <div className="mb-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono">
+              {error}
+            </div>
+          )}
           {isPurchased ? (
             <Link
               href="/register/enroll-event"
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-lg transition-colors flex items-center justify-center min-h-[44px]"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl transition-colors flex items-center justify-center min-h-[48px] shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             >
               ✓ Pass Confirmed • Enroll in Events &rarr;
             </Link>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-2 w-full">
-              <SlideCommit
-                width={320}
-                height={54}
-                label="Slide to pay ₹299"
-                doneLabel="Redirecting..."
-                errorLabel="Order Failed"
-                trackColor="#10131E"
-                handleColor="#FF6A00"
-                successColor="#22c55e"
-                dangerColor="#e5484d"
-                disabled={loading}
-                onConfirm={handleSlideConfirm}
-                onDone={handleSlideDone}
-                className="w-full max-w-[340px]"
-              />
-              <p className="text-[10px] font-mono text-zinc-500 tracking-wide text-center">
-                Slide the handle to confirm pass<span className="hidden sm:inline">. Keyboard: use arrow keys or End</span>.
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={handlePayEntryTicket}
+              disabled={paying}
+              className="w-full relative group overflow-hidden inline-flex items-center justify-center border border-[#FF6A00]/80 hover:border-[#FF6A00] bg-[#FF6A00] hover:bg-[#ff7b1a] text-black font-bold font-mono text-xs sm:text-sm tracking-wider uppercase rounded-xl py-3.5 px-5 shadow-[0_0_25px_rgba(255,106,0,0.35)] hover:shadow-[0_0_35px_rgba(255,106,0,0.55)] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none min-h-[48px]"
+            >
+              <span className="flex items-center justify-center gap-2">
+                {paying ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4 text-black" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    <span>Opening Payment Gateway...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Pay ₹299 • Get 3-Day Pass</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </>
+                )}
+              </span>
+            </button>
           )}
         </div>
       </div>
@@ -373,31 +489,34 @@ export default function EntryTicketView({
           {isPurchased ? (
             <Link
               href="/register/enroll-event"
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs uppercase tracking-wider py-3 px-4 rounded-lg transition-colors flex items-center justify-center min-h-[44px]"
+              className="w-full bg-emerald-500 hover:bg-emerald-600 text-black font-bold text-xs uppercase tracking-wider py-3.5 px-4 rounded-xl transition-colors flex items-center justify-center min-h-[48px] shadow-[0_0_20px_rgba(16,185,129,0.3)]"
             >
               ✓ Pass Confirmed • Enroll in Events &rarr;
             </Link>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-2 w-full">
-              <SlideCommit
-                width={320}
-                height={54}
-                label="Slide to pay ₹299"
-                doneLabel="Redirecting..."
-                errorLabel="Order Failed"
-                trackColor="#10131E"
-                handleColor="#FF6A00"
-                successColor="#22c55e"
-                dangerColor="#e5484d"
-                disabled={loading}
-                onConfirm={handleSlideConfirm}
-                onDone={handleSlideDone}
-                className="w-full max-w-[340px]"
-              />
-              <p className="text-[10px] font-mono text-zinc-500 tracking-wide text-center">
-                Slide the handle to confirm pass. Keyboard: use arrow keys or End.
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={handlePayEntryTicket}
+              disabled={paying}
+              className="w-full relative group overflow-hidden inline-flex items-center justify-center border border-[#FF6A00]/80 hover:border-[#FF6A00] bg-[#FF6A00] hover:bg-[#ff7b1a] text-black font-bold font-mono text-xs sm:text-sm tracking-wider uppercase rounded-xl py-3.5 px-5 shadow-[0_0_25px_rgba(255,106,0,0.35)] hover:shadow-[0_0_35px_rgba(255,106,0,0.55)] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none min-h-[48px]"
+            >
+              <span className="flex items-center justify-center gap-2">
+                {paying ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4 text-black" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                    <span>Opening Payment Gateway...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Pay ₹299 • Get 3-Day Pass</span>
+                    <span aria-hidden="true">&rarr;</span>
+                  </>
+                )}
+              </span>
+            </button>
           )}
         </div>
       </aside>
@@ -609,7 +728,12 @@ export default function EntryTicketView({
                     type="tel"
                     required
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    maxLength={10}
+                    pattern="[0-9]{10}"
+                    onKeyDown={(e) => {
+                      if (e.key === ' ') e.preventDefault();
+                    }}
                     placeholder="9876543210"
                     className="w-full bg-[#12141c] text-white placeholder-zinc-600 font-sans text-sm px-4 py-3 rounded-lg border border-zinc-700 focus:border-[#FF6A00] focus:outline-none"
                   />
@@ -644,24 +768,29 @@ export default function EntryTicketView({
               )}
 
               <div className="flex flex-col items-center justify-center gap-2 w-full pt-1">
-                <SlideCommit
-                  width={340}
-                  height={54}
-                  label="Slide to confirm ₹299"
-                  doneLabel="Redirecting..."
-                  errorLabel="Order Failed"
-                  trackColor="#10131E"
-                  handleColor="#FF6A00"
-                  successColor="#22c55e"
-                  dangerColor="#e5484d"
+                <button
+                  type="button"
+                  onClick={handleInitiatePurchase}
                   disabled={loading}
-                  onConfirm={handleSlideConfirm}
-                  onDone={handleSlideDone}
-                  className="w-full max-w-[340px]"
-                />
-                <p className="text-[10px] font-mono text-zinc-500 tracking-wide text-center">
-                  Slide handle to complete purchase
-                </p>
+                  className="w-full relative group overflow-hidden inline-flex items-center justify-center border border-[#FF6A00]/80 hover:border-[#FF6A00] bg-[#FF6A00] hover:bg-[#ff7b1a] text-black font-bold font-mono text-xs sm:text-sm tracking-wider uppercase rounded-xl py-3.5 px-5 shadow-[0_0_25px_rgba(255,106,0,0.35)] hover:shadow-[0_0_35px_rgba(255,106,0,0.55)] transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none min-h-[48px]"
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    {loading ? (
+                      <>
+                        <svg className="animate-spin w-4 h-4 text-black" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                        </svg>
+                        <span>Initiating Order...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Pay ₹299 • Confirm Pass</span>
+                        <span aria-hidden="true">&rarr;</span>
+                      </>
+                    )}
+                  </span>
+                </button>
               </div>
             </form>
           </div>

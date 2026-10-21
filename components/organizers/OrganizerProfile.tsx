@@ -1,9 +1,12 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
 export interface OrganizerProfileProps {
   name: string;
-  role: string;
+  role?: string;
+  title?: string;
   imageUrl?: string;
   size?: 'lg' | 'md' | 'sm';
   description?: string;
@@ -15,9 +18,27 @@ export interface OrganizerProfileProps {
   className?: string;
 }
 
+/** Check whether a social link is an actual URL and not "N / A" */
+function isRealLink(url?: string): boolean {
+  if (!url) return false;
+  const s = url.trim();
+  if (
+    !s ||
+    /^n\s*\/\s*a$/i.test(s) ||
+    /^na$/i.test(s) ||
+    /^none$/i.test(s) ||
+    /^null$/i.test(s) ||
+    /^undefined$/i.test(s)
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export default function OrganizerProfile({
   name,
   role,
+  title,
   imageUrl,
   size = 'md',
   description,
@@ -25,49 +46,104 @@ export default function OrganizerProfile({
   priority = false,
   className = '',
 }: OrganizerProfileProps) {
-  // Uniform sizing ensuring all organizer portraits have identical dimensions
+  const [imgError, setImgError] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Subtitle prioritizes member title (e.g., "Chairman", "Dean Student Welfare"), falling back to role
+  const subtitle = title || role;
+
+  const hasInstagram = isRealLink(socials?.instagram);
+  const hasLinkedin = isRealLink(socials?.linkedin);
+
+  // Scroll-triggered color reveal for touch / mobile screens (where hover is unavailable)
+  useEffect(() => {
+    const isTouch =
+      typeof window !== 'undefined' &&
+      (!window.matchMedia('(hover: hover)').matches || window.innerWidth < 768);
+
+    if (!isTouch) {
+      // Desktop uses CSS group-hover
+      return;
+    }
+
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsRevealed(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -20px 0px' }
+    );
+
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  // Responsive sizing configurations
   const sizeConfig = {
     lg: {
-      circle: 'w-24 h-24 xs:w-26 xs:h-26 sm:w-28 sm:h-28 md:w-30 md:h-30',
-      container: 'w-26 xs:w-28 sm:w-32 md:w-34',
-      nameText: 'text-xs sm:text-sm',
-      roleText: 'text-[10px] sm:text-xs',
-      avatarIconSize: 34,
+      circle: 'w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36',
+      container: 'w-36 sm:w-44 md:w-48',
+      nameText: 'text-sm sm:text-base md:text-lg font-semibold',
+      roleText: 'text-xs sm:text-sm text-zinc-400',
     },
     md: {
-      circle: 'w-24 h-24 xs:w-26 xs:h-26 sm:w-28 sm:h-28 md:w-30 md:h-30',
-      container: 'w-26 xs:w-28 sm:w-32 md:w-34',
-      nameText: 'text-xs sm:text-sm',
-      roleText: 'text-[10px] sm:text-xs',
-      avatarIconSize: 34,
+      circle: 'w-22 h-22 sm:w-26 sm:h-26 md:w-28 md:h-28',
+      container: 'w-32 sm:w-36 md:w-40',
+      nameText: 'text-xs sm:text-sm font-medium',
+      roleText: 'text-[11px] sm:text-xs text-zinc-400',
     },
     sm: {
-      circle: 'w-24 h-24 xs:w-26 xs:h-26 sm:w-28 sm:h-28 md:w-30 md:h-30',
-      container: 'w-26 xs:w-28 sm:w-32 md:w-34',
-      nameText: 'text-xs sm:text-sm',
-      roleText: 'text-[10px] sm:text-xs',
-      avatarIconSize: 34,
+      circle: 'w-18 h-18 sm:w-20 sm:h-20 md:w-24 md:h-24',
+      container: 'w-26 sm:w-28 md:w-32',
+      nameText: 'text-[11px] sm:text-xs font-medium',
+      roleText: 'text-[10px] sm:text-[11px] text-zinc-400',
     },
   }[size];
 
+  const showImage = Boolean(imageUrl && !imgError);
+
   return (
     <div
+      ref={containerRef}
       className={`group flex flex-col items-center text-center select-none ${sizeConfig.container} ${className}`}
-      aria-label={description || `${name}, ${role}`}
+      aria-label={description || `${name}${subtitle ? `, ${subtitle}` : ''}`}
     >
-      {/* Perfectly circular portrait mask with slow, buttery smooth hover transition */}
+      {/* Perfectly circular portrait mask: hover on desktop, auto scroll-reveal on mobile */}
       <div
-        className={`relative ${sizeConfig.circle} rounded-full overflow-hidden border border-zinc-800 bg-[#0c0e14] transition-all duration-700 ease-out group-hover:border-zinc-300 group-hover:scale-[1.03] group-hover:shadow-[0_0_24px_rgba(255,106,0,0.22)] shadow-[0_4px_16px_rgba(0,0,0,0.6)] flex items-center justify-center`}
+        className={`relative ${
+          sizeConfig.circle
+        } rounded-full overflow-hidden transition-all duration-1000 ease-out flex items-center justify-center ${
+          isRevealed
+            ? 'border-zinc-300 scale-[1.02] shadow-[0_0_24px_rgba(255,106,0,0.22)]'
+            : 'border-zinc-800 bg-[#0c0e14] shadow-[0_4px_16px_rgba(0,0,0,0.6)] md:group-hover:border-zinc-300 md:group-hover:scale-[1.03] md:group-hover:shadow-[0_0_24px_rgba(255,106,0,0.22)]'
+        }`}
       >
-        {imageUrl ? (
+        {showImage ? (
           <Image
-            src={imageUrl}
+            src={imageUrl!}
             alt={name}
             fill
+            unoptimized
             priority={priority}
-            loading={priority ? 'eager' : undefined}
-            sizes="(max-width: 768px) 120px, 150px"
-            className="object-cover transition-all duration-700 ease-out group-hover:scale-105 [filter:grayscale(100%)_contrast(1.05)_brightness(0.95)] group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]"
+            loading={priority ? 'eager' : 'lazy'}
+            onError={() => setImgError(true)}
+            sizes="(max-width: 768px) 140px, 180px"
+            className={`object-cover transition-all duration-1000 ease-out md:group-hover:scale-105 ${
+              isRevealed
+                ? '[filter:grayscale(0%)_contrast(1)_brightness(1)]'
+                : '[filter:grayscale(100%)_contrast(1.05)_brightness(0.95)] md:group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]'
+            }`}
           />
         ) : (
           /* High-fidelity monochrome editorial portrait placeholder */
@@ -83,7 +159,11 @@ export default function OrganizerProfile({
               viewBox="0 0 100 100"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="w-[82%] h-[82%] text-zinc-400/80 translate-y-1 transition-opacity duration-700 group-hover:text-zinc-300"
+              className={`w-[82%] h-[82%] translate-y-1 transition-all duration-700 ${
+                isRevealed
+                  ? 'text-zinc-200'
+                  : 'text-zinc-400/80 md:group-hover:text-zinc-300'
+              }`}
               aria-hidden="true"
             >
               <circle cx="50" cy="38" r="18" fill="currentColor" fillOpacity="0.45" />
@@ -95,29 +175,35 @@ export default function OrganizerProfile({
         )}
       </div>
 
-      {/* Profile Details */}
-      <div className="mt-2.5 sm:mt-3 flex flex-col items-center w-full px-1">
+      {/* Profile Details: Name and below it, Title */}
+      <div className="mt-3 flex flex-col items-center w-full px-1">
         <span
-          className={`font-sans font-medium text-zinc-200 tracking-tight transition-colors duration-300 group-hover:text-white truncate max-w-full ${sizeConfig.nameText}`}
+          className={`font-sans tracking-tight transition-colors duration-300 line-clamp-2 max-w-full ${
+            sizeConfig.nameText
+          } ${
+            isRevealed ? 'text-white' : 'text-zinc-100 md:group-hover:text-white'
+          }`}
         >
           {name}
         </span>
-        <span
-          className={`font-sans font-normal text-zinc-500 tracking-normal mt-0.5 truncate max-w-full ${sizeConfig.roleText}`}
-        >
-          {role}
-        </span>
+        {subtitle && (
+          <span
+            className={`font-sans tracking-normal mt-0.5 line-clamp-2 max-w-full ${sizeConfig.roleText}`}
+          >
+            {subtitle}
+          </span>
+        )}
 
-        {/* Minimalist Social Links: Instagram & LinkedIn */}
-        {socials && (socials.instagram || socials.linkedin) && (
-          <div className="mt-1.5 flex items-center justify-center gap-1.5 text-zinc-500">
-            {socials.instagram && (
+        {/* Minimalist Social Links: Instagram & LinkedIn (only if real valid link, not "N / A") */}
+        {(hasInstagram || hasLinkedin) && (
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-zinc-400">
+            {hasInstagram && (
               <a
-                href={socials.instagram}
+                href={socials!.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${name}'s Instagram profile`}
-                className="p-1 rounded-md text-zinc-500 hover:text-[#FF6A00] hover:bg-white/[0.06] transition-all duration-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
+                className="p-1.5 rounded-md text-zinc-400 hover:text-[#FF6A00] hover:bg-white/[0.06] transition-all duration-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF6A00]"
               >
                 <svg
                   className="w-3.5 h-3.5"
@@ -135,13 +221,13 @@ export default function OrganizerProfile({
                 </svg>
               </a>
             )}
-            {socials.linkedin && (
+            {hasLinkedin && (
               <a
-                href={socials.linkedin}
+                href={socials!.linkedin}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`${name}'s LinkedIn profile`}
-                className="p-1 rounded-md text-zinc-500 hover:text-[#0088FF] hover:bg-white/[0.06] transition-all duration-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#0088FF]"
+                className="p-1.5 rounded-md text-zinc-400 hover:text-[#0088FF] hover:bg-white/[0.06] transition-all duration-200 focus:outline-none focus-visible:ring-1 focus-visible:ring-[#0088FF]"
               >
                 <svg
                   className="w-3.5 h-3.5"

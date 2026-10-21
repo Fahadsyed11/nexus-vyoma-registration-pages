@@ -3,7 +3,11 @@ import * as v from "valibot";
 export const registerUserFormDto = v.object({
     // personal details
     full_name: v.pipe(v.string(), v.trim(), v.minLength(3), v.maxLength(50)),
-    phone_number: v.pipe(v.string(), v.transform(input => input.toString()), v.string(), v.minLength(10), v.maxLength(10)),
+    phone_number: v.pipe(
+        v.string(),
+        v.trim(),
+        v.regex(/^\d{10}$/, "Phone number must be exactly 10 digits with no spaces")
+    ),
     email: v.pipe(v.string(), v.email(), v.trim()),
 
     // professional details

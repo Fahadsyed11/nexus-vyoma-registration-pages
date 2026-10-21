@@ -62,7 +62,13 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
   const handleChange = (field: keyof FormState, value: string) => {
     if (field === 'email' && verifiedEmail) return;
 
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    let nextValue = value;
+    if (field === 'phone_number') {
+      // Disallow spaces and all non-digit characters; clamp strictly to 10 digits
+      nextValue = value.replace(/\D/g, '').slice(0, 10);
+    }
+
+    setFormData((prev) => ({ ...prev, [field]: nextValue }));
     if (fieldErrors[field]) {
       setFieldErrors((prev) => {
         const next = { ...prev };
@@ -247,8 +253,14 @@ export default function RegistrationFormStep({ verifiedEmail }: RegistrationForm
                   name="phone_number"
                   type="tel"
                   inputMode="numeric"
+                  pattern="[0-9]{10}"
                   value={formData.phone_number}
                   onChange={(e) => handleChange('phone_number', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ') {
+                      e.preventDefault();
+                    }
+                  }}
                   placeholder="10-digit Phone Number"
                   disabled={loading}
                   autoComplete="tel"

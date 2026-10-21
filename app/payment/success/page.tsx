@@ -23,14 +23,14 @@ async function SuccessContent({ searchParams }: SuccessPageProps) {
       ? params.txnid
       : typeof params.payment_id === 'string'
       ? params.payment_id
-      : 'TXN_NV26_894120';
+      : undefined;
 
   const orderId =
     typeof params.order_id === 'string'
       ? params.order_id
       : typeof params.orderid === 'string'
       ? params.orderid
-      : 'ORD_NV26_54910';
+      : undefined;
 
   const teamName =
     typeof params.team_name === 'string'

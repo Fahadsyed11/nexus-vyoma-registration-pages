@@ -147,11 +147,18 @@ async function getFreeEvents(): Promise<FreeEventItem[]> {
   }
 }
 
+import { redirect } from 'next/navigation';
+
 async function EntryTicketContent() {
   const [attendeeState, freeEvents] = await Promise.all([
     getInitialAttendeeState(),
     getFreeEvents(),
   ]);
+
+  // If already purchased, redirect directly to event enrolment
+  if (attendeeState.isPurchased) {
+    redirect('/register/enroll-event');
+  }
 
   return (
     <EntryTicketView
@@ -174,7 +181,14 @@ export default function EntryTicketPage() {
         className="flex-1 flex flex-col items-center justify-center w-full px-3 sm:px-6 lg:px-8 pt-24 sm:pt-28 pb-10 sm:pb-14 z-10"
       >
         <div className="w-full max-w-7xl mx-auto rounded-2xl sm:rounded-3xl border border-zinc-800/90 bg-black/70 p-4 xs:p-5 sm:p-8 lg:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.85)]">
-          <Suspense fallback={null}>
+          <Suspense
+            fallback={
+              <div className="w-full py-20 flex flex-col items-center justify-center gap-3 text-zinc-500 font-mono text-xs">
+                <div className="w-6 h-6 border-2 border-[#FF6A00] border-t-transparent rounded-full animate-spin" />
+                <span>Loading Entry Pass Portal...</span>
+              </div>
+            }
+          >
             <EntryTicketContent />
           </Suspense>
         </div>

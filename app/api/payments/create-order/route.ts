@@ -67,7 +67,6 @@ export async function POST() {
         await connectToDatabase();
 
         const user = await RegisterUser.findById(userData.user.id);
-
         if (!user) {
             return NextResponse.json(
                 {
@@ -93,11 +92,13 @@ export async function POST() {
             const latestCreatingTransaction = await Transaction.findOne({
                 userId: user._id,
                 status: "creating",
-            }).sort({ createdAt: -1 })
+            }).sort({ createdAt: -1 });
+
+            console.log({ latestCreatingTransaction })
 
             // If the latest creating transaction exists and its reservation time is still valid, return that transaction details to the user.
-            if (latestCreatingTransaction && latestCreatingTransaction.reservation_time > new Date()) {
-
+            if (latestCreatingTransaction) {
+                console.log("Hello World!")
                 const teamEventsAmount = latestCreatingTransaction.teamEventsAmount as number;
                 const individualEventsAmount = latestCreatingTransaction.individualEventsAmount as number;
 
