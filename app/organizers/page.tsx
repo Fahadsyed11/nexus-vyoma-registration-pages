@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import Navbar from '@/components/navbar/Navbar';
@@ -36,9 +37,12 @@ async function loadOrganizerMembers(): Promise<DbOrganizerMember[]> {
   }
 }
 
-export default async function OrganizersPage() {
+async function OrganizersContent() {
   const members = await loadOrganizerMembers();
+  return <OrganizersView initialMembers={members} />;
+}
 
+export default function OrganizersPage() {
   return (
     <div className="relative min-h-screen flex flex-col bg-[#050505] text-white selection:bg-[#FF6A00] selection:text-white">
       {/* 01 — Shared Nexus Vyoma Mirror-Glass Navbar */}
@@ -49,7 +53,9 @@ export default async function OrganizersPage() {
         suppressHydrationWarning
         className="flex-1 flex flex-col items-center w-full px-2.5 sm:px-4 md:px-6 pt-24 sm:pt-28 pb-12 sm:pb-16 z-10"
       >
-        <OrganizersView initialMembers={members} />
+        <Suspense fallback={null}>
+          <OrganizersContent />
+        </Suspense>
       </main>
 
       {/* 03 — Shared Cinematic Text-Stroke Footer */}

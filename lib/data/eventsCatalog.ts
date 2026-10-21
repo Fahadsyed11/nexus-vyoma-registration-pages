@@ -12,6 +12,8 @@ export interface CatalogEvent {
   category: string;
   participationType: string;
   feeText?: string;
+  isFree?: boolean;
+  entryFee?: number;
   prizePool?: string;
   imageUrl?: string;
   registrationUrl?: string | null;
@@ -359,6 +361,7 @@ export function mapApiEventToCatalog(doc: ApiEvent, index = 0): CatalogEvent {
   }
 
   const fee = Number(doc.entry_fee) || 0;
+  const isFree = fee === 0;
   const prize = (doc.prize || '').trim();
 
   return {
@@ -380,10 +383,12 @@ export function mapApiEventToCatalog(doc: ApiEvent, index = 0): CatalogEvent {
     time,
     category: (doc.category || 'General').trim(),
     participationType,
-    feeText: fee === 0 ? 'Free' : `₹${fee}`,
+    feeText: isFree ? 'Free' : `₹${fee}`,
+    isFree,
+    entryFee: fee,
     prizePool: prize && prize.toLowerCase() !== 'no prize' ? prize : 'N/A',
     imageUrl: doc.image_url || undefined,
     isFlagship: Boolean(doc.isFlatship),
-    statusNote: 'Registration opens soon.',
+    statusNote: isFree ? 'Included with official festival entry pass.' : undefined,
   };
 }

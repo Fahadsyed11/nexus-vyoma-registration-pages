@@ -1,5 +1,6 @@
 import { Suspense, cache } from 'react';
 import { headers } from 'next/headers';
+import { connection } from 'next/server';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Navbar from '@/components/navbar/Navbar';
@@ -19,6 +20,7 @@ interface EventDetailsPageProps {
 
 /** Loads one event from the existing `GET /api/event/:id` route (no direct DB access). */
 const loadEvent = cache(async (id: string): Promise<CatalogEvent | null> => {
+  await connection();
   try {
     const h = await headers();
     const host = h.get('x-forwarded-host') ?? h.get('host');
@@ -37,29 +39,17 @@ const loadEvent = cache(async (id: string): Promise<CatalogEvent | null> => {
   }
 });
 
-export async function generateMetadata({
-  params,
-}: EventDetailsPageProps): Promise<Metadata> {
-  const { eventSlug } = await params;
-  const event = await loadEvent(eventSlug);
-
-  if (!event) {
-    return {
-      title: 'Event Not Found | Nexus Vyoma',
-      description: 'The requested event could not be found.',
-    };
-  }
-
-  return {
-    title: `${event.title} | Nexus Vyoma`,
-    description: event.shortDescription,
-    openGraph: {
-      title: `${event.title} | Nexus Vyoma`,
-      description: event.shortDescription,
-      type: 'website',
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: 'Event Details | Nexus Vyoma',
+  description:
+    'Explore event details, schedule, prize, venue, and registration for Nexus Vyoma 2026 at ISL Engineering College, Hyderabad.',
+  openGraph: {
+    title: 'Event Details | Nexus Vyoma',
+    description:
+      'Official event details and registration for Nexus Vyoma 2026 at ISL Engineering College, Hyderabad.',
+    type: 'website',
+  },
+};
 
 async function EventDetailsContent({ params }: EventDetailsPageProps) {
   const { eventSlug } = await params;

@@ -11,51 +11,41 @@ interface EventDetailsViewProps {
 }
 
 export default function EventDetailsView({ event }: EventDetailsViewProps) {
-  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [hasImageError, setHasImageError] = useState(false);
   const showImage = Boolean(event.imageUrl && !hasImageError);
 
-  const handleGrabSeatClick = (e: React.MouseEvent) => {
-    if (!event.registrationUrl) {
-      e.preventDefault();
-      setStatusMessage('Registration is not active for this event yet.');
-      // Auto-hide message after 4 seconds
-      setTimeout(() => setStatusMessage(null), 4000);
-    }
-  };
+  const isFree = Boolean(
+    event.isFree ||
+    event.entryFee === 0 ||
+    event.feeText?.toLowerCase() === 'free' ||
+    event.feeText === '₹0'
+  );
 
-  const renderGrabSeatButton = (extraClassName = '') => {
-    if (event.registrationUrl) {
+  const renderActionArea = (extraClassName = '') => {
+    if (isFree) {
       return (
-        <Link
-          href={event.registrationUrl}
-          className={`inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-lg border border-[#FF6A00] bg-transparent text-[#FF6A00] hover:bg-[#FF6A00]/10 hover:shadow-[0_0_24px_rgba(255,106,0,0.3)] active:scale-[0.98] transition-all duration-200 font-sans font-bold text-xs sm:text-sm tracking-wider uppercase select-none outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00] ${extraClassName}`}
-        >
-          <span>GRAB YOUR SEAT</span>
-        </Link>
+        <div className={`flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 ${extraClassName}`}>
+          <div className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg border border-[#FF6A00]/40 bg-[#FF6A00]/10 text-[#FF6A00] font-mono text-xs sm:text-sm font-semibold tracking-wide select-none">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00] animate-pulse" />
+            <span>INCLUDED IN ENTRY TICKET</span>
+          </div>
+          <Link
+            href="/register/entry-ticket"
+            className="inline-flex items-center justify-center min-h-[44px] px-5 py-2.5 rounded-lg bg-[#FF6A00] text-black hover:bg-[#FF7A1A] active:scale-[0.98] font-sans font-bold text-xs sm:text-sm tracking-wider uppercase transition-all duration-200 select-none shadow-[0_0_20px_rgba(255,106,0,0.25)]"
+          >
+            <span>GET ENTRY TICKET</span>
+          </Link>
+        </div>
       );
     }
 
     return (
-      <div className={`flex flex-col items-start ${extraClassName}`}>
-        <button
-          type="button"
-          onClick={handleGrabSeatClick}
-          aria-label="Grab your seat — Registration is not active"
-          className="inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-lg border border-[#FF6A00] bg-transparent text-[#FF6A00] hover:bg-[#FF6A00]/10 hover:shadow-[0_0_24px_rgba(255,106,0,0.3)] active:scale-[0.98] transition-all duration-200 font-sans font-bold text-xs sm:text-sm tracking-wider uppercase cursor-pointer select-none outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00]"
-        >
-          <span>GRAB YOUR SEAT</span>
-        </button>
-
-        {statusMessage && (
-          <div
-            role="status"
-            className="mt-2 text-xs font-mono text-[#FF6A00] bg-[#FF6A00]/10 border border-[#FF6A00]/30 rounded-md px-3 py-1.5 animate-in fade-in duration-200"
-          >
-            {statusMessage}
-          </div>
-        )}
-      </div>
+      <Link
+        href={event.registrationUrl || '/register/enroll-event'}
+        className={`inline-flex items-center justify-center min-h-[44px] px-6 py-2.5 rounded-lg border border-[#FF6A00] bg-transparent text-[#FF6A00] hover:bg-[#FF6A00]/10 hover:shadow-[0_0_24px_rgba(255,106,0,0.3)] active:scale-[0.98] transition-all duration-200 font-sans font-bold text-xs sm:text-sm tracking-wider uppercase select-none outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00] ${extraClassName}`}
+      >
+        <span>ENROLL IN EVENT</span>
+      </Link>
     );
   };
 
@@ -124,8 +114,13 @@ export default function EventDetailsView({ event }: EventDetailsViewProps) {
                 EVENT FEE
               </span>
               <span className="font-sans text-sm sm:text-base font-extrabold text-white tracking-tight mt-0.5">
-                {event.feeText || '₹200'}
+                {isFree ? 'FREE' : event.feeText || '₹200'}
               </span>
+              {isFree && (
+                <span className="font-mono text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#FF6A00] mt-0.5 select-none">
+                  Included in Entry Ticket
+                </span>
+              )}
             </div>
 
             {/* 2. Prize Money Display */}
@@ -135,14 +130,14 @@ export default function EventDetailsView({ event }: EventDetailsViewProps) {
                 PRIZE POOL
               </span>
               <span className="font-sans text-xs sm:text-sm md:text-base font-extrabold text-white tracking-tight mt-0.5">
-                Exciting Prizes
+                {event.prizePool || 'Exciting Prizes'}
               </span>
             </div>
           </div>
 
-          {/* Desktop Grab Seat Action */}
+          {/* Desktop Action Area */}
           <div className="hidden lg:block mt-6">
-            {renderGrabSeatButton()}
+            {renderActionArea()}
           </div>
         </div>
 
@@ -250,17 +245,19 @@ export default function EventDetailsView({ event }: EventDetailsViewProps) {
           </div>
         </div>
 
-        {/* Mobile Grab Seat Action (in logical stack flow below metadata) */}
+        {/* Mobile Action Area (in logical stack flow below metadata) */}
         <div className="block lg:hidden mt-6 w-full">
-          {renderGrabSeatButton('w-full')}
+          {renderActionArea('w-full')}
         </div>
 
         {/* Status Note / Disclaimer */}
-        <div className="w-full mt-4 sm:mt-6 text-center sm:text-right">
-          <p className="font-sans text-[11px] text-zinc-500 tracking-wide select-none">
-            {event.statusNote || 'Sample event only. Registration is not active.'}
-          </p>
-        </div>
+        {event.statusNote && (
+          <div className="w-full mt-4 sm:mt-6 text-center sm:text-right">
+            <p className="font-sans text-[11px] text-zinc-500 tracking-wide select-none">
+              {event.statusNote}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

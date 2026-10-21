@@ -1,13 +1,11 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { connection } from 'next/server';
 import Navbar from '@/components/navbar/Navbar';
 import FooterSection from '@/components/footer/FooterSection';
 import EntryTicketView, { FreeEventItem } from '@/components/tickets/EntryTicketView';
-import { connectToDatabase } from '@/database/db';
-import RegisterUser from '@/database/schema/register-user.schema';
-import EntryTicket from '@/database/schema/entry-ticket.schema';
-import Event from '@/database/schema/event.schema';
 import { verifyJWT } from '@/utilities/jwt';
 
 export const metadata: Metadata = {
@@ -30,14 +28,69 @@ interface SessionTokenData {
   };
 }
 
-async function getInitialAttendeeState() {
+interface EntryTicketApiResponse {
+  message?: string;
+  data?: Record<string, unknown> | null;
+  error?: unknown;
+  redirect: boolean;
+  redirectUrl: string | null;
+}
+
+interface ApiEventRaw {
+  _id: string;
+  title: string;
+  short_description?: string;
+  long_description?: string;
+  venue?: string;
+  date_time?: string;
+  image_url?: string;
+  category?: string;
+  participants_type?: string;
+  team_size?: number;
+  min_team_size?: number;
+  max_team_size?: number;
+  prize?: string;
+  entry_fee?: number;
+}
+
+/**
+ * Calls GET /api/entry-ticket with incoming cookies to check ticket & auth status.
+ * Handles redirects based on the API response contract.
+ */
+async function checkEntryTicketStatus(): Promise<{ redirect: boolean; redirectUrl: string | null }> {
+  try {
+    const h = await headers();
+    const host = h.get('x-forwarded-host') ?? h.get('host');
+    const proto = h.get('x-forwarded-proto') ?? 'http';
+    const cookie = h.get('cookie') ?? '';
+
+    const res = await fetch(`${proto}://${host}/api/entry-ticket`, {
+      headers: { cookie },
+      cache: 'no-store',
+    });
+
+    const json = (await res.json()) as EntryTicketApiResponse;
+    return {
+      redirect: Boolean(json.redirect),
+      redirectUrl: json.redirectUrl ?? null,
+    };
+  } catch {
+    return {
+      redirect: true,
+      redirectUrl: '/register/check-email',
+    };
+  }
+}
+
+/** Decodes session token data locally to pre-fill attendee info (no DB access). */
+async function getSessionUser() {
   try {
     const cookieStore = await cookies();
     const userToken = cookieStore.get('nv-session')?.value;
     const tempToken = cookieStore.get('nv-session-temp')?.value;
 
     if (!userToken || !tempToken) {
-      return { user: null, isPurchased: false };
+      return null;
     }
 
     const userData = verifyJWT(userToken) as SessionTokenData | null;
@@ -48,34 +101,16 @@ async function getInitialAttendeeState() {
       !tempData?.user?.id ||
       userData.user.id !== tempData.user.id
     ) {
-      return { user: null, isPurchased: false };
+      return null;
     }
-
-    await connectToDatabase();
-
-    const dbUser = await RegisterUser.findById(userData.user.id).lean();
-    if (!dbUser) {
-      return { user: null, isPurchased: false };
-    }
-
-    const normalizedEmail = String(dbUser.email ?? '').trim().toLowerCase();
-    const paidTicket = await EntryTicket.findOne({
-      $or: [{ userId: dbUser._id }, { email: normalizedEmail }],
-      isPaid: true,
-    }).lean();
 
     return {
-      user: {
-        id: dbUser._id.toString(),
-        name: dbUser.full_name,
-        email: dbUser.email,
-        phone_number: dbUser.phone_number,
-        institution: dbUser.institution,
-      },
-      isPurchased: Boolean(paidTicket),
+      id: userData.user.id,
+      name: userData.user.name || '',
+      email: userData.user.email || '',
     };
   } catch {
-    return { user: null, isPurchased: false };
+    return null;
   }
 }
 
@@ -110,60 +145,68 @@ function parseEventSchedule(rawDateStr: string): { date: string; time: string } 
   }
 }
 
+/** Loads free events from GET /api/event without any direct DB query. */
 async function getFreeEvents(): Promise<FreeEventItem[]> {
   try {
-    await connectToDatabase();
-    const docs = await Event.find({
-      $or: [{ entry_fee: 0 }, { entry_fee: { $exists: false } }],
-    })
-      .sort({ date_time: 1 })
-      .lean();
+    const h = await headers();
+    const host = h.get('x-forwarded-host') ?? h.get('host');
+    const proto = h.get('x-forwarded-proto') ?? 'http';
 
-    return docs.map((e) => {
-      const rawSchedule = e.date_time || 'Schedule TBA';
-      const { date, time } = parseEventSchedule(rawSchedule);
+    const res = await fetch(`${proto}://${host}/api/event`, { cache: 'no-store' });
+    if (!res.ok) return [];
 
-      return {
-        _id: e._id.toString(),
-        title: e.title,
-        short_description: e.short_description || '',
-        long_description: e.long_description || '',
-        venue: e.venue || 'ISL Campus',
-        date_time: rawSchedule,
-        formatted_date: date,
-        formatted_time: time,
-        image_url: e.image_url || '',
-        category: e.category || 'General',
-        participants_type: (e.participants_type === 'team' ? 'team' : 'individual') as 'individual' | 'team',
-        team_size: e.team_size || 1,
-        min_team_size: e.min_team_size || 1,
-        max_team_size: e.max_team_size || 1,
-        prize: e.prize || 'Exciting Prizes & Certificates',
-      };
-    });
+    const json = (await res.json()) as { data?: ApiEventRaw[] | null };
+    const events = json.data ?? [];
+
+    return events
+      .filter((e) => !e.entry_fee || Number(e.entry_fee) === 0)
+      .map((e) => {
+        const rawSchedule = e.date_time || 'Schedule TBA';
+        const { date, time } = parseEventSchedule(rawSchedule);
+
+        return {
+          _id: String(e._id),
+          title: e.title,
+          short_description: e.short_description || '',
+          long_description: e.long_description || '',
+          venue: e.venue || 'ISL Campus',
+          date_time: rawSchedule,
+          formatted_date: date,
+          formatted_time: time,
+          image_url: e.image_url || '',
+          category: e.category || 'General',
+          participants_type: (e.participants_type === 'team' ? 'team' : 'individual') as 'individual' | 'team',
+          team_size: e.team_size || 1,
+          min_team_size: e.min_team_size || 1,
+          max_team_size: e.max_team_size || 1,
+          prize: e.prize || 'Exciting Prizes & Certificates',
+        };
+      });
   } catch (err) {
     console.error('Error fetching free events for entry ticket:', err);
     return [];
   }
 }
 
-import { redirect } from 'next/navigation';
-
 async function EntryTicketContent() {
-  const [attendeeState, freeEvents] = await Promise.all([
-    getInitialAttendeeState(),
+  await connection();
+
+  const ticketStatus = await checkEntryTicketStatus();
+
+  // If API indicates redirect (e.g. not authenticated -> /check-email, or paid -> /enroll-event)
+  if (ticketStatus.redirect && ticketStatus.redirectUrl) {
+    redirect(ticketStatus.redirectUrl);
+  }
+
+  const [user, freeEvents] = await Promise.all([
+    getSessionUser(),
     getFreeEvents(),
   ]);
 
-  // If already purchased, redirect directly to event enrolment
-  if (attendeeState.isPurchased) {
-    redirect('/register/enroll-event');
-  }
-
   return (
     <EntryTicketView
-      initialUser={attendeeState.user}
-      initialIsPurchased={attendeeState.isPurchased}
+      initialUser={user}
+      initialIsPurchased={false}
       freeEvents={freeEvents}
     />
   );

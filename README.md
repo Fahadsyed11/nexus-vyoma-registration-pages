@@ -43,6 +43,70 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-22 — Refactored /register/entry-ticket to call /api/entry-ticket (Zero DB/Schema)
+
+**Done**
+- **Removed All Direct DB & Schema Dependencies (`app/register/entry-ticket/page.tsx`)**:
+  - Removed imports of `connectToDatabase`, `RegisterUser`, `EntryTicket`, and `Event`.
+  - The entry ticket page now has zero database and zero Mongoose schema couplings.
+- **Integrated `GET /api/entry-ticket`**:
+  - Forwards session cookies to `/api/entry-ticket` and handles the response contract:
+    - If `redirect: true, redirectUrl: "/register/check-email"` (unauthorized / missing token / user not found) $\rightarrow$ redirects to `/register/check-email`.
+    - If `redirect: true, redirectUrl: "/register/enroll-event"` (ticket already paid) $\rightarrow$ redirects to `/register/enroll-event`.
+    - If `redirect: false` (ticket unpaid) $\rightarrow$ renders entry ticket purchase view.
+- **Pure Token Session & API Event Fetching**:
+  - Decodes session `name` and `email` directly via `verifyJWT` from the session token (0 DB queries).
+  - Fetches and filters free festival events via `GET /api/event` with `{ cache: 'no-store' }`.
+- **Verification**:
+  - Confirmed 0 matches for `database` or `schema` in `app/register/entry-ticket/page.tsx`.
+  - `npx tsc --noEmit` passed with 0 errors.
+  - `npm run build` completed with exit code 0 (42/42 routes successfully generated).
+
+**Files changed**
+- `app/register/entry-ticket/page.tsx`
+- `README.md`
+
+### 2026-10-22 — Event Details Free Event Badging & Action Update
+
+**Done**
+- **Catalog Model Enhancements (`lib/data/eventsCatalog.ts`)**:
+  - Added `isFree?: boolean` and `entryFee?: number` fields to `CatalogEvent` interface.
+  - In `mapApiEventToCatalog`, properly computed `isFree = fee === 0` and assigned `statusNote: isFree ? 'Included with official festival entry pass.' : undefined`.
+- **Event Details View Updates (`components/events/EventDetailsView.tsx`)**:
+  - For free events:
+    - Highlighted Event Fee card displays `FREE` with subtitle `Included in Entry Ticket`.
+    - Removed dummy "GRAB YOUR SEAT" button and replaced it with a prominent `INCLUDED IN ENTRY TICKET` badge and a `GET ENTRY TICKET` button linking to `/register/entry-ticket`.
+  - For paid events: links directly to `/register/enroll-event` (or official registration URL) with `ENROLL IN EVENT`.
+  - Completely removed the toast/message `"Registration is not active for this event yet."` and removed the inactive fallback disclaimer.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - `npm run build` completed with exit code 0 (42/42 routes successfully generated).
+
+**Files changed**
+- `lib/data/eventsCatalog.ts`
+- `components/events/EventDetailsView.tsx`
+- `README.md`
+
+### 2026-10-22 — Next.js 16 Partial Prerendering (PPR) Build Fixes
+
+**Done**
+- **Dynamic Route Prerendering Fix (`app/events/[eventSlug]/page.tsx`)**:
+  - Resolved `crypto.randomUUID()` prerendering build error by switching to static `metadata` export instead of unstable build-time `generateMetadata`.
+  - Added `await connection()` from `next/server` inside `loadEvent` to safely defer dynamic request-time fetches under Next.js 16 Partial Prefetching and Cache Components.
+- **Organizers Page Suspense Boundary (`app/organizers/page.tsx`)**:
+  - Extracted dynamic data fetching into `OrganizersContent` server component wrapped with `<Suspense fallback={null}>` matching `app/events/page.tsx`.
+- **Entry Ticket Portal Prerender Alignment (`app/register/entry-ticket/page.tsx`)**:
+  - Added `await connection()` in `EntryTicketContent()` to prevent database queries and date calculations from interfering with static shell prerendering.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - `npm run build` completed with exit code 0, successfully generating all 42/42 static and partially prerendered (PPR) routes.
+
+**Files changed**
+- `app/events/[eventSlug]/page.tsx`
+- `app/organizers/page.tsx`
+- `app/register/entry-ticket/page.tsx`
+- `README.md`
+
 ### 2026-10-21 — Universal Festival Pass Email & Single-Send Enforcement
 
 **Done**
