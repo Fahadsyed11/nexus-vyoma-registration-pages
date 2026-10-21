@@ -43,6 +43,42 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-21 — Registration Strict 10-Digit Phone Number Formatting & Validation
+
+**Done**
+- **Strict 10-Digit Phone Formatting (`components/registration/RegistrationFormStep.tsx`)**:
+  - Implemented real-time input sanitization in `handleChange` removing any spaces or non-digit characters (`replace(/\D/g, '')`) and clamping strictly to 10 digits.
+  - Added `onKeyDown` prevention on Space (`e.key === ' '`) to prevent spaces from being typed.
+  - Added `maxLength={10}`, `pattern="[0-9]{10}"`, and `inputMode="numeric"`.
+- **Valibot Schema Enforcement (`dto/(register)/register-user.dto.ts`)**:
+  - Enforced exact 10-digit regex validation: `/^\d{10}$/` with clear error message `"Phone number must be exactly 10 digits with no spaces"`.
+  - Blocks submissions with less or more than 10 digits on both client-side and server-side endpoints.
+- **Entry Ticket Consistency (`components/tickets/EntryTicketView.tsx`)**:
+  - Applied the same real-time non-digit stripping, space suppression, and 10-digit clamping to ticket checkout phone inputs.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+**Files changed**
+- `components/registration/RegistrationFormStep.tsx`
+- `dto/(register)/register-user.dto.ts`
+- `components/tickets/EntryTicketView.tsx`
+- `README.md`
+
+### 2026-10-21 — Organizers Mobile Scroll-Triggered Color Reveal
+
+**Done**
+- **Mobile Touchscreen Color Reveal (`components/organizers/OrganizerProfile.tsx`)**:
+  - Implemented an `IntersectionObserver` on touch/mobile devices (`@media (hover: none)` or viewport $< 768\text{px}$) to detect when organizer portraits scroll into the viewport.
+  - Automatically transitions portraits smoothly from grayscale into full color (`duration-1000 ease-out`), activating a subtle warm ambient glow and elevated border highlight without requiring touch, tap, or hold.
+  - Unobserves elements once triggered to preserve 60fps scroll performance.
+  - Preserves standard desktop `group-hover` interactions for pointer-equipped devices.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+**Files changed**
+- `components/organizers/OrganizerProfile.tsx`
+- `README.md`
+
 ### 2026-10-21 — Organizers Heading Size & Typography Refinement
 
 **Done**

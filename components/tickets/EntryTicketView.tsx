@@ -728,7 +728,12 @@ export default function EntryTicketView({
                     type="tel"
                     required
                     value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    maxLength={10}
+                    pattern="[0-9]{10}"
+                    onKeyDown={(e) => {
+                      if (e.key === ' ') e.preventDefault();
+                    }}
                     placeholder="9876543210"
                     className="w-full bg-[#12141c] text-white placeholder-zinc-600 font-sans text-sm px-4 py-3 rounded-lg border border-zinc-700 focus:border-[#FF6A00] focus:outline-none"
                   />

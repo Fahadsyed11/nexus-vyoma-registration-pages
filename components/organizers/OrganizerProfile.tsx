@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 
 export interface OrganizerProfileProps {
@@ -47,12 +47,47 @@ export default function OrganizerProfile({
   className = '',
 }: OrganizerProfileProps) {
   const [imgError, setImgError] = useState(false);
+  const [isRevealed, setIsRevealed] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Subtitle prioritizes member title (e.g., "Chairman", "Dean Student Welfare"), falling back to role
   const subtitle = title || role;
 
   const hasInstagram = isRealLink(socials?.instagram);
   const hasLinkedin = isRealLink(socials?.linkedin);
+
+  // Scroll-triggered color reveal for touch / mobile screens (where hover is unavailable)
+  useEffect(() => {
+    const isTouch =
+      typeof window !== 'undefined' &&
+      (!window.matchMedia('(hover: hover)').matches || window.innerWidth < 768);
+
+    if (!isTouch) {
+      // Desktop uses CSS group-hover
+      return;
+    }
+
+    const el = containerRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsRevealed(true);
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15, rootMargin: '0px 0px -20px 0px' }
+    );
+
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   // Responsive sizing configurations
   const sizeConfig = {
@@ -80,12 +115,19 @@ export default function OrganizerProfile({
 
   return (
     <div
+      ref={containerRef}
       className={`group flex flex-col items-center text-center select-none ${sizeConfig.container} ${className}`}
       aria-label={description || `${name}${subtitle ? `, ${subtitle}` : ''}`}
     >
-      {/* Perfectly circular portrait mask with slow, buttery smooth hover transition */}
+      {/* Perfectly circular portrait mask: hover on desktop, auto scroll-reveal on mobile */}
       <div
-        className={`relative ${sizeConfig.circle} rounded-full overflow-hidden border border-zinc-800 bg-[#0c0e14] transition-all duration-700 ease-out group-hover:border-zinc-300 group-hover:scale-[1.03] group-hover:shadow-[0_0_24px_rgba(255,106,0,0.22)] shadow-[0_4px_16px_rgba(0,0,0,0.6)] flex items-center justify-center`}
+        className={`relative ${
+          sizeConfig.circle
+        } rounded-full overflow-hidden transition-all duration-1000 ease-out flex items-center justify-center ${
+          isRevealed
+            ? 'border-zinc-300 scale-[1.02] shadow-[0_0_24px_rgba(255,106,0,0.22)]'
+            : 'border-zinc-800 bg-[#0c0e14] shadow-[0_4px_16px_rgba(0,0,0,0.6)] md:group-hover:border-zinc-300 md:group-hover:scale-[1.03] md:group-hover:shadow-[0_0_24px_rgba(255,106,0,0.22)]'
+        }`}
       >
         {showImage ? (
           <Image
@@ -97,7 +139,11 @@ export default function OrganizerProfile({
             loading={priority ? 'eager' : 'lazy'}
             onError={() => setImgError(true)}
             sizes="(max-width: 768px) 140px, 180px"
-            className="object-cover transition-all duration-700 ease-out group-hover:scale-105 [filter:grayscale(100%)_contrast(1.05)_brightness(0.95)] group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]"
+            className={`object-cover transition-all duration-1000 ease-out md:group-hover:scale-105 ${
+              isRevealed
+                ? '[filter:grayscale(0%)_contrast(1)_brightness(1)]'
+                : '[filter:grayscale(100%)_contrast(1.05)_brightness(0.95)] md:group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]'
+            }`}
           />
         ) : (
           /* High-fidelity monochrome editorial portrait placeholder */
@@ -113,7 +159,11 @@ export default function OrganizerProfile({
               viewBox="0 0 100 100"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              className="w-[82%] h-[82%] text-zinc-400/80 translate-y-1 transition-opacity duration-700 group-hover:text-zinc-300"
+              className={`w-[82%] h-[82%] translate-y-1 transition-all duration-700 ${
+                isRevealed
+                  ? 'text-zinc-200'
+                  : 'text-zinc-400/80 md:group-hover:text-zinc-300'
+              }`}
               aria-hidden="true"
             >
               <circle cx="50" cy="38" r="18" fill="currentColor" fillOpacity="0.45" />
@@ -128,7 +178,11 @@ export default function OrganizerProfile({
       {/* Profile Details: Name and below it, Title */}
       <div className="mt-3 flex flex-col items-center w-full px-1">
         <span
-          className={`font-sans text-zinc-100 tracking-tight transition-colors duration-300 group-hover:text-white line-clamp-2 max-w-full ${sizeConfig.nameText}`}
+          className={`font-sans tracking-tight transition-colors duration-300 line-clamp-2 max-w-full ${
+            sizeConfig.nameText
+          } ${
+            isRevealed ? 'text-white' : 'text-zinc-100 md:group-hover:text-white'
+          }`}
         >
           {name}
         </span>
