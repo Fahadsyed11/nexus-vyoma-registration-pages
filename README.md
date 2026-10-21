@@ -43,6 +43,26 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-21 — Universal Festival Pass Email & Single-Send Enforcement
+
+**Done**
+- **Universal Festival Pass Copy & Layout (`utilities/emails/ticket-qr-mail.ts`)**:
+  - Updated subject to `Your Official Festival Pass & Universal QR Code — Nexus Vyoma 2026`.
+  - Updated email text & HTML templates to clearly communicate that the QR code is an all-in-one Universal Festival Pass covering:
+    - Festival Gate Entry across all 3 days (10–12 Nov 2026).
+    - Verification and check-in for all currently enrolled events and competitions.
+    - Automatic validity for any future events or workshops enrolled in.
+  - Noted that attendees will not receive separate QR passes for individual events.
+  - Updated attachment filename to `nexus-vyoma-festival-pass.png`.
+- **Enforced Single-Send Delivery**:
+  - Added duplicate check `await EmailSchema.findOne({ email: to, type: "ticket_qr" })` at the top of `sendQREmail`. If a ticket email was already sent to the recipient, it gracefully skips sending duplicate QR emails.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+**Files changed**
+- `utilities/emails/ticket-qr-mail.ts`
+- `README.md`
+
 ### 2026-10-21 — Registration Strict 10-Digit Phone Number Formatting & Validation
 
 **Done**

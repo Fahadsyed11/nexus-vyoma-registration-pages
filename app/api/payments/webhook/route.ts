@@ -6,6 +6,7 @@ import { sendEmailToPaymentFailed } from "@/utilities/emails/payment-failed.emai
 import { sendQREmail } from "@/utilities/emails/ticket-qr-mail";
 import { generateQRCode } from "@/utilities/generate-qr";
 import { NextRequest, NextResponse } from "next/server";
+import { sendEmailToPaymentSuccess } from "@/utilities/emails/payment-success.email";
 
 export async function POST(request: NextRequest) {
     try {
@@ -17,7 +18,9 @@ export async function POST(request: NextRequest) {
         const customerName = body.data?.customer_details?.customer_name;
         const paymentStatus = body.data?.payment?.payment_status;
         const paymentAmount = body.data?.payment?.payment_amount;
-        const orderAmount = body.data?.order?.order_amount;
+        const orderAmount = body.data?.order?.order_amount; 
+        console.log("Webhook received:", JSON.stringify(body, null, 2));
+        
 
         if (orderId && orderId.startsWith("NVET_")) {
             const entryTicket = await EntryTicket.findOne({ orderId: orderId })
@@ -32,6 +35,7 @@ export async function POST(request: NextRequest) {
                 if (entryTicket && entryTicket.isPaid) {
                     const qr_code = await generateQRCode({ userId: entryTicket.userId, userEmail: customerEmail })
                     await sendQREmail(customerEmail, customerName, qr_code)
+                    await sendEmailToPaymentSuccess(customerEmail, customerName, orderId, orderAmount, body.data?.payment?.payment_id || null)
 
                     return NextResponse.json({ message: "Payment verified and entry ticket updated successfully" }, { status: 200 });
                 }
@@ -61,6 +65,8 @@ export async function POST(request: NextRequest) {
 
             if (paymentStatus === "SUCCESS") {
                 if (transaction.status === "completed") {
+                    await sendEmailToPaymentSuccess(customerEmail, customerName, orderId, orderAmount, body.data?.payment?.payment_id || null)
+
                     return NextResponse.json({ message: "Payment already processed for this transaction" }, { status: 200 });
                 }
 

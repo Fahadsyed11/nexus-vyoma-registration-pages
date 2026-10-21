@@ -2,6 +2,7 @@ import { SendRawEmailCommand } from "@aws-sdk/client-ses";
 import { sesClient } from "../aws/client";
 import { uploadImageToS3, sendEmailWithSES } from "../aws/helper.aws";
 import EmailSchema from "@/database/schema/email.schema";
+import { connectToDatabase } from "@/database/db";
 
 /**
  * Builds an RFC-compliant MIME multipart message with both HTML/Plain-text alternative parts
@@ -59,9 +60,31 @@ function buildMimeWithAttachment(
 }
 
 export async function sendQREmail(to: string, user_name: string, qrCode: Buffer) {
+    try {
+        await connectToDatabase();
+
+        // Enforce single-send: Ticket QR pass will be sent only once per user/email
+        const alreadySent = await EmailSchema.findOne({
+            email: to,
+            type: "ticket_qr",
+        });
+
+        if (alreadySent) {
+            console.log(`[Ticket QR] Festival pass already sent once to ${to} (MessageId: ${alreadySent.message_id}). Skipping duplicate delivery.`);
+            return {
+                success: true,
+                alreadySent: true,
+                messageId: alreadySent.message_id,
+                error: null,
+            };
+        }
+    } catch (dbErr) {
+        console.warn("[Ticket QR] Error checking existing email history, proceeding safely:", dbErr);
+    }
+
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://nexusvyoma.islec.edu.in";
     const qrCodeBase64 = qrCode.toString("base64");
-    const subject = `Your Official Entry Pass & QR Code — Nexus Vyoma 2026`;
+    const subject = `Your Official Festival Pass & Universal QR Code — Nexus Vyoma 2026`;
 
     // Attempt to host the QR on S3 so webmail clients (like Gmail) render the in-body image without base64 stripping
     let qrImageUrl = `data:image/png;base64,${qrCodeBase64}`;
@@ -74,28 +97,33 @@ export async function sendQREmail(to: string, user_name: string, qrCode: Buffer)
         // Fallback to data URI if S3 is unavailable
     }
 
-    const textContent = `NEXUS VYOMA 2026 — OFFICIAL ENTRY PASS & QR CODE
+    const textContent = `NEXUS VYOMA 2026 — OFFICIAL ALL-IN-ONE FESTIVAL PASS & QR CODE
 
 Hello ${user_name},
 
-Your registration for Nexus Vyoma 2026 has been confirmed!
+Your official digital festival pass for Nexus Vyoma 2026 is ready!
 
-Your official entry pass QR code is attached to this email (nexus-vyoma-entry-pass.png).
-Please download and save it on your phone, or have this email ready when you arrive at the fest.
+IMPORTANT — ONE PASS FOR ALL ACCESS:
+This single QR code is your permanent, all-in-one pass for the entire festival:
+• Festival Gate Entry for all 3 days (10, 11, 12 November 2026)
+• Verification and check-in for all your currently enrolled events and competitions
+• Automatic access to any future upcoming events you register for
 
-EVENT DETAILS:
+Please note: You will NOT receive separate QR codes for individual events. This single pass is linked directly to your festival registration and will be used at both the festival gates and individual event arenas.
+
+ATTENDEE DETAILS:
 • Attendee: ${user_name}
 • Registered Email: ${to}
 • Event: Nexus Vyoma 2026 — A Three-Day Inter-College Fest
 • Dates: 10 · 11 · 12 November 2026
 • Venue: ISL Engineering College, Bandlaguda, Chandrayangutta, Hyderabad
 
-GATE ENTRY INSTRUCTIONS:
-1. Present your QR code at the registration desk or security gate.
-2. Our team will scan your pass to issue your official attendee festival badge.
-3. Keep your badge with you throughout all 3 days of events, workshops, and concerts.
+HOW TO USE YOUR PASS:
+1. Save the attached festival pass (nexus-vyoma-festival-pass.png) on your phone.
+2. Present this QR code at the main festival entry desk to collect your physical wristband/badge.
+3. Keep this same QR code ready at event venues—coordinators will scan it to verify your participation.
 
-Explore schedules, event venues, and updates on the fest portal:
+Explore schedules, event lineups, and live festival updates on the portal:
 ${baseUrl}/events
 
 — Team Nexus Vyoma
@@ -153,19 +181,19 @@ Ideas • People • Culture • Beyond`;
           <tr>
             <td style="padding: 28px 32px 24px 32px; text-align: left;">
               
-              <!-- Badge: Official Pass -->
+              <!-- Badge: Universal Pass -->
               <div style="margin-bottom: 16px; text-align: center;">
                 <span style="display: inline-block; padding: 4px 14px; background-color: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 6px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: #34D399; text-transform: uppercase;">
-                  &#10003; OFFICIAL ENTRY PASS &bull; GATE ACCESS
+                  &#10003; UNIVERSAL FESTIVAL PASS &bull; ALL ACCESS
                 </span>
               </div>
 
               <h1 style="margin: 0 0 12px 0; font-size: 22px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.3px; line-height: 1.3; text-align: center;">
-                Your Entry Pass is Ready!
+                Your Festival Pass is Ready!
               </h1>
               
               <p style="margin: 0 0 20px 0; font-size: 14px; line-height: 22px; color: #9CA3AF; text-align: center;">
-                Hello <strong style="color: #FFFFFF;">${user_name}</strong>, your digital QR pass has been generated. Present this pass at the gate on <strong style="color: #FF6A00;">10 &bull; 11 &bull; 12 November 2026</strong>.
+                Hello <strong style="color: #FFFFFF;">${user_name}</strong>, your digital QR pass has been generated. This single QR code gives you complete access on <strong style="color: #FF6A00;">10 &bull; 11 &bull; 12 November 2026</strong>.
               </p>
 
               <!-- Central QR Code Card -->
@@ -177,7 +205,7 @@ Ideas • People • Culture • Beyond`;
                         <td align="center">
                           <!-- White Container for High-Contrast QR Scanning -->
                           <div style="background-color: #FFFFFF; border-radius: 12px; padding: 14px; display: inline-block; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7);">
-                            <img src="${qrImageUrl}" alt="Nexus Vyoma 2026 QR Entry Pass" width="220" height="220" style="display: block; width: 220px; height: 220px; max-width: 100%; border: 0; outline: none; margin: 0 auto;" />
+                            <img src="${qrImageUrl}" alt="Nexus Vyoma 2026 Universal QR Festival Pass" width="220" height="220" style="display: block; width: 220px; height: 220px; max-width: 100%; border: 0; outline: none; margin: 0 auto;" />
                           </div>
                           
                           <!-- Attendee Name & Pass Instructions -->
@@ -189,11 +217,33 @@ Ideas • People • Culture • Beyond`;
                           </div>
 
                           <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #1A2030; font-size: 11px; line-height: 16px; color: #6B7280;">
-                            &#128247; Also attached to this email as <strong style="color: #D1D5DB;">nexus-vyoma-entry-pass.png</strong> for offline access.
+                            &#128247; Also attached to this email as <strong style="color: #D1D5DB;">nexus-vyoma-festival-pass.png</strong> for offline access.
                           </div>
                         </td>
                       </tr>
                     </table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Universal Pass Information Notice -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 20px 0;">
+                <tr>
+                  <td style="background-color: rgba(255, 106, 0, 0.08); border: 1px solid rgba(255, 106, 0, 0.28); border-radius: 12px; padding: 16px 18px;">
+                    <div style="font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: #FF6A00; text-transform: uppercase; margin-bottom: 8px;">
+                      &#9733; ONE PASS FOR ALL ACCESS &bull; SENT ONLY ONCE
+                    </div>
+                    <div style="font-size: 13px; line-height: 20px; color: #E5E7EB;">
+                      This single QR pass is your all-in-one ticket for Nexus Vyoma 2026:
+                    </div>
+                    <ul style="margin: 8px 0 8px 0; padding-left: 20px; font-size: 12px; line-height: 19px; color: #D1D5DB;">
+                      <li><strong>Festival Gate Entry:</strong> Valid for all 3 days of the fest.</li>
+                      <li><strong>Enrolled Events:</strong> Scanned at venues for your competitions and arenas.</li>
+                      <li><strong>Upcoming Events:</strong> Automatically covers any future events you register for.</li>
+                    </ul>
+                    <div style="font-size: 11px; line-height: 16px; color: #9CA3AF; margin-top: 6px;">
+                      <em>You will not receive separate QR passes for individual events. Keep this QR handy throughout the festival.</em>
+                    </div>
                   </td>
                 </tr>
               </table>
@@ -219,17 +269,6 @@ Ideas • People • Culture • Beyond`;
                         <td style="padding: 3px 0; color: #E5E7EB;">ISL Engineering College, Hyderabad</td>
                       </tr>
                     </table>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Gate Entry Notice -->
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 0 24px 0;">
-                <tr>
-                  <td style="background-color: rgba(255, 106, 0, 0.08); border: 1px solid rgba(255, 106, 0, 0.25); border-radius: 10px; padding: 14px 16px;">
-                    <div style="font-size: 12px; line-height: 18px; color: #FDBA74;">
-                      <strong>Gate Entry Notice:</strong> Please carry a valid college/student photo ID along with this QR pass. Once scanned at the entry desk, you will receive your physical festival wristband/badge.
-                    </div>
                   </td>
                 </tr>
               </table>
@@ -286,7 +325,7 @@ Ideas • People • Culture • Beyond`;
             textContent,
             htmlContent,
             {
-                filename: "nexus-vyoma-entry-pass.png",
+                filename: "nexus-vyoma-festival-pass.png",
                 content: qrCode,
                 contentType: "image/png",
             }
@@ -323,7 +362,7 @@ Ideas • People • Culture • Beyond`;
         };
     }
 
-    // Save the email details to the database with type "qr_code"
+    // Save the email details to the database with type "ticket_qr"
     await EmailSchema.create({
         email: to,
         type: "ticket_qr",
