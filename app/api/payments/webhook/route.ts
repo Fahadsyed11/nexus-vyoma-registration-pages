@@ -19,8 +19,6 @@ export async function POST(request: NextRequest) {
         const paymentStatus = body.data?.payment?.payment_status;
         const paymentAmount = body.data?.payment?.payment_amount;
         const orderAmount = body.data?.order?.order_amount; 
-        console.log("Webhook received:", JSON.stringify(body, null, 2));
-        
 
         if (orderId && orderId.startsWith("NVET_")) {
             const entryTicket = await EntryTicket.findOne({ orderId: orderId })
@@ -33,12 +31,12 @@ export async function POST(request: NextRequest) {
 
             if (paymentStatus === "SUCCESS") {
                 if (entryTicket && entryTicket.isPaid) {
-                    const qr_code = await generateQRCode({ userId: entryTicket.userId, userEmail: customerEmail })
-                    await sendQREmail(customerEmail, customerName, qr_code)
-                    await sendEmailToPaymentSuccess(customerEmail, customerName, orderId, orderAmount, body.data?.payment?.payment_id || null)
-
                     return NextResponse.json({ message: "Payment verified and entry ticket updated successfully" }, { status: 200 });
                 }
+
+                const qr_code = await generateQRCode({ userId: entryTicket.userId, userEmail: customerEmail })
+                await sendQREmail(customerEmail, customerName, qr_code)
+                await sendEmailToPaymentSuccess(customerEmail, customerName, orderId, orderAmount, body.data?.payment?.payment_id || null)
 
                 entryTicket.isPaid = true;
                 entryTicket.paymentId = body.data?.payment?.payment_id || null;
@@ -65,8 +63,6 @@ export async function POST(request: NextRequest) {
 
             if (paymentStatus === "SUCCESS") {
                 if (transaction.status === "completed") {
-                    await sendEmailToPaymentSuccess(customerEmail, customerName, orderId, orderAmount, body.data?.payment?.payment_id || null)
-
                     return NextResponse.json({ message: "Payment already processed for this transaction" }, { status: 200 });
                 }
 
@@ -85,6 +81,7 @@ export async function POST(request: NextRequest) {
                     }
                 }
 
+                await sendEmailToPaymentSuccess(customerEmail, customerName, orderId, orderAmount, body.data?.payment?.payment_id || null)
                 transaction.status = "completed";
                 transaction.paymentId = body.data?.payment?.payment_id
                 await transaction.save();
