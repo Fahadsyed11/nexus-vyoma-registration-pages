@@ -43,6 +43,88 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-21 — Organizers Heading Size & Typography Refinement
+
+**Done**
+- **Heading Size & Colon Removal (`components/organizers/OrganizersView.tsx`)**:
+  - Increased section heading typography to `text-lg sm:text-xl md:text-2xl` with prominent `text-zinc-100` color.
+  - Removed trailing colons (`:`) from all section titles (`CHIEF PATRON`, `PATRON`, `CONVENER`, `ADVISORY BOARD`, etc.).
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+**Files changed**
+- `components/organizers/OrganizersView.tsx`
+- `README.md`
+
+### 2026-10-21 — Organizers Header Centering, Count Removal & Image Loading Fix
+
+**Done**
+- **Centered Middle Headers**:
+  - Centered all section headers (`CHIEF PATRON:`, `PATRON:`, `CONVENER:`, `ADVISORY BOARD:`, etc.) in the middle across all roles, matching the Chief Patron and Patron presentation.
+- **Removed Total Counts**:
+  - Removed the `total - {count}` indicators from all section headers.
+- **Fixed Image Loading & Timeout Resolution**:
+  - Resolved HTTP 504 Gateway Timeout caused by Next.js optimizer attempting to buffer large S3 images (e.g. 7.4 MB) by adding `unoptimized` on `next/image` in `components/organizers/OrganizerProfile.tsx`. Images now stream directly from AWS S3 without Next.js proxy delays.
+  - Added an `onError` state fallback to seamlessly display the high-fidelity SVG silhouette placeholder if any asset fails to load.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors. Verified HTTP 200 response on `http://localhost:3000/organizers`.
+
+**Files changed**
+- `components/organizers/OrganizersView.tsx`
+- `components/organizers/OrganizerProfile.tsx`
+- `README.md`
+
+### 2026-10-21 — Organizers Dynamic 8-Tier Hierarchy & Social Link Filtering
+
+**Done**
+- **8-Tier Hierarchy Ordering**:
+  - Configured dynamic section grouping in `lib/data/organizersData.ts` and `components/organizers/OrganizersView.tsx` strictly following the requested hierarchy:
+    1. Chief Patron
+    2. Patron
+    3. Convener
+    4. Advisory Board
+    5. Organizing Faculty
+    6. Board Members
+    7. Tech Team
+    8. Coordinators
+- **Single-Member Centering & Dynamic Counters**:
+  - Roles with 1 member (e.g. Chief Patron, Patron) are centered horizontally with centered headers.
+  - Multi-member roles (e.g. Convener, Advisory Board) wrap responsively with a right-aligned `total - {count}` indicator.
+- **Card Presentation & Social Link Filtering (`components/organizers/OrganizerProfile.tsx`)**:
+  - Displays member `name` and, below it, their official `title` (e.g., *Chairman*, *Dean Student Welfare*, *Principal ISL Pharmacy College*).
+  - Sanitizes `linkedin` and `instagram` attributes: explicitly suppresses icons if value is `"N / A"`, `"N/A"`, empty, or invalid, rendering only active URLs.
+- **Build & Live Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Verified live SSR response on `http://localhost:3000/organizers` rendering the active database members correctly grouped.
+
+**Files changed**
+- `components/organizers/OrganizersView.tsx`
+- `components/organizers/OrganizerProfile.tsx`
+- `lib/data/organizersData.ts`
+- `README.md`
+
+### 2026-10-21 — Organizers Page Layout Update & Database Integration
+
+**Done**
+- Restructured `/organizers` page layout to exactly match the requested wireframe specification:
+  - **Section 1 (Leadership Stack)**: Centered vertical column containing 4 circular profiles matching the updated hierarchy: Chief Patron (Salman), Patron (Masood), Convener (Zareena), and Convener (Dr. Bari).
+  - **Section 2 (Faculty Org)**: Section title `FACULTY ORG:` with right badge `total - 15` and a 5-column responsive grid (Advisory Board, Principals, Dean, HODs, and Faculty).
+  - **Section 3 (Student Org)**: Section title `STUDENT ORG:` featuring 1 centered top profile for `Student Council`, a 4-column × 3-row grid (12 members: 8 Board members + 4 Tech Team), and the exact metadata breakdown summary block (`1 student council`, `8 Board members`, `4 tech team`, `total - 13`).
+- **Database-Driven (Zero Mock/Dummy Data)**:
+  - Wired SSR loading in `app/organizers/page.tsx` directly fetching live data from `GET /api/organizer-member` without modifying any DB schemas or API routes.
+  - Linked database entries dynamically to slots by member roles/titles/names (e.g., tech team members automatically display real AWS S3 portraits and social links).
+  - Fallback slots render high-fidelity monochrome SVG avatar masks awaiting official database entries per Rule 6 (Strict Asset Lock).
+- **Type Safety & Build Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Verified SSR payload and HTTP 200 response on `http://localhost:3000/organizers`.
+
+**Files changed**
+- `app/organizers/page.tsx`
+- `components/organizers/OrganizersView.tsx`
+- `components/organizers/OrganizerProfile.tsx`
+- `lib/data/organizersData.ts`
+- `README.md`
+
 ### 2026-10-21 — Fix Order Summary Model Registration & Checkout Transaction Loop
 
 **Done**
