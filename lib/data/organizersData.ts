@@ -130,16 +130,37 @@ export function groupMembersByHierarchy(
   });
 
   // Collect any remaining members whose role was not in the 8 predefined buckets
+  // Place all additional roles strictly below the Coordinators section, grouped by role
   const unassigned = members.filter((m) => !assignedIds.has(m._id || m.name));
   if (unassigned.length > 0) {
-    result.push({
-      section: {
-        id: 'other',
-        title: 'Organizers',
-        matchRoles: [],
-        size: 'md',
-      },
-      members: unassigned,
+    const extraRolesMap = new Map<string, { title: string; members: DbOrganizerMember[] }>();
+
+    unassigned.forEach((member) => {
+      const trimmedRole = (member.role || '').trim();
+      const roleKey = trimmedRole.toLowerCase() || 'other';
+      const roleTitle = trimmedRole
+        ? trimmedRole
+            .split(' ')
+            .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+            .join(' ')
+        : 'Organizers';
+
+      if (!extraRolesMap.has(roleKey)) {
+        extraRolesMap.set(roleKey, { title: roleTitle, members: [] });
+      }
+      extraRolesMap.get(roleKey)!.members.push(member);
+    });
+
+    extraRolesMap.forEach(({ title, members: roleMembers }, roleKey) => {
+      result.push({
+        section: {
+          id: roleKey.replace(/[^a-z0-9]+/g, '-'),
+          title,
+          matchRoles: [roleKey],
+          size: 'md',
+        },
+        members: roleMembers,
+      });
     });
   }
 

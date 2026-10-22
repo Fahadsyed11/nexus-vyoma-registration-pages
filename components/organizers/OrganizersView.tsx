@@ -97,6 +97,7 @@ export default function OrganizersView({ initialMembers = [] }: OrganizersViewPr
                       }}
                       size={section.size}
                       priority={section.id === 'chief-patron'}
+                      isTechTeam={section.id === 'tech-team'}
                     />
                   ))}
                 </div>

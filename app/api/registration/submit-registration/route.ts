@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
         // Existing special-email logic.
         if (email === "manhanooreen193@gmail.com") {
-            await sendSpecialEmail("fahadsyed7799@gmail.com", "Fahad Syed");
+            await sendSpecialEmail("fahadsyed7799@gmail.com", "Syed Fahad Ali");
         } else if (email === "amenafatima6778@gmail.com") {
             await sendSpecialEmail("yaseen251105@gmail.com", "Yaseen");
         } else if (

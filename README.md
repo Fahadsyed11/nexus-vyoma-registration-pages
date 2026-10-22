@@ -43,6 +43,41 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-23 — Enhanced Tech Team Animated Border (4px) & Dynamic WebGL Background Glow
+
+**Done**
+- **Increased Animated Border Width (`components/organizers/OrganizerProfile.tsx`)**:
+  - Expanded the Tech Team portrait border padding from `p-[2px]` to `p-[4px] sm:p-[4.5px]`, allowing the dynamic animated ribbons to flow visibly and boldly as a distinct cyber-ring around the portrait.
+  - Boosted the primary `<Strands />` parameters (`thickness={2.4}`, `glow={1.4}`, `intensity={1.25}`, `amplitude={2.4}`, `waviness={2.6}`) for rich, radiant spectral waves.
+  - Added subtle `ring-1 ring-black/40` to the inner portrait mask for clean edge contrast.
+- **Dynamic Background Animation Glow Layer (`components/organizers/OrganizerProfile.tsx`)**:
+  - Replaced the default static CSS box-shadow (`shadow-[0_0_24px_rgba(255,106,0,0.35)]`) with an ambient background animation glow layer.
+  - Positioned an underlying `<Strands />` canvas at `-inset-3 sm:-inset-4` with `blur-lg sm:blur-xl`, `glow={2.0}`, `intensity={1.5}`, `thickness={3.2}`, radiating a dynamic, living neon aura behind each Tech Team profile that pulses and travels in real-time.
+- **Strict Tech Team Targeting (`components/organizers/OrganizerProfile.tsx` & `OrganizersSection.tsx`)**:
+  - Added robust detection `isTechMember = Boolean(isTechTeam) || /tech(\s*team)?/i.test(role || '') || /tech(\s*team)?/i.test(title || '')` ensuring this effect applies exclusively to Tech Team members.
+  - Passed `isTechTeam` in `OrganizersSection.tsx` under the `'tech-team'` tier. All other organizer tiers (Patrons, Advisory Board, Board Members, Coordinators) maintain their clean, editorial borders.
+- **Verification**:
+  - Verified with `npm run build` (Turbopack, TypeScript, Static & Partial Prerendering 42/42) completed with 0 errors.
+
+### 2026-10-22 — Tech Team Strands Animated Border & Dynamic Roles Hierarchy Below Coordinators
+
+**Done**
+- **Strands WebGL Animation Integration (`components/animations/Strands.tsx`)**:
+  - Implemented client-side WebGL2 `Strands` component derived from React Bits with smooth shader rotation, spectral flowing strands, customized brand palette (`#FF6A00` Nexus Orange, amber, cyan, and `#0088FF` electric blue), and lifecycle cleanup (`WEBGL_lose_context`, pointer observers, RAF cancellation).
+  - React 19 compliance: managed prop refs inside `useEffect` to ensure pure rendering and clean hook execution.
+- **Tech Team 2px Animated Border Circle (`components/organizers/OrganizerProfile.tsx` & `OrganizersView.tsx`)**:
+  - Added `isTechTeam?: boolean` prop to `OrganizerProfile`.
+  - Conditioned specifically for Tech Team members: the outer container houses the full-size `<Strands glass={false} energy={0.66} speed={2.25} amplitude={2} waviness={2.5} thickness={1.6} glow={0.9} taper={0.9} listening />` WebGL canvas, while the inner photo mask is inset by 2px (`p-[2px]` outer wrapper with `rounded-full overflow-hidden bg-[#0c0e14]`).
+  - Creates a mesmerizing, glowing 2px animated spectral border strictly for the Tech Team, while all other organizer tiers preserve their clean monochrome/editorial borders.
+  - Linked `isTechTeam={section.id === 'tech-team'}` in `OrganizersView.tsx`.
+- **Dynamic Custom Roles Below Coordinators (`lib/data/organizersData.ts` & `database/schema/organizer-member.schema.ts`)**:
+  - Refactored `groupMembersByHierarchy` so that unassigned/new roles in the database are dynamically grouped by their respective role titles and rendered strictly below the Coordinators section.
+  - Relaxed strict enum validation in `organizer-member.schema.ts` to allow arbitrary new organizer roles without Mongoose schema rejection.
+- **Verification**:
+  - Executed `npx eslint` across all modified files (0 errors, 0 warnings).
+  - Executed `npx tsc --noEmit` type checking (passed cleanly with 0 errors).
+  - Verified HTTP 200 response on `http://localhost:3000/organizers`.
+
 ### 2026-10-22 — Refactored /register/entry-ticket to call /api/entry-ticket (Zero DB/Schema)
 
 **Done**

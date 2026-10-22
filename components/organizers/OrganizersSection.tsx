@@ -63,6 +63,7 @@ export default function OrganizersSection({
                 imageUrl={member.imageUrl}
                 socials={member.socials}
                 size={size}
+                isTechTeam
               />
             ))}
           </div>

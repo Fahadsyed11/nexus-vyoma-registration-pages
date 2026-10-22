@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Strands from '@/components/animations/Strands';
 
 export interface OrganizerProfileProps {
   name: string;
@@ -16,6 +17,7 @@ export interface OrganizerProfileProps {
   };
   priority?: boolean;
   className?: string;
+  isTechTeam?: boolean;
 }
 
 /** Check whether a social link is an actual URL and not "N / A" */
@@ -45,6 +47,7 @@ export default function OrganizerProfile({
   socials,
   priority = false,
   className = '',
+  isTechTeam = false,
 }: OrganizerProfileProps) {
   const [imgError, setImgError] = useState(false);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -52,6 +55,12 @@ export default function OrganizerProfile({
 
   // Subtitle prioritizes member title (e.g., "Chairman", "Dean Student Welfare"), falling back to role
   const subtitle = title || role;
+
+  // Resolve whether this member belongs to the Tech Team (via prop or role/title detection)
+  const isTechMember =
+    Boolean(isTechTeam) ||
+    /tech(\s*team)?/i.test(role || '') ||
+    /tech(\s*team)?/i.test(title || '');
 
   const hasInstagram = isRealLink(socials?.instagram);
   const hasLinkedin = isRealLink(socials?.linkedin);
@@ -119,61 +128,161 @@ export default function OrganizerProfile({
       className={`group flex flex-col items-center text-center select-none ${sizeConfig.container} ${className}`}
       aria-label={description || `${name}${subtitle ? `, ${subtitle}` : ''}`}
     >
-      {/* Perfectly circular portrait mask: hover on desktop, auto scroll-reveal on mobile */}
-      <div
-        className={`relative ${
-          sizeConfig.circle
-        } rounded-full overflow-hidden transition-all duration-1000 ease-out flex items-center justify-center ${
-          isRevealed
-            ? 'border-zinc-300 scale-[1.02] shadow-[0_0_24px_rgba(255,106,0,0.22)]'
-            : 'border-zinc-800 bg-[#0c0e14] shadow-[0_4px_16px_rgba(0,0,0,0.6)] md:group-hover:border-zinc-300 md:group-hover:scale-[1.03] md:group-hover:shadow-[0_0_24px_rgba(255,106,0,0.22)]'
-        }`}
-      >
-        {showImage ? (
-          <Image
-            src={imageUrl!}
-            alt={name}
-            fill
-            unoptimized
-            priority={priority}
-            loading={priority ? 'eager' : 'lazy'}
-            onError={() => setImgError(true)}
-            sizes="(max-width: 768px) 140px, 180px"
-            className={`object-cover transition-all duration-1000 ease-out md:group-hover:scale-105 ${
-              isRevealed
-                ? '[filter:grayscale(0%)_contrast(1)_brightness(1)]'
-                : '[filter:grayscale(100%)_contrast(1.05)_brightness(0.95)] md:group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]'
-            }`}
-          />
-        ) : (
-          /* High-fidelity monochrome editorial portrait placeholder */
+      {/* Portrait Circle: Animated Strands border & dynamic background animation glow for Tech Team only, standard editorial border for all other tiers */}
+      {isTechMember ? (
+        <div className="relative flex items-center justify-center">
+          {/* Dynamic Background Animation Glow (WebGL Strands ambient aura, replaces default static CSS box-shadow) */}
           <div
-            className="w-full h-full flex flex-col items-center justify-end relative overflow-hidden"
-            style={{
-              background:
-                'radial-gradient(circle at 50% 36%, #282c37 0%, #171a22 55%, #0b0c10 100%)',
-            }}
+            className={`absolute -inset-3 sm:-inset-4 rounded-full overflow-hidden pointer-events-none transition-all duration-700 blur-lg sm:blur-xl ${
+              isRevealed
+                ? 'opacity-85 scale-105'
+                : 'opacity-40 md:group-hover:opacity-90 md:group-hover:scale-110'
+            }`}
+            aria-hidden="true"
           >
-            <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-black/60 pointer-events-none" />
-            <svg
-              viewBox="0 0 100 100"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className={`w-[82%] h-[82%] translate-y-1 transition-all duration-700 ${
-                isRevealed
-                  ? 'text-zinc-200'
-                  : 'text-zinc-400/80 md:group-hover:text-zinc-300'
-              }`}
-              aria-hidden="true"
-            >
-              <circle cx="50" cy="38" r="18" fill="currentColor" fillOpacity="0.45" />
-              <circle cx="50" cy="38" r="18" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
-              <path d="M18 92 C18 68, 32 60, 50 60 C68 60, 82 68, 82 92 Z" fill="currentColor" fillOpacity="0.35" />
-              <path d="M18 92 C18 68, 32 60, 50 60 C68 60, 82 68, 82 92" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
-            </svg>
+            <Strands
+              glass={false}
+              energy={0.85}
+              speed={2.2}
+              amplitude={2.6}
+              waviness={2.8}
+              thickness={3.2}
+              glow={2.0}
+              intensity={1.5}
+              taper={0.9}
+              listening
+            />
           </div>
-        )}
-      </div>
+
+          {/* Main Portrait Circle with Increased Dynamic Animated Border (4px-4.5px) */}
+          <div
+            className={`relative ${
+              sizeConfig.circle
+            } rounded-full overflow-hidden transition-all duration-700 ease-out flex items-center justify-center p-[4px] sm:p-[4.5px] ${
+              isRevealed ? 'scale-[1.03]' : 'md:group-hover:scale-[1.04]'
+            }`}
+          >
+            {/* Animated Strands Canvas running inside the outer circle */}
+            <div className="absolute inset-0 w-full h-full pointer-events-none rounded-full overflow-hidden">
+              <Strands
+                glass={false}
+                energy={0.75}
+                speed={2.2}
+                amplitude={2.4}
+                waviness={2.6}
+                thickness={2.4}
+                glow={1.4}
+                intensity={1.25}
+                taper={0.9}
+                listening
+              />
+            </div>
+
+            {/* Inner portrait mask (inset by 4px-4.5px, creating the pronounced dynamic animated border) */}
+            <div className="relative w-full h-full rounded-full overflow-hidden bg-[#0c0e14] z-10 flex items-center justify-center ring-1 ring-black/40">
+              {showImage ? (
+                <Image
+                  src={imageUrl!}
+                  alt={name}
+                  fill
+                  unoptimized
+                  priority={priority}
+                  loading={priority ? 'eager' : 'lazy'}
+                  onError={() => setImgError(true)}
+                  sizes="(max-width: 768px) 140px, 180px"
+                  className={`object-cover transition-all duration-1000 ease-out md:group-hover:scale-105 ${
+                    isRevealed
+                      ? '[filter:grayscale(0%)_contrast(1)_brightness(1)]'
+                      : '[filter:grayscale(100%)_contrast(1.05)_brightness(0.95)] md:group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]'
+                  }`}
+                />
+              ) : (
+                <div
+                  className="w-full h-full flex flex-col items-center justify-end relative overflow-hidden"
+                  style={{
+                    background:
+                      'radial-gradient(circle at 50% 36%, #282c37 0%, #171a22 55%, #0b0c10 100%)',
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-black/60 pointer-events-none" />
+                  <svg
+                    viewBox="0 0 100 100"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`w-[82%] h-[82%] translate-y-1 transition-all duration-700 ${
+                      isRevealed
+                        ? 'text-zinc-200'
+                        : 'text-zinc-400/80 md:group-hover:text-zinc-300'
+                    }`}
+                    aria-hidden="true"
+                  >
+                    <circle cx="50" cy="38" r="18" fill="currentColor" fillOpacity="0.45" />
+                    <circle cx="50" cy="38" r="18" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                    <path d="M18 92 C18 68, 32 60, 50 60 C68 60, 82 68, 82 92 Z" fill="currentColor" fillOpacity="0.35" />
+                    <path d="M18 92 C18 68, 32 60, 50 60 C68 60, 82 68, 82 92" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+                  </svg>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Standard member portrait */
+        <div
+          className={`relative ${
+            sizeConfig.circle
+          } rounded-full overflow-hidden transition-all duration-1000 ease-out flex items-center justify-center ${
+            isRevealed
+              ? 'border-zinc-300 scale-[1.02] shadow-[0_0_24px_rgba(255,106,0,0.22)]'
+              : 'border-zinc-800 bg-[#0c0e14] shadow-[0_4px_16px_rgba(0,0,0,0.6)] md:group-hover:border-zinc-300 md:group-hover:scale-[1.03] md:group-hover:shadow-[0_0_24px_rgba(255,106,0,0.22)]'
+          }`}
+        >
+          {showImage ? (
+            <Image
+              src={imageUrl!}
+              alt={name}
+              fill
+              unoptimized
+              priority={priority}
+              loading={priority ? 'eager' : 'lazy'}
+              onError={() => setImgError(true)}
+              sizes="(max-width: 768px) 140px, 180px"
+              className={`object-cover transition-all duration-1000 ease-out md:group-hover:scale-105 ${
+                isRevealed
+                  ? '[filter:grayscale(0%)_contrast(1)_brightness(1)]'
+                  : '[filter:grayscale(100%)_contrast(1.05)_brightness(0.95)] md:group-hover:[filter:grayscale(0%)_contrast(1)_brightness(1)]'
+              }`}
+            />
+          ) : (
+            /* High-fidelity monochrome editorial portrait placeholder */
+            <div
+              className="w-full h-full flex flex-col items-center justify-end relative overflow-hidden"
+              style={{
+                background:
+                  'radial-gradient(circle at 50% 36%, #282c37 0%, #171a22 55%, #0b0c10 100%)',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] via-transparent to-black/60 pointer-events-none" />
+              <svg
+                viewBox="0 0 100 100"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className={`w-[82%] h-[82%] translate-y-1 transition-all duration-700 ${
+                  isRevealed
+                    ? 'text-zinc-200'
+                    : 'text-zinc-400/80 md:group-hover:text-zinc-300'
+                }`}
+                aria-hidden="true"
+              >
+                <circle cx="50" cy="38" r="18" fill="currentColor" fillOpacity="0.45" />
+                <circle cx="50" cy="38" r="18" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                <path d="M18 92 C18 68, 32 60, 50 60 C68 60, 82 68, 82 92 Z" fill="currentColor" fillOpacity="0.35" />
+                <path d="M18 92 C18 68, 32 60, 50 60 C68 60, 82 68, 82 92" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+              </svg>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Profile Details: Name and below it, Title */}
       <div className="mt-3 flex flex-col items-center w-full px-1">
