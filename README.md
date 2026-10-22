@@ -43,6 +43,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-23 — Point CTA Section "Explore Events" Button to `/events`
+
+**Done**
+- **CTA Routing Update (`components/cta/RegisterCTASection.tsx`)**:
+  - Updated the secondary button link (`"Explore Events"`) from `#events` anchor to `/events`, ensuring users are directed straight to the full official events catalog page when clicked.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
 ### 2026-10-23 — Update Flagship Arena Cards on Home Page with Exact Event Details
 
 **Done**

@@ -140,9 +140,9 @@ export default function ContactSection() {
             <div className="space-y-3.5 sm:space-y-4">
               {/* EMAIL ROW */}
               <a
-                href="mailto:nexusvyoma@islec.edu.in"
+                href="mailto:team@nexusvyoma.islec.edu.in"
                 className="group flex items-center justify-between p-3.5 sm:p-4 min-h-[44px] rounded-xl border border-white/[0.08] bg-zinc-950/70 hover:bg-zinc-900/60 hover:border-white/20 transition-all duration-200"
-                aria-label="Send email to nexusvyoma@islec.edu.in"
+                aria-label="Send email to team@nexusvyoma.islec.edu.in"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
                   <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/[0.04] text-zinc-400 group-hover:text-white transition-colors flex-shrink-0">
@@ -153,7 +153,7 @@ export default function ContactSection() {
                       EMAIL
                     </span>
                     <span className="text-xs sm:text-sm font-sans text-zinc-200 group-hover:text-white transition-colors truncate">
-                      nexusvyoma@islec.edu.in
+                      team@nexusvyoma.islec.edu.in
                     </span>
                   </div>
                 </div>

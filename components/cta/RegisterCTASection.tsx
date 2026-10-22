@@ -156,7 +156,7 @@ export default function RegisterCTASection() {
 
             {/* Secondary Button: Explore Events */}
             <Link
-              href="#events"
+              href="/events"
               className="group inline-flex items-center justify-between gap-5 pl-7 sm:pl-8 pr-2.5 py-2.5 sm:py-3 rounded-full bg-[#0A0A0C]/90 hover:bg-[#141418] text-zinc-200 hover:text-white border border-white/20 hover:border-white/35 shadow-[0_10px_30px_rgba(0,0,0,0.5)] transition-all duration-300 select-none"
             >
               <span className="font-semibold text-sm sm:text-base tracking-wide">
