@@ -274,27 +274,37 @@ export function getEventBySlug(slug: string): CatalogEvent | undefined {
   if (fromCatalog) return fromCatalog;
 
   const flagship = OFFICIAL_FLAGSHIP_EVENTS.find(
-    (e) => e.slug.toLowerCase() === normalized || e.id.toLowerCase() === normalized
+    (e) =>
+      e.slug.toLowerCase() === normalized ||
+      e.id.toLowerCase() === normalized ||
+      (e._id && e._id.toLowerCase() === normalized)
   );
   if (flagship) {
+    const isFree = flagship.price === 0;
     return {
-      id: flagship.id,
+      id: flagship._id || flagship.id,
       slug: flagship.slug,
       mockId: 'FLAGSHIP',
       title: flagship.title,
-      shortDescription: flagship.description,
-      description: [flagship.description],
-      requirements: flagship.rules,
+      shortDescription: flagship.shortDescription || flagship.description,
+      description: flagship.longDescription
+        ? flagship.longDescription.split(/\r?\n+/).map((p) => p.trim()).filter(Boolean)
+        : [flagship.description],
+      requirements: flagship.requirements && flagship.requirements.length > 0
+        ? flagship.requirements
+        : flagship.rules,
       venue: flagship.venue,
       date: flagship.day ? `${flagship.day} (${flagship.date})` : flagship.date,
       time: flagship.time,
       category: flagship.category,
       participationType: flagship.entryType,
-      feeText: `₹${flagship.price}`,
+      feeText: isFree ? 'Free' : `₹${flagship.price}`,
+      isFree,
+      entryFee: flagship.price,
       prizePool: flagship.prizePool || 'N/A',
       imageUrl: flagship.image,
       isFlagship: true,
-      statusNote: 'Official Flagship Arena',
+      statusNote: isFree ? 'Included with official festival entry pass.' : 'Official Flagship Arena',
     };
   }
 
@@ -303,7 +313,9 @@ export function getEventBySlug(slug: string): CatalogEvent | undefined {
 
 export function getAllEventSlugs(): string[] {
   const catalogSlugs = EVENTS_CATALOG.map((e) => e.slug);
-  const flagshipSlugs = OFFICIAL_FLAGSHIP_EVENTS.map((e) => e.slug);
+  const flagshipSlugs = OFFICIAL_FLAGSHIP_EVENTS.flatMap((e) =>
+    e._id ? [e.slug, e._id] : [e.slug]
+  );
   return Array.from(new Set(['sample-event', ...catalogSlugs, ...flagshipSlugs]));
 }
 

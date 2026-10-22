@@ -43,6 +43,30 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-23 — Update Flagship Arena Cards on Home Page with Exact Event Details
+
+**Done**
+- **Synced Flagship Events Data (`lib/data/events.ts`)**:
+  - Updated `EventItem` interface with `_id`, `participantLimit`, `shortDescription`, `longDescription`, `dateTime`, and `requirements`.
+  - Replaced the flagship events array with the exact official database records for all 7 flagship arenas:
+    1. **FanDoMania 2K26** (`_id: 6ad087ce3f54d0d1e8dfe1e0`, Free Entry, Block A Ground Floor, 11 Nov 1:00 PM, 50 Spots, Exciting prizes)
+    2. **Riwayath** (`_id: 6ad314244fd3ab4dfc61c640`, Free Entry, Block A Ground floor, 12 Nov 12:00 PM, 50 Spots, Exciting prizes)
+    3. **Mehfil - E - Hunar** (`_id: 6ad31fbcddce0d54768230b4`, Free Entry, Outdoor College Amphitheatre, 11 Nov 10:00 AM, 400 Spots, Exciting prizes)
+    4. **Eclipse 404** (`_id: 6ad32acf8fd375e15558c923`, ₹399 Entry, Crown Hall, 10 Nov 4:00 PM, 500 Spots)
+    5. **RPM Gear Up Expo - Fuel the Madness** (`_id: 6ad5bfc3eed3b916645db675`, Free Entry, Law Ground & Volleyball Court, 10 Nov 11:00 AM, 4,000 Spots)
+    6. **CHARCHA** (`_id: 6ad5c28c4e44180db97a9343`, ₹399 Entry, Amphitheatre, 11 Nov 3:00 PM, 500 Spots, Exciting prizes)
+    7. **Jashn - E - Suroor** (`_id: 6ad5c4e4959eb51581b6c908`, ₹599 Entry, Block-A Ground floor, 12 Nov 6:00 PM, 500 Spots)
+  - Connected each event with its official AWS S3 banner image URL (`https://nexus-vyoma.s3.ap-south-2.amazonaws.com/event-banners/...`).
+- **Refined Flagship Deck Cards Presentation (`components/events/FlagshipScrollDeck.tsx`)**:
+  - Streamlined metadata chips on each card to display exclusively the Date (`🗓️ Day • Date • Time`) and Venue (`📍 Venue`).
+  - Removed the "Register Now" button from each card as requested, keeping the sleek "Explore Arena" action button linking directly to `/events/${event._id || event.slug}`.
+  - Linked the poster visual directly to `/events/${event._id || event.slug}`.
+- **Event Catalog Fallback Integration (`lib/data/eventsCatalog.ts`)**:
+  - Updated `getEventBySlug` to look up events by `_id` as well as `slug` and `id`, ensuring direct event page routes (`/events/:_id`) resolve cleanly.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+  - Validated responsive layout, theme accents, and image rendering.
+
 ### 2026-10-23 — Enhanced Tech Team Animated Border (4px) & Dynamic WebGL Background Glow
 
 **Done**

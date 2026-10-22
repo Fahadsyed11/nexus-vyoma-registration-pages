@@ -100,7 +100,7 @@ export default function FlagshipScrollDeck() {
                 <div className="relative z-10 flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-10 w-full min-h-0">
                   {/* LEFT: Visual / Image Card - snug fixed frame strictly as per poster size with NO side gaps */}
                   <Link
-                    href="/events"
+                    href={`/events/${event._id || event.slug}`}
                     className="relative flex-shrink-0 rounded-xl sm:rounded-2xl overflow-hidden group/visual border transition-all duration-300 shadow-2xl flex items-center justify-center bg-[#07090F] block cursor-pointer"
                     style={{
                       aspectRatio: event.aspectRatio || '1/1',
@@ -118,7 +118,7 @@ export default function FlagshipScrollDeck() {
                           fill
                           sizes="(max-width: 1024px) 100vw, 420px"
                           className="object-contain transition-transform duration-500 ease-out group-hover/visual:scale-105"
-                          priority={event.id === 'auto-show'}
+                          priority={event.id === 'fandomania'}
                         />
 
                         {/* Crisp 1px specular inner ring */}
@@ -135,7 +135,7 @@ export default function FlagshipScrollDeck() {
                               color: '#FFFFFF',
                             }}
                           >
-                            {categoryMeta?.title || event.category}
+                            {event.category || categoryMeta?.title}
                           </span>
                         </div>
                       </div>
@@ -156,7 +156,7 @@ export default function FlagshipScrollDeck() {
                         {/* Category Label & Caption */}
                         <div className="text-center z-10 flex flex-col items-center gap-0.5 sm:gap-1">
                           <span className="px-2.5 py-0.5 sm:px-3.5 sm:py-1 rounded-full font-mono text-[10px] sm:text-xs font-semibold tracking-wider uppercase border border-white/15 bg-white/[0.05] text-white">
-                            {categoryMeta?.title || event.category}
+                            {event.category || categoryMeta?.title}
                           </span>
                           <span className="font-mono text-[9px] sm:text-[11px] text-zinc-400 tracking-widest uppercase">
                             {event.caption}
@@ -186,14 +186,14 @@ export default function FlagshipScrollDeck() {
 
                     {/* Description */}
                     <p className="font-sans text-xs sm:text-sm lg:text-base text-zinc-300 leading-relaxed font-normal line-clamp-3 sm:line-clamp-none">
-                      {event.description}
+                      {event.shortDescription || event.description}
                     </p>
 
-                    {/* Compact Metadata Chips */}
+                    {/* Compact Metadata Chips: Date & Venue only */}
                     <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-1">
                       {event.date && (
                         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 font-mono text-[10px] sm:text-xs text-zinc-300">
-                          <span style={{ color: themeColor }}>🗓️</span> {event.day ? `${event.day} • ` : ''}{event.date}
+                          <span style={{ color: themeColor }}>🗓️</span> {event.day ? `${event.day} • ` : ''}{event.date}{event.time ? ` • ${event.time}` : ''}
                         </div>
                       )}
                       {event.venue && (
@@ -201,30 +201,12 @@ export default function FlagshipScrollDeck() {
                           <span style={{ color: themeColor }}>📍</span> {event.venue}
                         </div>
                       )}
-                      {event.entryType && (
-                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 font-mono text-[10px] sm:text-xs text-zinc-300">
-                          <span className="text-zinc-400">👥</span> {event.entryType}
-                        </div>
-                      )}
-                      {event.prizePool && event.prizePool !== 'N/A' && (
-                        <div
-                          className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-mono text-[10px] sm:text-xs font-semibold"
-                          style={{
-                            backgroundColor: `${themeColor}15`,
-                            borderColor: `${themeColor}40`,
-                            color: themeColor,
-                            borderWidth: 1,
-                          }}
-                        >
-                          <span>🏆</span> Exciting Prizes
-                        </div>
-                      )}
                     </div>
 
-                    {/* Action Link */}
+                    {/* Action Link: Explore Arena */}
                     <div className="pt-1.5 sm:pt-2">
                       <Link
-                        href="/events"
+                        href={`/events/${event._id || event.slug}`}
                         className="inline-flex items-center gap-2 px-4 py-2 sm:px-5 sm:py-2.5 rounded-full font-mono text-xs sm:text-sm font-semibold tracking-wider uppercase text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
                         style={{
                           boxShadow: `0 0 16px -4px ${themeColor}35`,
