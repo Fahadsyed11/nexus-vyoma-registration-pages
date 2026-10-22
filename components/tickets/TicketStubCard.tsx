@@ -100,15 +100,15 @@ export default function TicketStubCard({
             </li>
             <li className="flex items-start gap-2 leading-relaxed">
               <span className="text-[#FF6A00] mt-0.5 shrink-0 select-none">✦</span>
-              <span>Cultural Evenings, Celebrity Concerts &amp; DJ Night</span>
+              <span>Cultural Events Under Riwayat</span>
             </li>
             <li className="flex items-start gap-2 leading-relaxed">
               <span className="text-[#FF6A00] mt-0.5 shrink-0 select-none">✦</span>
-              <span>Technical Arenas, Hackathons &amp; Project Expos</span>
+              <span>Technical &amp; Non Technical Arenas</span>
             </li>
             <li className="flex items-start gap-2 leading-relaxed">
               <span className="text-[#FF6A00] mt-0.5 shrink-0 select-none">✦</span>
-              <span>Gaming Arenas, E-Sports Pit &amp; Food Streets</span>
+              <span>Gaming Arenas, E-Sports Pit &amp; Food Odyssey</span>
             </li>
           </ul>
         </div>
