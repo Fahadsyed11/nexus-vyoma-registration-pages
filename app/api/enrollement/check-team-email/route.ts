@@ -109,7 +109,11 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             message: "Team member has registered and purchased the entry ticket.",
-            data: null,
+            data: {
+                name: teamUser.full_name,
+                email: teamUser.email,
+                phone: teamUser.phone_number,
+            },
             error: null,
             redirect: false,
             redirectUrl: null

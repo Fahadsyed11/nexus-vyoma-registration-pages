@@ -90,13 +90,35 @@ export async function GET(request: NextRequest) {
             isPaid: true
         }).select("-transaction_id -__v");
 
-        const paidTeamEvents = await EnrolledTeamEvent.find({
+        const rawPaidTeamEvents = await EnrolledTeamEvent.find({
             $or: [
                 { team_leader_register_user_id: user._id },
                 { team_emails: user.email }
             ],
             isPaid: true
-        }).select("-transaction_id -__v");
+        }).populate("team_leader_register_user_id", "full_name email phone_number").select("-transaction_id -__v");
+
+        const allTeammateEmails = Array.from(new Set(rawPaidTeamEvents.flatMap((e: { team_emails?: string[] }) => e.team_emails || [])));
+        const teammateUsers = await RegisterUser.find({ email: { $in: allTeammateEmails } }).select("full_name email phone_number");
+        const teammateMap = new Map(teammateUsers.map((u: { full_name?: string; email?: string; phone_number?: string }) => [
+            (u.email || '').toLowerCase(),
+            { name: u.full_name || '', email: u.email || '', phone: u.phone_number || '' }
+        ]));
+
+        const paidTeamEvents = rawPaidTeamEvents.map((team: Record<string, unknown> & { toObject: () => Record<string, unknown> }) => {
+            const teamObj = team.toObject();
+            const leader = teamObj.team_leader_register_user_id as { full_name?: string; email?: string; phone_number?: string } | null;
+            const memberDetails = ((teamObj.team_emails as string[]) || []).map((email: string) => 
+                teammateMap.get(email.toLowerCase()) || { name: email.split('@')[0], email, phone: '' }
+            );
+            return {
+                ...teamObj,
+                team_leader_name: leader?.full_name || '',
+                team_leader_email: leader?.email || '',
+                team_leader_phone: leader?.phone_number || '',
+                team_member_details: memberDetails
+            };
+        });
 
         const paidEvents = {
             individualEvents: paidIndividualEvents || [],

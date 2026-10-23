@@ -43,6 +43,40 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Newest first.
 
+### 2026-10-23 — Add Spam Folder Notice on `/register/verify-email` Page
+
+**Done**
+- **Spam / Junk Reminder (`components/registration/OtpStepForm.tsx`)**:
+  - Added a notice below the OTP countdown and resend control: *"Can't find the email? Please check your spam or junk folder."*
+  - Styled with brand typography (`text-zinc-500` / `text-amber-400/90`) matching the glassmorphic OTP verification card.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
+### 2026-10-23 — Streamline & Simplify `/register/enroll-event` Page
+
+**Done**
+- **Personalized Greeting**:
+  - Enlarged and highlighted `Hi, {userName} :)` with Nexus Vyoma orange glow text (`#FF6A00`), removing cluttered attendee portal subheadings and email text.
+- **Unified Paid Events Section**:
+  - Merged individual and team paid events into a single unified container with a clean counter badge (`{count} PAID`).
+  - Added an accordion dropdown for paid team events displaying Team Name, Team Leader details (Name, Email, Phone), and Teammate cards (Name, Email, Phone).
+- **8 Free Events Banner**:
+  - Added a prominent emerald highlighted banner: *"All 8 free events are already included with the pass"* with checkmark accent.
+- **Simplified Event Catalog Cards (Left Box)**:
+  - Cleaned cards to show only Title, Price badge, Squad length (e.g. `Squad: 2–4 Members Required` or `Individual Participation`), minimal 1-line description, and `+ Select Event` button. Removed venue text for visual clarity.
+- **Unified Selected Events Cart (Right Box)**:
+  - Header updated to `Selected Events` with notice: `⏱️ This cart expires in 5 minutes` (removed `(not paid)`).
+  - Merged all pending reservations and staged selections into a single flat list without section dividers, tags, or venue clutter.
+  - Team events show `Team Size: Min {min} – Max {max} members` and clean squad input fields.
+  - Added interactive teammate verification button with dynamic states: `+` (idle), loading spinner, green `✓` (verified attendee), or red `✕` with red alert banner (`⚠️ User has not paid the entry ticket`).
+  - Removed internal card-level enroll buttons in favor of a single bottom action button: `Proceed to Checkout`.
+- **Backend & APIs**:
+  - `app/api/enrollement/check-team-email/route.ts`: Updated to return attendee's `name` and `phone` in addition to `email`.
+  - `app/api/enrollement/enrolled-event/route.ts`: Expanded team event queries to resolve `team_leader_name`, `team_leader_phone`, and `team_member_details`.
+  - `app/register/enroll-event/page.tsx`: Updated page-level props forwarding for team leader and teammate info.
+- **Verification**:
+  - `npx tsc --noEmit` passed with 0 errors.
+
 ### 2026-10-23 — Point CTA Section "Explore Events" Button to `/events`
 
 **Done**

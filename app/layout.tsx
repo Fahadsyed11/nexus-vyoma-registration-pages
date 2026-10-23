@@ -1,3 +1,5 @@
+import { SpeedInsights } from "@vercel/speed-insights/next"
+import { Analytics } from "@vercel/analytics/next"
 import type { Metadata } from "next";
 import { Anton, Montserrat, Inter, JetBrains_Mono, Barlow_Condensed, Space_Grotesk, Aldrich } from "next/font/google";
 import { Suspense } from "react";
@@ -102,6 +104,8 @@ export default function RootLayout({
         </Suspense>
         <DualBackground />
         {children}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );

@@ -97,9 +97,14 @@ function mapEnrolledTeam(
     event_title: eventDetails?.title ?? 'Unknown Event',
     participation_type: 'team',
     team_name: doc.team_name ? String(doc.team_name) : null,
-    team_leader_email: leaderEmail,
+    team_leader_name: doc.team_leader_name ? String(doc.team_leader_name) : null,
+    team_leader_email: doc.team_leader_email ? String(doc.team_leader_email) : leaderEmail,
+    team_leader_phone: doc.team_leader_phone ? String(doc.team_leader_phone) : null,
     team_size: typeof doc.team_length === 'number' ? doc.team_length : teamEmails.length + 1,
     team_members: teamEmails,
+    team_member_details: Array.isArray(doc.team_member_details)
+      ? (doc.team_member_details as SerializedEnrolledEvent['team_member_details'])
+      : undefined,
     event_details: eventDetails,
   };
 }

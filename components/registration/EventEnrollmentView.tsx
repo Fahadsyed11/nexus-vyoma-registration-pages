@@ -20,15 +20,24 @@ export interface SerializedEvent {
   category?: string;
 }
 
+export interface TeamMemberInfo {
+  name?: string;
+  email: string;
+  phone?: string;
+}
+
 export interface SerializedEnrolledEvent {
   _id: string;
   event_title: string;
   event_id: string;
   participation_type?: 'individual' | 'team';
   team_name?: string | null;
+  team_leader_name?: string | null;
   team_leader_email?: string | null;
+  team_leader_phone?: string | null;
   team_size?: number | null;
   team_members?: string[];
+  team_member_details?: TeamMemberInfo[];
   event_details?: SerializedEvent | null;
 }
 
@@ -45,6 +54,7 @@ interface EventEnrollmentViewProps {
 export interface VerifiedMember {
   email: string;
   name?: string;
+  phone?: string;
   college?: string;
 }
 
@@ -84,6 +94,7 @@ export default function EventEnrollmentView({
   const [pendingMemberEmail, setPendingMemberEmail] = useState<Record<string, string>>({});
   const [verifyingMember, setVerifyingMember] = useState<Record<string, boolean>>({});
   const [memberError, setMemberError] = useState<Record<string, string | null>>({});
+  const [memberStatus, setMemberStatus] = useState<Record<string, 'idle' | 'checking' | 'success' | 'error'>>({});
 
   // Submission & feedback states
   const [submitting, setSubmitting] = useState(false);
@@ -389,12 +400,14 @@ export default function EventEnrollmentView({
 
     if (!email) {
       setMemberError((prev) => ({ ...prev, [eventId]: 'Please enter a teammate email.' }));
+      setMemberStatus((prev) => ({ ...prev, [eventId]: 'error' }));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       setMemberError((prev) => ({ ...prev, [eventId]: 'Please enter a valid email format.' }));
+      setMemberStatus((prev) => ({ ...prev, [eventId]: 'error' }));
       return;
     }
 
@@ -403,6 +416,7 @@ export default function EventEnrollmentView({
         ...prev,
         [eventId]: 'You are already registered as Team Leader. Enter your teammate’s email.',
       }));
+      setMemberStatus((prev) => ({ ...prev, [eventId]: 'error' }));
       return;
     }
 
@@ -412,6 +426,7 @@ export default function EventEnrollmentView({
         ...prev,
         [eventId]: 'This teammate is already added to this squad.',
       }));
+      setMemberStatus((prev) => ({ ...prev, [eventId]: 'error' }));
       return;
     }
 
@@ -422,6 +437,7 @@ export default function EventEnrollmentView({
         ...prev,
         [eventId]: 'This is a solo team event. The team leader is the only squad member.',
       }));
+      setMemberStatus((prev) => ({ ...prev, [eventId]: 'error' }));
       return;
     }
 
@@ -430,10 +446,12 @@ export default function EventEnrollmentView({
         ...prev,
         [eventId]: `Maximum squad limit (${ev?.max_team_size || ev?.team_size || 1} members including leader) reached.`,
       }));
+      setMemberStatus((prev) => ({ ...prev, [eventId]: 'error' }));
       return;
     }
 
     setVerifyingMember((prev) => ({ ...prev, [eventId]: true }));
+    setMemberStatus((prev) => ({ ...prev, [eventId]: 'checking' }));
 
     try {
       const res = await fetch('/api/enrollement/check-team-email', {
@@ -447,9 +465,11 @@ export default function EventEnrollmentView({
       if (res.ok && res.status === 200) {
         const verifiedInfo: VerifiedMember = {
           email,
-          name: email.split('@')[0],
+          name: result?.data?.name || email.split('@')[0],
+          phone: result?.data?.phone || '',
         };
 
+        setMemberStatus((prev) => ({ ...prev, [eventId]: 'success' }));
         setSelectedTeamEvents((prev) =>
           prev.map((t) => {
             if (t.eventId !== eventId) return t;
@@ -461,10 +481,14 @@ export default function EventEnrollmentView({
           })
         );
 
-        // Clear input for the next member
+        // Clear input for the next member and reset status after a moment
         setPendingMemberEmail((prev) => ({ ...prev, [eventId]: '' }));
         setMemberError((prev) => ({ ...prev, [eventId]: null }));
+        setTimeout(() => {
+          setMemberStatus((prev) => ({ ...prev, [eventId]: 'idle' }));
+        }, 1200);
       } else {
+        setMemberStatus((prev) => ({ ...prev, [eventId]: 'error' }));
         if (result?.redirect && result?.redirectUrl) {
           router.push(result.redirectUrl);
           return;
@@ -474,10 +498,11 @@ export default function EventEnrollmentView({
           [eventId]:
             result?.message ||
             result?.error ||
-            'Team member check failed. Please ensure the member has registered and paid for their pass.',
+            'User has not registered yet or has not paid for the event entry ticket.',
         }));
       }
     } catch {
+      setMemberStatus((prev) => ({ ...prev, [eventId]: 'error' }));
       setMemberError((prev) => ({
         ...prev,
         [eventId]: 'Failed to verify member. Please check your connection.',
@@ -756,137 +781,65 @@ export default function EventEnrollmentView({
     <div className="w-full max-w-5xl mx-auto flex flex-col gap-10 text-white pb-20">
       {/* 01 — Top Personalized Greeting */}
       <div className="flex flex-col gap-1 pt-2">
-        <h1 className="text-base sm:text-lg font-display font-medium uppercase tracking-wider text-zinc-400">
-          Hi{' '}
-          <span className="text-zinc-200 font-semibold">
+        <h1 className="text-2xl sm:text-3xl font-display font-bold uppercase tracking-wider text-white">
+          Hi,{' '}
+          <span className="text-[#FF6A00] drop-shadow-[0_0_20px_rgba(255,106,0,0.4)]">
             {userName}
           </span>{' '}
           :)
         </h1>
-        <p className="text-xs font-mono text-zinc-500 tracking-wide uppercase break-all sm:break-normal">
-          Nexus Vyoma 2026 • Registered Attendee Portal • {userEmail}
-        </p>
       </div>
 
-      {/* 02 — Individual Enrolled Events Section (Smooth Sideways Scrolling) */}
-      <section className="w-full min-w-0 flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base sm:text-lg font-subheading font-medium uppercase tracking-wider text-zinc-400">
-            Individual Events (Paid)
+      {/* 02 — Unified Paid Events Container (Individual & Team) */}
+      <section className="w-full flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-base sm:text-lg font-subheading font-medium uppercase tracking-wider text-zinc-200 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            Paid Events
           </h2>
-          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <span className="text-xs font-mono text-emerald-400 font-medium">
-              {initialIndividualEnrolled.length} PAID
-            </span>
-            {initialIndividualEnrolled.length > 0 && (
-              <div className="hidden sm:flex items-center gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => scrollIndividual('left')}
-                  aria-label="Scroll left"
-                  className="p-1.5 rounded-lg border border-white/[0.1] bg-[#07090E] hover:border-[#FF6A00]/50 hover:bg-white/[0.05] text-zinc-400 hover:text-white transition-all cursor-pointer"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollIndividual('right')}
-                  aria-label="Scroll right"
-                  className="p-1.5 rounded-lg border border-white/[0.1] bg-[#07090E] hover:border-[#FF6A00]/50 hover:bg-white/[0.05] text-zinc-400 hover:text-white transition-all cursor-pointer"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
+          <span className="text-xs font-mono text-emerald-400 font-medium px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            {individualPaid.length + teamPaid.length} PAID
+          </span>
         </div>
 
-        {individualPaid.length === 0 ? (
+        {individualPaid.length === 0 && teamPaid.length === 0 ? (
           <div className="w-full p-6 sm:p-8 rounded-2xl border border-white/[0.08] bg-[#07090E] text-zinc-500 font-mono text-xs sm:text-sm text-center">
-            No paid individual events yet. Browse and add events below.
+            No paid events yet. Browse and add events below.
           </div>
         ) : (
-          <div
-            ref={individualScrollRef}
-            onMouseDown={handleMouseDown}
-            onMouseLeave={handleMouseLeaveOrUp}
-            onMouseUp={handleMouseLeaveOrUp}
-            onMouseMove={handleMouseMove}
-            className={`w-full min-w-0 flex gap-4 overflow-x-auto pb-4 pt-1 touch-pan-x -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-proximity scrollbar-thin scrollbar-thumb-zinc-700 hover:scrollbar-thumb-zinc-500 scrollbar-track-transparent ${
-              isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'
-            }`}
-          >
+          <div className="flex flex-col gap-3">
+            {/* Paid Individual Events */}
             {individualPaid.map((enrolled) => {
               const details = enrolled.event_details;
               return (
                 <div
                   key={enrolled._id}
-                  className="snap-start shrink-0 w-[260px] sm:w-[300px] rounded-2xl border border-white/[0.1] bg-[#07090E] hover:border-[#FF6A00]/40 transition-colors p-4 flex flex-col gap-3 group select-none"
+                  className="rounded-2xl border border-white/[0.1] bg-[#07090E] p-4 sm:p-5 flex items-center justify-between gap-4"
                 >
-                  {/* Event Thumbnail */}
-                  <div className="w-full aspect-[16/9] rounded-xl overflow-hidden relative bg-zinc-950 border border-white/[0.06]">
-                    {details?.image_url && details.image_url.startsWith('http') ? (
-                      <Image
-                        src={details.image_url}
-                        alt={enrolled.event_title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300 pointer-events-none"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-zinc-950 text-zinc-600 font-mono text-xs uppercase p-2 text-center pointer-events-none">
-                        {enrolled.event_title}
-                      </div>
-                    )}
-                    <span className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 backdrop-blur-sm">
-                      PAID
-                    </span>
-                  </div>
-
-                  {/* Title, Metadata & Entry Fee */}
-                  <div className="flex flex-col gap-1.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="font-subheading font-medium text-sm sm:text-base text-white tracking-wide truncate">
-                        {enrolled.event_title}
-                      </h3>
-                      {/* Entry Fee directly inside individual enrolled event */}
-                      <span className="text-xs font-sans font-medium text-emerald-400 shrink-0">
-                        {details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}
+                  <div className="flex flex-col gap-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono text-emerald-400 font-semibold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20 uppercase">
+                        INDIVIDUAL
                       </span>
+                      <span className="text-xs font-mono text-emerald-400 font-medium">PAID</span>
                     </div>
-                    <div className="text-[11px] font-mono text-zinc-400 flex flex-col gap-0.5">
-                      <span>{details?.date_time || 'Schedule TBA'}</span>
-                      <span className="text-zinc-500 truncate">{details?.venue || 'Venue TBA'}</span>
-                    </div>
+                    <h3 className="font-subheading font-medium text-base sm:text-lg text-white truncate">
+                      {enrolled.event_title}
+                    </h3>
+                    <p className="text-xs text-zinc-400 line-clamp-1">
+                      {details?.short_description || 'Individual Competition'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="text-sm font-sans font-semibold text-emerald-400">
+                      {details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}
+                    </span>
                   </div>
                 </div>
               );
             })}
-          </div>
-        )}
-      </section>
 
-      {/* 03 — Team Enrolled Events Section (Expandable Accordion Rows) */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-base sm:text-lg font-subheading font-medium uppercase tracking-wider text-zinc-400">
-            Team Events (Paid)
-          </h2>
-          <span className="text-xs font-mono text-emerald-400 font-medium">
-            {teamPaid.length} PAID
-          </span>
-        </div>
-
-        {teamPaid.length === 0 ? (
-          <div className="w-full p-6 sm:p-8 rounded-2xl border border-white/[0.08] bg-[#07090E] text-zinc-500 font-mono text-xs sm:text-sm text-center">
-            No paid team events yet. Register your team below.
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
+            {/* Paid Team Events with Simple & Good-Looking Dropdown */}
             {teamPaid.map((teamEvent) => {
               const rowId = `team-enrolled-${teamEvent._id}`;
               const isExpanded = Boolean(expandedRows[rowId]);
@@ -902,102 +855,121 @@ export default function EventEnrollmentView({
                     onClick={() => toggleRow(rowId)}
                     className="p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer select-none"
                   >
-                    <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-6 pr-2">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-mono text-emerald-400 tracking-widest uppercase font-semibold">
-                          PAID • TEAM EVENT
+                    <div className="flex flex-col gap-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-mono text-[#FF8833] font-semibold px-2 py-0.5 rounded bg-[#FF6A00]/10 border border-[#FF6A00]/20 uppercase">
+                          TEAM
                         </span>
-                        <h3 className="font-subheading font-medium text-base sm:text-lg text-white">
-                          {teamEvent.event_title}
-                        </h3>
-                        <p className="text-xs text-zinc-400 line-clamp-1">
-                          {details?.short_description || 'Team competition'}
-                        </p>
+                        <span className="text-xs font-mono text-emerald-400 font-medium">PAID</span>
                       </div>
-
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono text-zinc-400 min-w-0">
-                        <span>{details?.venue || 'Venue TBA'}</span>
-                        <span className="hidden sm:inline text-zinc-600">•</span>
-                        <span>{details?.date_time || 'Schedule TBA'}</span>
-                        <span className="hidden sm:inline text-zinc-600">•</span>
-                        {/* Entry Fee directly inside team event collapsed row */}
-                        <span className="text-xs font-sans font-medium text-emerald-400">
-                          {details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}
-                        </span>
-                      </div>
+                      <h3 className="font-subheading font-medium text-base sm:text-lg text-white truncate">
+                        {teamEvent.event_title}
+                      </h3>
+                      <p className="text-xs text-zinc-400 line-clamp-1">
+                        Team: <span className="text-white font-medium">{teamEvent.team_name || 'Squad'}</span>
+                      </p>
                     </div>
 
-                    {/* Expand/Collapse Arrow Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleRow(rowId);
-                      }}
-                      aria-expanded={isExpanded}
-                      aria-label={isExpanded ? 'Collapse event details' : 'Expand event details'}
-                      className="shrink-0 p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6A00] transition-colors"
-                    >
-                      <svg
-                        className={`w-5 h-5 transition-transform duration-300 ${
-                          isExpanded ? 'rotate-180 text-[#FF6A00]' : 'text-zinc-400'
-                        }`}
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth="2"
+                    <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                      <span className="text-sm font-sans font-semibold text-emerald-400">
+                        {details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          toggleRow(rowId);
+                        }}
+                        aria-expanded={isExpanded}
+                        aria-label={isExpanded ? 'Collapse team details' : 'Expand team details'}
+                        className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/[0.05] transition-colors"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
+                        <svg
+                          className={`w-5 h-5 transition-transform duration-300 ${
+                            isExpanded ? 'rotate-180 text-[#FF6A00]' : 'text-zinc-400'
+                          }`}
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Expanded Dropdown Panel */}
+                  {/* Expanded Dropdown Panel: Team Name, Leader & Teammates (Name, Email, Phone) */}
                   <div
                     className={`grid transition-[grid-template-rows] duration-250 ease-out motion-reduce:transition-none ${
                       isExpanded ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
                     }`}
                   >
                     <div className="overflow-hidden">
-                      <div className="p-4 sm:p-5 pt-3 border-t border-white/[0.06] flex flex-col gap-3 font-mono text-xs">
-                        {/* Clean metadata line without artificial card containers */}
-                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-zinc-400">
+                      <div className="p-4 sm:p-5 pt-3 border-t border-white/[0.06] flex flex-col gap-4 bg-white/[0.01]">
+                        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs font-mono border-b border-white/[0.06] pb-3">
                           <div>
-                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">Team: </span>
+                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">Team Name: </span>
                             <span className="text-white font-medium">{teamEvent.team_name || 'N/A'}</span>
                           </div>
                           <div>
                             <span className="text-zinc-500 uppercase tracking-wider text-[11px]">Leader: </span>
-                            <span className="text-white font-medium">{teamEvent.team_leader_email || userEmail}</span>
+                            <span className="text-white font-medium">{teamEvent.team_leader_name || userName}</span>
                           </div>
                           <div>
-                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">Squad Size: </span>
-                            <span className="text-white font-medium">{teamEvent.team_size || (teamEvent.team_members?.length || 0) + 1}</span>
+                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">Leader Email: </span>
+                            <span className="text-zinc-300">{teamEvent.team_leader_email || userEmail}</span>
                           </div>
-                          <div>
-                            <span className="text-zinc-500 uppercase tracking-wider text-[11px]">Fee: </span>
-                            <span className="text-emerald-400 font-sans font-medium">{details?.entry_fee ? `₹${details.entry_fee}` : 'FREE'}</span>
-                          </div>
+                          {teamEvent.team_leader_phone && (
+                            <div>
+                              <span className="text-zinc-500 uppercase tracking-wider text-[11px]">Leader Phone: </span>
+                              <span className="text-zinc-300">{teamEvent.team_leader_phone}</span>
+                            </div>
+                          )}
                         </div>
 
-                        {/* Members List - Separated with clean distance and '|' delimiter */}
-                        {teamEvent.team_members && teamEvent.team_members.length > 0 && (
-                          <div className="flex flex-col sm:flex-row sm:items-baseline gap-2 pt-1 text-xs">
-                            <span className="text-zinc-500 uppercase tracking-wider text-[11px] shrink-0">
-                              Registered Members:
-                            </span>
-                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-zinc-300 font-mono tracking-wide">
-                              {teamEvent.team_members.map((memberEmail, mIdx) => (
-                                <React.Fragment key={mIdx}>
-                                  <span>{memberEmail}</span>
-                                  {mIdx < (teamEvent.team_members?.length ?? 0) - 1 && (
-                                    <span className="text-zinc-600 select-none">|</span>
-                                  )}
-                                </React.Fragment>
+                        {/* Team Members List */}
+                        <div className="flex flex-col gap-2">
+                          <span className="text-[11px] font-mono text-zinc-400 uppercase tracking-wider">
+                            Team Members ({teamEvent.team_member_details?.length || teamEvent.team_members?.length || 0})
+                          </span>
+
+                          {(!teamEvent.team_member_details || teamEvent.team_member_details.length === 0) &&
+                          (!teamEvent.team_members || teamEvent.team_members.length === 0) ? (
+                            <p className="text-xs text-zinc-500 font-mono italic">No additional teammates added.</p>
+                          ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                              {(teamEvent.team_member_details && teamEvent.team_member_details.length > 0
+                                ? teamEvent.team_member_details
+                                : (teamEvent.team_members || []).map((email) => ({
+                                    name: 'Registered Attendee',
+                                    email,
+                                    phone: 'N/A',
+                                  }))
+                              ).map((member, mIdx) => (
+                                <div
+                                  key={mIdx}
+                                  className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col gap-1 text-xs"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium text-white text-sm">
+                                      {member.name || `Member ${mIdx + 1}`}
+                                    </span>
+                                    <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                      MEMBER
+                                    </span>
+                                  </div>
+                                  <div className="font-mono text-zinc-400 text-[11px] flex flex-col gap-0.5 pt-1">
+                                    <span className="text-zinc-300">{member.email}</span>
+                                    {member.phone && member.phone !== 'N/A' && (
+                                      <span className="text-zinc-500">{member.phone}</span>
+                                    )}
+                                  </div>
+                                </div>
                               ))}
                             </div>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -1008,6 +980,23 @@ export default function EventEnrollmentView({
         )}
       </section>
 
+      {/* 03 — Highlighted Banner: All 8 Free Events Included */}
+      <div className="w-full rounded-2xl border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-black/40 p-4 sm:p-5 flex items-center gap-4 shadow-[0_0_30px_rgba(16,185,129,0.12)]">
+        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-400">
+            Included with Entry Pass
+          </span>
+          <p className="text-sm sm:text-base font-subheading font-medium text-white tracking-wide">
+            All 8 free events are already included with the pass
+          </p>
+        </div>
+      </div>
+
       {/* 04 — Add Events Section (Side-by-Side Dual-Box Layout) */}
       <section className="flex flex-col gap-6 pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-3 gap-2">
@@ -1017,7 +1006,7 @@ export default function EventEnrollmentView({
               Add Events
             </h2>
             <p className="text-xs font-mono text-zinc-500">
-              All 8 free events are included with your pass • Add paid competitions below
+              Browse and select paid competitions below
             </p>
           </div>
           <span className="text-xs font-mono text-zinc-400 shrink-0">
@@ -1084,7 +1073,7 @@ export default function EventEnrollmentView({
                             {ev.title}
                           </h4>
                           {ev.short_description && (
-                            <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+                            <p className="text-xs text-zinc-400 line-clamp-1 leading-relaxed">
                               {ev.short_description}
                             </p>
                           )}
@@ -1094,16 +1083,10 @@ export default function EventEnrollmentView({
                         </span>
                       </div>
 
-                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.05] text-[11px] font-mono text-zinc-400">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-zinc-300">
-                            Squad: {ev.team_size || ev.min_team_size || 2} Members
-                          </span>
-                          <span className="text-zinc-600">•</span>
-                          <span>{ev.venue || 'ISL Campus'}</span>
-                          <span className="text-zinc-600">•</span>
-                          <span>{ev.date_time || 'Schedule TBA'}</span>
-                        </div>
+                      <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.05] text-[11px] font-mono text-zinc-400">
+                        <span className="text-zinc-300">
+                          Squad: {ev.team_size || ev.min_team_size || 2} Members Required
+                        </span>
 
                         <button
                           type="button"
@@ -1132,7 +1115,7 @@ export default function EventEnrollmentView({
                           {ev.title}
                         </h4>
                         {ev.short_description && (
-                          <p className="text-xs text-zinc-400 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-zinc-400 line-clamp-1 leading-relaxed">
                             {ev.short_description}
                           </p>
                         )}
@@ -1142,18 +1125,10 @@ export default function EventEnrollmentView({
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.05] text-[11px] font-mono text-zinc-400">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span>{ev.venue || 'ISL Campus'}</span>
-                        <span className="text-zinc-600">•</span>
-                        <span>{ev.date_time || 'Schedule TBA'}</span>
-                        {ev.category && (
-                          <>
-                            <span className="text-zinc-600">•</span>
-                            <span className="text-zinc-500">{ev.category}</span>
-                          </>
-                        )}
-                      </div>
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-white/[0.05] text-[11px] font-mono text-zinc-400">
+                      <span className="text-zinc-300">
+                        Individual Participation
+                      </span>
 
                       <button
                         type="button"
@@ -1169,20 +1144,25 @@ export default function EventEnrollmentView({
             </div>
           </div>
 
-          {/* RIGHT BOX: SELECTED EVENTS (not paid) & Checkout */}
+          {/* RIGHT BOX: SELECTED EVENTS & Checkout */}
           <div className="rounded-2xl border border-white/[0.12] bg-[#07090E] p-4 sm:p-5 flex flex-col gap-4 shadow-xl">
-            {/* Header matching user sketch */}
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
-              <h3 className="font-subheading font-semibold text-sm sm:text-base text-zinc-200 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#FF6A00] animate-pulse" />
-                Selected Events (not paid)
-              </h3>
-              <span className="text-xs font-mono text-zinc-400 bg-white/[0.05] border border-white/[0.08] px-2.5 py-0.5 rounded-full">
+            {/* Header: Title, Cart Expiration Notice & Counter */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/[0.08] pb-3 gap-2">
+              <div className="flex flex-col gap-0.5">
+                <h3 className="font-subheading font-semibold text-sm sm:text-base text-zinc-200 uppercase tracking-wider flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#FF6A00] animate-pulse" />
+                  Selected Events
+                </h3>
+                <span className="text-xs font-mono text-amber-400/90 flex items-center gap-1.5">
+                  ⏱️ This cart expires in 5 minutes
+                </span>
+              </div>
+              <span className="text-xs font-mono text-zinc-400 bg-white/[0.05] border border-white/[0.08] px-2.5 py-0.5 rounded-full shrink-0 self-start sm:self-auto">
                 {totalSelectedCount} Selected
               </span>
             </div>
 
-            {/* List of Selected Events */}
+            {/* Flat Unified List of Selected Events */}
             <div className="flex flex-col gap-3 max-h-[580px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-zinc-700 hover:scrollbar-thumb-zinc-500">
               {totalSelectedCount === 0 ? (
                 <div className="py-16 px-4 text-center rounded-xl border border-dashed border-white/[0.08] text-zinc-500 font-mono text-xs flex flex-col items-center justify-center gap-2">
@@ -1193,426 +1173,367 @@ export default function EventEnrollmentView({
                   <span className="text-zinc-600 text-[11px]">Select events from the left box to add them here.</span>
                 </div>
               ) : (
-                <>
-                  {/* --- SECTION 1: Active Enrolled Reservations (Unpaid) from /api/enrollement/enroll-event --- */}
-                  {(pendingIndividual.length > 0 || pendingTeam.length > 0) && (
-                    <div className="flex flex-col gap-2.5">
-                      <div className="flex items-center justify-between px-1 pt-1 border-b border-amber-500/20 pb-1.5">
-                        <span className="font-mono text-[11px] font-semibold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                          Enrolled Reservations (Not Paid)
-                        </span>
-                        <span className="text-[10px] font-mono text-amber-300/80 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                          {pendingIndividual.length + pendingTeam.length} Active
-                        </span>
-                      </div>
-
-                      {/* Enrolled Individual Reservations */}
-                      {pendingIndividual.map((item) => (
-                        <div
-                          key={item._id}
-                          className="rounded-xl border border-amber-500/30 bg-amber-500/[0.04] p-3.5 flex flex-col gap-2"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex flex-col min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-subheading font-medium text-sm text-white truncate">
-                                  {item.event_title}
-                                </h4>
-                                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 uppercase font-semibold">
-                                  RESERVED (NOT PAID)
-                                </span>
-                              </div>
-                              <span className="text-xs font-mono text-zinc-400">
-                                {item.event_details?.venue || 'ISL Campus'} • {item.event_details?.date_time || 'Schedule TBA'}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs font-mono font-bold text-emerald-400">
-                                {item.event_details?.entry_fee ? `₹${item.event_details.entry_fee}` : 'FREE'}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteEnrolled(item._id, item.event_id, 'individual')}
-                                disabled={deletingEnrollId === item._id}
-                                aria-label={`Cancel reservation for ${item.event_title}`}
-                                title="Cancel reservation"
-                                className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-50"
-                              >
-                                {deletingEnrollId === item._id ? (
-                                  <span className="w-4 h-4 block border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                )}
-                              </button>
-                            </div>
+                <div className="flex flex-col gap-3">
+                  {/* 1. Unpaid Enrolled Individual Events */}
+                  {pendingIndividual.map((item) => (
+                    <div
+                      key={item._id}
+                      className="rounded-xl border border-white/[0.1] bg-black/40 hover:border-white/[0.18] transition-colors p-3.5 flex flex-col gap-2"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-subheading font-medium text-sm text-white truncate">
+                              {item.event_title}
+                            </h4>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.06] text-zinc-400 uppercase">
+                              INDIVIDUAL
+                            </span>
                           </div>
+                          {item.event_details?.date_time && (
+                            <span className="text-[11px] font-mono text-zinc-400 pt-0.5">
+                              {item.event_details.date_time}
+                            </span>
+                          )}
                         </div>
-                      ))}
 
-                      {/* Enrolled Team Reservations */}
-                      {pendingTeam.map((item) => (
-                        <div
-                          key={item._id}
-                          className="rounded-xl border border-amber-500/30 bg-amber-500/[0.04] p-3.5 flex flex-col gap-2.5"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex flex-col min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="font-subheading font-medium text-sm text-white truncate">
-                                  {item.event_title}
-                                </h4>
-                                <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 uppercase font-semibold">
-                                  TEAM RESERVED (NOT PAID)
-                                </span>
-                              </div>
-                              <span className="text-xs font-mono text-zinc-400">
-                                {item.event_details?.venue || 'ISL Campus'} • {item.event_details?.date_time || 'Schedule TBA'}
-                              </span>
-                            </div>
-
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs font-mono font-bold text-emerald-400">
-                                {item.event_details?.entry_fee ? `₹${item.event_details.entry_fee}` : 'FREE'}
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteEnrolled(item._id, item.event_id, 'team')}
-                                disabled={deletingEnrollId === item._id}
-                                aria-label={`Cancel reservation for ${item.event_title}`}
-                                title="Cancel team reservation"
-                                className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-50"
-                              >
-                                {deletingEnrollId === item._id ? (
-                                  <span className="w-4 h-4 block border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
-                                ) : (
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                )}
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Team Details Summary */}
-                          <div className="pt-2 border-t border-white/[0.06] flex flex-col gap-1.5 text-xs">
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-[11px] text-zinc-400">Team Name:</span>
-                              <span className="font-medium text-white">{item.team_name || 'Squad'}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <span className="font-mono text-[11px] text-zinc-400">Team Leader:</span>
-                              <span className="font-mono text-zinc-300 text-[11px]">{item.team_leader_email || userEmail}</span>
-                            </div>
-                            {item.team_members && item.team_members.length > 0 && (
-                              <div className="flex flex-col gap-1 pt-1">
-                                <span className="font-mono text-[10px] text-zinc-400 uppercase">Teammates ({item.team_members.length}):</span>
-                                <div className="flex flex-wrap gap-1.5">
-                                  {item.team_members.map((email) => (
-                                    <span key={email} className="px-2 py-0.5 rounded bg-white/[0.05] border border-white/[0.08] text-[10px] font-mono text-zinc-300">
-                                      {email}
-                                    </span>
-                                  ))}
-                                </div>
-                              </div>
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <span className="text-xs font-mono font-medium text-emerald-400">
+                            {item.event_details?.entry_fee ? `₹${item.event_details.entry_fee}` : 'FREE'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEnrolled(item._id, item.event_id, 'individual')}
+                            disabled={deletingEnrollId === item._id}
+                            aria-label={`Remove ${item.event_title}`}
+                            title="Remove event"
+                            className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            {deletingEnrollId === item._id ? (
+                              <span className="w-4 h-4 block border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
                             )}
-                          </div>
+                          </button>
                         </div>
-                      ))}
+                      </div>
                     </div>
-                  )}
+                  ))}
 
-                  {/* --- SECTION 2: Newly Staged Events (Selected from Catalog, Ready to Enroll) --- */}
-                  {(selectedIndividualIds.length > 0 || selectedTeamEvents.length > 0) && (
-                    <div className="flex flex-col gap-2.5 pt-1">
-                      <div className="flex items-center justify-between px-1 border-b border-white/[0.08] pb-1.5">
-                        <span className="font-mono text-[11px] font-semibold text-[#FF8833] uppercase tracking-wider flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6A00]" />
-                          Newly Selected (Ready to Enroll)
-                        </span>
-                        <span className="text-[10px] font-mono text-zinc-400 bg-white/[0.05] px-2 py-0.5 rounded border border-white/[0.08]">
-                          {selectedIndividualIds.length + selectedTeamEvents.length} Staged
-                        </span>
+                  {/* 2. Newly Staged Individual Events */}
+                  {selectedIndividualEventObjects.map((ev) => (
+                    <div
+                      key={ev._id}
+                      className="rounded-xl border border-white/[0.1] bg-black/40 hover:border-white/[0.18] transition-colors p-3.5 flex flex-col gap-2"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-subheading font-medium text-sm text-white truncate">
+                              {ev.title}
+                            </h4>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-white/[0.06] text-zinc-400 uppercase">
+                              INDIVIDUAL
+                            </span>
+                          </div>
+                          {ev.date_time && (
+                            <span className="text-[11px] font-mono text-zinc-400 pt-0.5">
+                              {ev.date_time}
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <span className="text-xs font-mono font-medium text-emerald-400">
+                            {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveIndividual(ev._id)}
+                            aria-label={`Remove ${ev.title}`}
+                            title="Remove event"
+                            className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                          >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* 3. Unpaid Enrolled Team Events */}
+                  {pendingTeam.map((item) => (
+                    <div
+                      key={item._id}
+                      className="rounded-xl border border-white/[0.1] bg-black/40 hover:border-white/[0.18] transition-colors p-3.5 flex flex-col gap-2.5"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex flex-col min-w-0">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-subheading font-medium text-sm text-white truncate">
+                              {item.event_title}
+                            </h4>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FF6A00]/20 text-[#FF8833] uppercase">
+                              TEAM
+                            </span>
+                          </div>
+                          <span className="text-[11px] font-mono text-zinc-400 pt-0.5">
+                            Team: <span className="text-white font-medium">{item.team_name || 'Squad'}</span>
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <span className="text-xs font-mono font-medium text-emerald-400">
+                            {item.event_details?.entry_fee ? `₹${item.event_details.entry_fee}` : 'FREE'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteEnrolled(item._id, item.event_id, 'team')}
+                            disabled={deletingEnrollId === item._id}
+                            aria-label={`Remove ${item.event_title}`}
+                            title="Remove team event"
+                            className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer disabled:opacity-50"
+                          >
+                            {deletingEnrollId === item._id ? (
+                              <span className="w-4 h-4 block border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            )}
+                          </button>
+                        </div>
                       </div>
 
-                      {/* Selected Individual Events */}
-                      {selectedIndividualEventObjects.map((ev) => (
-                        <div
-                          key={ev._id}
-                          className="rounded-xl border border-white/[0.1] bg-black/40 hover:border-white/[0.2] transition-colors p-3.5 flex flex-col gap-2"
-                        >
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="flex flex-col min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h4 className="font-subheading font-medium text-sm text-white truncate">
-                                  {ev.title}
-                                </h4>
-                                <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-white/[0.06] text-zinc-400 uppercase">
-                                  INDIVIDUAL
-                                </span>
-                              </div>
-                              <span className="text-xs font-mono text-zinc-400">
-                                {ev.venue || 'ISL Campus'} • {ev.date_time || 'Schedule TBA'}
-                              </span>
-                            </div>
+                      {item.team_members && item.team_members.length > 0 && (
+                        <div className="pt-2 border-t border-white/[0.06] flex flex-wrap gap-1.5 text-xs font-mono">
+                          <span className="text-zinc-500 text-[10px] uppercase w-full">Teammates:</span>
+                          {item.team_members.map((email) => (
+                            <span key={email} className="px-2 py-0.5 rounded bg-white/[0.05] border border-white/[0.08] text-[10px] text-zinc-300">
+                              {email}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
 
-                            <div className="flex items-center gap-2 shrink-0">
-                              <span className="text-xs font-mono font-medium text-emerald-400">
-                                {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
+                  {/* 4. Newly Staged Team Events with Setup Inputs */}
+                  {selectedTeamEvents.map((tItem) => {
+                    const ev = eventsList.find((e) => e._id === tItem.eventId);
+                    if (!ev) return null;
+
+                    const minSize = ev.min_team_size || 2;
+                    const maxSize = ev.max_team_size || ev.team_size || 2;
+                    const maxTeammates = Math.max(0, maxSize - 1);
+                    const minTeammates = Math.max(0, minSize - 1);
+                    const currentStatus = memberStatus[tItem.eventId] || 'idle';
+
+                    return (
+                      <div
+                        key={tItem.eventId}
+                        className="rounded-xl border border-white/[0.1] bg-black/40 hover:border-white/[0.18] transition-colors p-3.5 flex flex-col gap-3"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex flex-col min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-subheading font-medium text-sm text-white truncate">
+                                {ev.title}
+                              </h4>
+                              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#FF6A00]/20 text-[#FF8833] uppercase">
+                                TEAM
                               </span>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveIndividual(ev._id)}
-                                aria-label={`Remove ${ev.title}`}
-                                className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
-                              >
-                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                </svg>
-                              </button>
                             </div>
+                            <span className="text-[11px] font-mono text-zinc-400 pt-0.5">
+                              Team Size: Min {minSize} – Max {maxSize} members
+                            </span>
                           </div>
 
-                          <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
-                            <span className="text-[11px] font-mono text-zinc-500">Staged (Not yet enrolled)</span>
+                          <div className="flex items-center gap-2.5 shrink-0">
+                            <span className="text-xs font-mono font-medium text-emerald-400">
+                              {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
+                            </span>
                             <button
                               type="button"
-                              onClick={() => handleEnrollSingleIndividual(ev._id)}
-                              disabled={enrollingEventId === ev._id}
-                              className="px-2.5 py-1 rounded bg-[#FF6A00]/20 hover:bg-[#FF6A00]/30 border border-[#FF6A00]/50 text-[#FF8833] hover:text-white font-mono text-[11px] uppercase tracking-wider font-medium cursor-pointer transition-colors disabled:opacity-50"
+                              onClick={() => handleRemoveTeam(tItem.eventId)}
+                              aria-label={`Remove ${ev.title}`}
+                              title="Remove team event"
+                              className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
                             >
-                              {enrollingEventId === ev._id ? 'Enrolling...' : 'Enroll Event →'}
+                              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                              </svg>
                             </button>
                           </div>
                         </div>
-                      ))}
 
-                      {/* Selected Team Events with Squad Setup Fields */}
-                      {selectedTeamEvents.map((tItem) => {
-                        const ev = eventsList.find((e) => e._id === tItem.eventId);
-                        if (!ev) return null;
+                        {/* Team Form Fields */}
+                        <div className="pt-2 border-t border-white/[0.06] flex flex-col gap-2.5 text-xs">
+                          {/* Team Name */}
+                          <div className="flex flex-col gap-1">
+                            <label className="font-mono text-[10px] uppercase text-zinc-400">
+                              Team Name <span className="text-[#FF6A00]">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              value={tItem.teamName}
+                              onChange={(e) => updateTeamName(tItem.eventId, e.target.value)}
+                              placeholder="e.g. Apex Titans"
+                              className="w-full bg-black/60 text-white font-sans text-xs px-3 py-2 rounded-lg border border-white/[0.12] focus:border-[#FF6A00] focus:outline-none"
+                            />
+                          </div>
 
-                        const maxTeammates = Math.max(0, (ev.max_team_size ?? ev.team_size ?? 1) - 1);
-                        const minTeammates = Math.max(0, (ev.min_team_size ?? 1) - 1);
+                          {/* Leader (Read-only) */}
+                          <div className="flex flex-col gap-1">
+                            <label className="font-mono text-[10px] uppercase text-zinc-400">
+                              Team Leader (You)
+                            </label>
+                            <input
+                              type="email"
+                              value={userEmail}
+                              readOnly
+                              className="w-full bg-white/[0.02] text-zinc-400 font-mono text-xs px-3 py-2 rounded-lg border border-white/[0.08] cursor-not-allowed"
+                            />
+                          </div>
 
-                        return (
-                          <div
-                            key={tItem.eventId}
-                            className="rounded-xl border border-white/[0.1] bg-black/40 hover:border-white/[0.2] transition-colors p-3.5 flex flex-col gap-3"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex flex-col min-w-0">
-                                <div className="flex items-center gap-2">
-                                  <h4 className="font-subheading font-medium text-sm text-white truncate">
-                                    {ev.title}
-                                  </h4>
-                                  <span className="text-[10px] font-mono px-2 py-0.2 rounded bg-[#FF6A00]/20 text-[#FF8833] uppercase">
-                                    TEAM
-                                  </span>
-                                </div>
-                                <span className="text-xs font-mono text-zinc-400">
-                                  {ev.venue || 'ISL Campus'} • {ev.date_time || 'Schedule TBA'}
-                                </span>
+                          {/* Teammates List & Progressive Addition */}
+                          {maxTeammates > 0 && (
+                            <div className="flex flex-col gap-2 pt-1">
+                              <div className="flex items-center justify-between">
+                                <label className="font-mono text-[10px] uppercase text-zinc-400">
+                                  Teammates ({tItem.teamMembers.length}/{maxTeammates} added • Min {minTeammates} required)
+                                </label>
                               </div>
 
-                              <div className="flex items-center gap-2 shrink-0">
-                                <span className="text-xs font-mono font-medium text-emerald-400">
-                                  {ev.entry_fee ? `₹${ev.entry_fee}` : 'FREE'}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveTeam(tItem.eventId)}
-                                  aria-label={`Remove ${ev.title}`}
-                                  className="p-1 rounded-md text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                              {/* Verified Members List */}
+                              {(tItem.verifiedDetails || []).map((m, mIdx) => (
+                                <div
+                                  key={m.email}
+                                  className="flex items-center justify-between p-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs"
                                 >
-                                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-
-                            {/* Squad Inputs */}
-                            <div className="pt-2 border-t border-white/[0.06] flex flex-col gap-3 text-xs">
-                              {/* Team Name */}
-                              <div className="flex flex-col gap-1">
-                                <label className="font-mono text-[10px] uppercase text-zinc-400">
-                                  Team Name <span className="text-[#FF6A00]">*</span>
-                                </label>
-                                <input
-                                  type="text"
-                                  value={tItem.teamName}
-                                  onChange={(e) => updateTeamName(tItem.eventId, e.target.value)}
-                                  placeholder="e.g. Apex Titans"
-                                  className="w-full bg-black/60 text-white font-sans text-xs px-3 py-2 rounded-lg border border-white/[0.12] focus:border-[#FF6A00] focus:outline-none"
-                                />
-                              </div>
-
-                              {/* Leader (read-only) */}
-                              <div className="flex flex-col gap-1">
-                                <label className="font-mono text-[10px] uppercase text-zinc-400">
-                                  Team Leader (You)
-                                </label>
-                                <input
-                                  type="email"
-                                  value={userEmail}
-                                  readOnly
-                                  className="w-full bg-white/[0.02] text-zinc-400 font-mono text-xs px-3 py-2 rounded-lg border border-white/[0.08] cursor-not-allowed"
-                                />
-                              </div>
-
-                              {/* Squad Members: Progressive Verification */}
-                              {maxTeammates === 0 ? (
-                                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300 flex items-center gap-2">
-                                  <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center font-bold text-emerald-400">
-                                    ✓
-                                  </span>
-                                  <span>
-                                    Solo Team Event • Team limit is 1 (Team Leader is the only squad member).
-                                  </span>
-                                </div>
-                              ) : (
-                                <div className="flex flex-col gap-2 pt-1">
-                                  <div className="flex items-center justify-between">
-                                    <label className="font-mono text-[10px] uppercase text-zinc-400">
-                                      Team Members ({tItem.teamMembers.length} verified • Min {minTeammates} required)
-                                    </label>
-                                    <span className="text-[10px] font-mono text-zinc-500">
-                                      Max {maxTeammates} Teammates
+                                  <div className="flex items-center gap-2 min-w-0 pr-2">
+                                    <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold shrink-0">
+                                      ✓
                                     </span>
+                                    <div className="flex items-center gap-2 min-w-0 truncate">
+                                      <span className="text-white font-medium text-xs truncate">
+                                        {m.name || `Member ${mIdx + 1}`}
+                                      </span>
+                                      <span className="text-zinc-400 font-mono text-[11px] truncate">
+                                        ({m.email})
+                                      </span>
+                                    </div>
                                   </div>
 
-                                  {/* Verified Members List */}
-                                  {(tItem.verifiedDetails || []).map((m, mIdx) => (
-                                    <div
-                                      key={m.email}
-                                      className="flex items-center justify-between p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20 text-xs"
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveVerifiedMember(tItem.eventId, m.email)}
+                                    aria-label={`Remove ${m.name || m.email}`}
+                                    className="p-1 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors cursor-pointer shrink-0"
+                                  >
+                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              ))}
+
+                              {/* Teammate Input with + / ✓ / ✕ Button */}
+                              {tItem.teamMembers.length < maxTeammates ? (
+                                <div className="flex flex-col gap-1.5 pt-0.5">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="email"
+                                      value={pendingMemberEmail[tItem.eventId] || ''}
+                                      onChange={(e) => {
+                                        setPendingMemberEmail((prev) => ({
+                                          ...prev,
+                                          [tItem.eventId]: e.target.value,
+                                        }));
+                                        if (memberError[tItem.eventId]) {
+                                          setMemberError((prev) => ({
+                                            ...prev,
+                                            [tItem.eventId]: null,
+                                          }));
+                                        }
+                                        if (memberStatus[tItem.eventId] && memberStatus[tItem.eventId] !== 'idle') {
+                                          setMemberStatus((prev) => ({
+                                            ...prev,
+                                            [tItem.eventId]: 'idle',
+                                          }));
+                                        }
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          e.preventDefault();
+                                          handleVerifyAndAddMember(tItem.eventId);
+                                        }
+                                      }}
+                                      disabled={verifyingMember[tItem.eventId]}
+                                      placeholder={`Enter teammate ${tItem.teamMembers.length + 1} registered email`}
+                                      className="flex-1 bg-black/60 text-white font-mono text-xs px-3 py-2 rounded-lg border border-white/[0.12] focus:border-[#FF6A00] focus:outline-none disabled:opacity-50"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => handleVerifyAndAddMember(tItem.eventId)}
+                                      disabled={
+                                        verifyingMember[tItem.eventId] ||
+                                        !(pendingMemberEmail[tItem.eventId] || '').trim()
+                                      }
+                                      title={
+                                        currentStatus === 'success'
+                                          ? 'Verified'
+                                          : currentStatus === 'error'
+                                          ? 'Not Paid or Not Found'
+                                          : 'Verify Teammate'
+                                      }
+                                      className={`h-9 w-9 rounded-lg font-bold text-sm flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
+                                        currentStatus === 'success'
+                                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
+                                          : currentStatus === 'error'
+                                          ? 'bg-red-500/20 text-red-400 border border-red-500/40 hover:bg-red-500/30'
+                                          : 'bg-[#FF6A00]/20 text-[#FF8833] border border-[#FF6A00]/60 hover:bg-[#FF6A00] hover:text-white'
+                                      }`}
                                     >
-                                      <div className="flex items-center gap-2 min-w-0 pr-2">
-                                        <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[11px] font-bold shrink-0">
-                                          ✓
-                                        </span>
-                                        <div className="flex flex-col min-w-0">
-                                          <div className="flex items-center gap-1.5 flex-wrap">
-                                            <span className="text-white font-medium text-xs">
-                                              Team Member - {mIdx + 1}:
-                                            </span>
-                                            <span className="text-emerald-300 font-medium truncate">
-                                              {m.name || 'Registered Attendee'}
-                                            </span>
-                                          </div>
-                                          <span className="text-zinc-400 font-mono text-[11px] truncate">
-                                            {m.email}
-                                          </span>
-                                        </div>
-                                      </div>
-
-                                      <div className="flex items-center gap-2 shrink-0">
-                                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 uppercase font-semibold">
-                                          VERIFIED
-                                        </span>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveVerifiedMember(tItem.eventId, m.email)}
-                                          aria-label={`Remove ${m.name || m.email}`}
-                                          className="p-1 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors cursor-pointer"
-                                        >
-                                          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                          </svg>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ))}
-
-                                  {/* Progressive Input for Next Team Member with + (Verify) button */}
-                                  {tItem.teamMembers.length < maxTeammates ? (
-                                    <div className="flex flex-col gap-1 pt-0.5">
-                                      <label className="font-mono text-[10px] uppercase text-zinc-400">
-                                        Add Team Member - {tItem.teamMembers.length + 1} (Must be registered)
-                                      </label>
-                                      <div className="flex items-center gap-2">
-                                        <input
-                                          type="email"
-                                          value={pendingMemberEmail[tItem.eventId] || ''}
-                                          onChange={(e) => {
-                                            setPendingMemberEmail((prev) => ({
-                                              ...prev,
-                                              [tItem.eventId]: e.target.value,
-                                            }));
-                                            if (memberError[tItem.eventId]) {
-                                              setMemberError((prev) => ({
-                                                ...prev,
-                                                [tItem.eventId]: null,
-                                              }));
-                                            }
-                                          }}
-                                          onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                              e.preventDefault();
-                                              handleVerifyAndAddMember(tItem.eventId);
-                                            }
-                                          }}
-                                          disabled={verifyingMember[tItem.eventId]}
-                                          placeholder={`Enter Team Member - ${tItem.teamMembers.length + 1} email`}
-                                          className="flex-1 bg-black/60 text-white font-mono text-xs px-3 py-2 rounded-lg border border-white/[0.12] focus:border-[#FF6A00] focus:outline-none disabled:opacity-50"
-                                        />
-                                        <button
-                                          type="button"
-                                          onClick={() => handleVerifyAndAddMember(tItem.eventId)}
-                                          disabled={
-                                            verifyingMember[tItem.eventId] ||
-                                            !(pendingMemberEmail[tItem.eventId] || '').trim()
-                                          }
-                                          title={`Verify & Add Team Member - ${tItem.teamMembers.length + 1}`}
-                                          className="h-8.5 px-3 rounded-lg border border-[#FF6A00]/70 bg-[#FF6A00]/20 hover:bg-[#FF6A00] text-white font-bold text-sm flex items-center justify-center transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
-                                        >
-                                          {verifyingMember[tItem.eventId] ? (
-                                            <svg className="animate-spin w-4 h-4 text-[#FF6A00]" fill="none" viewBox="0 0 24 24">
-                                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                                            </svg>
-                                          ) : (
-                                            <span className="text-base leading-none font-bold">+</span>
-                                          )}
-                                        </button>
-                                      </div>
-
-                                      {memberError[tItem.eventId] && (
-                                        <p className="text-[11px] font-mono text-red-400 px-1 pt-0.5">
-                                          {memberError[tItem.eventId]}
-                                        </p>
+                                      {verifyingMember[tItem.eventId] ? (
+                                        <svg className="animate-spin w-4 h-4 text-[#FF6A00]" fill="none" viewBox="0 0 24 24">
+                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                        </svg>
+                                      ) : currentStatus === 'success' ? (
+                                        <span className="text-base leading-none">✓</span>
+                                      ) : currentStatus === 'error' ? (
+                                        <span className="text-base leading-none">✕</span>
+                                      ) : (
+                                        <span className="text-base leading-none font-bold">+</span>
                                       )}
-                                    </div>
-                                  ) : (
-                                    <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.06] text-[11px] font-mono text-zinc-500 text-center">
-                                      Maximum squad limit reached for this event.
+                                    </button>
+                                  </div>
+
+                                  {/* Red alert message when not paid or not found */}
+                                  {memberError[tItem.eventId] && (
+                                    <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-xs font-mono text-red-400 flex items-start gap-2">
+                                      <span className="shrink-0">⚠️</span>
+                                      <span>{memberError[tItem.eventId]}</span>
                                     </div>
                                   )}
                                 </div>
+                              ) : (
+                                <div className="p-2 rounded-lg bg-white/[0.02] border border-white/[0.06] text-[11px] font-mono text-zinc-500 text-center">
+                                  Maximum squad limit reached for this event.
+                                </div>
                               )}
-
-                              <div className="pt-2 border-t border-white/[0.06] flex items-center justify-between">
-                                <span className="text-[11px] font-mono text-zinc-500">Staged (Not yet enrolled)</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleEnrollSingleTeam(tItem.eventId)}
-                                  disabled={enrollingEventId === tItem.eventId}
-                                  className="px-2.5 py-1 rounded bg-[#FF6A00]/20 hover:bg-[#FF6A00]/30 border border-[#FF6A00]/50 text-[#FF8833] hover:text-white font-mono text-[11px] uppercase tracking-wider font-medium cursor-pointer transition-colors disabled:opacity-50"
-                                >
-                                  {enrollingEventId === tItem.eventId ? 'Enrolling Squad...' : 'Enroll Squad →'}
-                                </button>
-                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
 
@@ -1657,11 +1578,7 @@ export default function EventEnrollmentView({
                   className="absolute inset-0 bg-gradient-to-r from-[#FF6A00] via-[#FF3B2E] to-[#D8182B] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"
                 />
                 <span className="relative z-10 font-bold tracking-widest flex items-center gap-2">
-                  {submitting
-                    ? 'Processing Enrolment...'
-                    : selectedIndividualIds.length > 0 || selectedTeamEvents.length > 0
-                    ? 'Enroll & Proceed To Check Out'
-                    : 'Proceed To Check Out'}
+                  {submitting ? 'Processing Enrolment...' : 'Proceed to Checkout'}
                   {!submitting && (
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />

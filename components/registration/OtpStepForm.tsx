@@ -299,6 +299,12 @@ export default function OtpStepForm({ email }: OtpStepFormProps) {
             )}
           </div>
 
+          {/* Spam / Junk folder reminder if email not found */}
+          <p className="w-full text-[11px] font-mono text-zinc-500 px-1 mt-2 flex items-center gap-1.5">
+            <span className="text-zinc-500">Can&apos;t find the email?</span>
+            <span className="text-amber-400/90">Please check your spam or junk folder.</span>
+          </p>
+
           {/* Success Message Banner */}
           {message && (
             <div
